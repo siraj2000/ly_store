@@ -1,0 +1,357 @@
+import 'package:flutter/material.dart';
+
+import '../models/cart_item_model.dart';
+import '../models/coupon_model.dart';
+import '../models/product_model.dart';
+import '../models/product_status.dart';
+import '../models/user_role.dart';
+import '../services/cart_service.dart';
+import 'auth_controller.dart';
+import 'product_controller.dart';
+
+class CartController extends ChangeNotifier {
+  CartController({required CartService cartService})
+    : _cartService = cartService;
+
+  final CartService _cartService;
+  AuthController? _authController;
+  ProductController? _productController;
+  final List<CartItemModel> _items = [];
+  String? _boundUserId;
+  CouponModel? appliedCoupon;
+  bool usePoints = false;
+  bool useWallet = false;
+  CartActionResult? lastActionResult;
+
+  List<CartItemModel> get items => List.unmodifiable(_items);
+
+  void bind({
+    required AuthController authController,
+    required ProductController productController,
+  }) {
+    _authController = authController;
+    _productController = productController;
+    final nextUserId = authController.currentUser?.id;
+    if (_boundUserId != nextUserId) {
+      _boundUserId = nextUserId;
+      _items
+        ..clear()
+        ..addAll(authController.currentUser?.cart ?? const []);
+      appliedCoupon = null;
+      usePoints = false;
+      useWallet = false;
+    }
+    notifyListeners();
+  }
+
+  CartActionResult addToCart(
+    ProductModel product,
+    String selectedColor,
+    String selectedSize,
+    int quantity,
+  ) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return _setResult(CartActionResult.failure('customer_required'));
+    }
+    final existingIndex = _items.indexWhere(
+      (item) =>
+          item.product.id == product.id &&
+          item.selectedColor == selectedColor &&
+          item.selectedSize == selectedSize,
+    );
+    final existingQuantity = existingIndex >= 0
+        ? _items[existingIndex].quantity
+        : 0;
+    final validation = _validateCartRequest(
+      product: product,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+      requestedQuantity: existingQuantity + quantity,
+    );
+    if (!validation.isSuccess) {
+      notifyListeners();
+      return _setResult(validation);
+    }
+    final canonicalProduct = validation.product ?? product;
+    if (existingIndex >= 0) {
+      final existing = _items[existingIndex];
+      _items[existingIndex] = existing.copyWith(
+        product: canonicalProduct,
+        quantity: existing.quantity + quantity,
+      );
+    } else {
+      _items.add(
+        CartItemModel(
+          id: '${canonicalProduct.id}_${DateTime.now().millisecondsSinceEpoch}',
+          product: canonicalProduct,
+          selectedColor: selectedColor,
+          selectedSize: selectedSize,
+          quantity: quantity,
+        ),
+      );
+    }
+    _persistCart();
+    notifyListeners();
+    return _setResult(CartActionResult.success(product: canonicalProduct));
+  }
+
+  void removeFromCart(String cartItemId) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return;
+    }
+    _items.removeWhere((item) => item.id == cartItemId);
+    _persistCart();
+    notifyListeners();
+  }
+
+  CartActionResult updateQuantity(String cartItemId, int quantity) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return _setResult(CartActionResult.failure('customer_required'));
+    }
+    final index = _items.indexWhere((item) => item.id == cartItemId);
+    if (index == -1) {
+      return _setResult(CartActionResult.failure('cart_item_not_found'));
+    }
+    if (quantity <= 0) {
+      removeFromCart(cartItemId);
+      return _setResult(CartActionResult.success());
+    }
+    final item = _items[index];
+    final validation = _validateCartRequest(
+      product: item.product,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+      requestedQuantity: quantity,
+    );
+    if (!validation.isSuccess) {
+      notifyListeners();
+      return _setResult(validation);
+    }
+    _items[index] = item.copyWith(
+      product: validation.product ?? item.product,
+      quantity: quantity,
+    );
+    _persistCart();
+    notifyListeners();
+    return _setResult(CartActionResult.success(product: _items[index].product));
+  }
+
+  void selectItem(String cartItemId, bool selected) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return;
+    }
+    final index = _items.indexWhere((item) => item.id == cartItemId);
+    if (index == -1) return;
+    _items[index] = _items[index].copyWith(isSelected: selected);
+    _persistCart();
+    notifyListeners();
+  }
+
+  void selectAll(bool selected) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return;
+    }
+    for (var index = 0; index < _items.length; index++) {
+      _items[index] = _items[index].copyWith(isSelected: selected);
+    }
+    _persistCart();
+    notifyListeners();
+  }
+
+  bool applyCoupon(CouponModel coupon) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return false;
+    }
+    if (calculateSubtotal() < coupon.minimumSpend) {
+      return false;
+    }
+    appliedCoupon = coupon;
+    notifyListeners();
+    return true;
+  }
+
+  double calculateSubtotal() {
+    return _items
+        .where((item) => item.isSelected)
+        .fold(0, (sum, item) => sum + item.product.price * item.quantity);
+  }
+
+  double calculateDiscount() {
+    final subtotal = calculateSubtotal();
+    var discount = 0.0;
+    if (appliedCoupon != null) {
+      discount += appliedCoupon!.isPercentage
+          ? subtotal * (appliedCoupon!.amount / 100)
+          : appliedCoupon!.amount;
+    }
+    if (usePoints && _authController?.currentUser != null) {
+      discount += (_authController!.currentUser!.points / 100).clamp(0, 12);
+    }
+    if (useWallet && _authController?.currentUser != null) {
+      discount += _authController!.currentUser!.walletBalance.clamp(0, 18);
+    }
+    return discount > subtotal ? subtotal : discount;
+  }
+
+  double calculateShipping() {
+    return _cartService.shippingFor(calculateSubtotal());
+  }
+
+  double calculateTotal() {
+    final subtotal = calculateSubtotal();
+    final total = subtotal - calculateDiscount() + calculateShipping();
+    return total < 0 ? 0 : total;
+  }
+
+  void setUsePoints(bool enabled) {
+    usePoints = enabled;
+    notifyListeners();
+  }
+
+  void setUseWallet(bool enabled) {
+    useWallet = enabled;
+    notifyListeners();
+  }
+
+  void clearPurchasedItems() {
+    if (_authController?.currentRole != UserRole.customer) {
+      return;
+    }
+    _items.removeWhere((item) => item.isSelected);
+    appliedCoupon = null;
+    usePoints = false;
+    useWallet = false;
+    _persistCart();
+    notifyListeners();
+  }
+
+  List<CartItemModel> get selectedItems =>
+      _items.where((item) => item.isSelected).toList();
+
+  String freeShippingMessage() {
+    return _cartService.freeShippingMessage(calculateSubtotal());
+  }
+
+  void _persistCart() {
+    final currentUser = _authController?.currentUser;
+    if (currentUser == null || currentUser.role != UserRole.customer) {
+      return;
+    }
+    _authController?.replaceUser(
+      currentUser.copyWith(cart: List<CartItemModel>.from(_items)),
+    );
+  }
+
+  CartActionResult _validateCartRequest({
+    required ProductModel product,
+    required String selectedColor,
+    required String selectedSize,
+    required int requestedQuantity,
+  }) {
+    if (requestedQuantity < 1) {
+      return CartActionResult.failure('quantity_minimum');
+    }
+    final productController = _productController;
+    final canonicalProduct = productController?.productById(product.id);
+    if (canonicalProduct == null) {
+      return CartActionResult.failure('product_not_found');
+    }
+    if (!canonicalProduct.isActive ||
+        canonicalProduct.isDeleted ||
+        canonicalProduct.status.id != 'active') {
+      return CartActionResult.failure('product_unavailable');
+    }
+    final store = productController?.storeForProduct(canonicalProduct);
+    if (store == null || !store.isActive || store.vacationMode) {
+      return CartActionResult.failure('store_unavailable');
+    }
+    if (canonicalProduct.colors.isNotEmpty &&
+        !canonicalProduct.colors.contains(selectedColor)) {
+      return CartActionResult.failure('color_unavailable');
+    }
+    if (canonicalProduct.sizes.isNotEmpty &&
+        !canonicalProduct.sizes.contains(selectedSize)) {
+      return CartActionResult.failure('size_unavailable');
+    }
+    var matchingVariantIndex = -1;
+    for (var index = 0; index < canonicalProduct.variants.length; index++) {
+      final item = canonicalProduct.variants[index];
+      final colorMatches = item.color.isEmpty || item.color == selectedColor;
+      final sizeMatches = item.size.isEmpty || item.size == selectedSize;
+      if (colorMatches && sizeMatches) {
+        matchingVariantIndex = index;
+        break;
+      }
+    }
+    final variant = matchingVariantIndex == -1
+        ? null
+        : canonicalProduct.variants[matchingVariantIndex];
+    if (canonicalProduct.variants.isNotEmpty) {
+      if (variant == null || !variant.isActive) {
+        return CartActionResult.failure('variant_unavailable');
+      }
+    }
+    final availableStock = variant?.stock ?? canonicalProduct.stock;
+    if (availableStock < 1) {
+      return CartActionResult.failure(
+        'out_of_stock',
+        availableStock: availableStock,
+        product: canonicalProduct,
+      );
+    }
+    if (requestedQuantity > availableStock) {
+      return CartActionResult.failure(
+        'insufficient_stock',
+        availableStock: availableStock,
+        product: canonicalProduct,
+      );
+    }
+    return CartActionResult.success(
+      availableStock: availableStock,
+      product: canonicalProduct,
+    );
+  }
+
+  CartActionResult _setResult(CartActionResult result) {
+    lastActionResult = result;
+    return result;
+  }
+}
+
+class CartActionResult {
+  const CartActionResult._({
+    required this.isSuccess,
+    this.errorCode,
+    this.availableStock,
+    this.product,
+  });
+
+  factory CartActionResult.success({
+    int? availableStock,
+    ProductModel? product,
+  }) {
+    return CartActionResult._(
+      isSuccess: true,
+      availableStock: availableStock,
+      product: product,
+    );
+  }
+
+  factory CartActionResult.failure(
+    String errorCode, {
+    int? availableStock,
+    ProductModel? product,
+  }) {
+    return CartActionResult._(
+      isSuccess: false,
+      errorCode: errorCode,
+      availableStock: availableStock,
+      product: product,
+    );
+  }
+
+  final bool isSuccess;
+  final String? errorCode;
+  final int? availableStock;
+  final ProductModel? product;
+}
