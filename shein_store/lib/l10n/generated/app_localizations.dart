@@ -185,7 +185,7 @@ abstract class AppLocalizations {
   /// No description provided for @trendsTitle.
   ///
   /// In en, this message translates to:
-  /// **'StyleHub Trends'**
+  /// **'LY STORE Trends'**
   String get trendsTitle;
 
   /// No description provided for @trendsSearchHint.
@@ -587,7 +587,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileWelcomeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to StyleHub'**
+  /// **'Welcome to LY STORE'**
   String get profileWelcomeTitle;
 
   /// No description provided for @profileWelcomeSubtitle.

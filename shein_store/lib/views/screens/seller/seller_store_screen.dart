@@ -8,7 +8,9 @@ import '../../../controllers/theme_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/localized_status_helper.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/product_model.dart';
 import '../../widgets/common/app_header.dart';
@@ -752,7 +754,8 @@ class _OperationsCard extends StatelessWidget {
               'أبقِ الملف ظاهرًا مع تقليل توقعات تنفيذ الطلبات.',
             ),
             value: controller.vacationMode,
-            onChanged: controller.toggleVacationMode,
+            onChanged: (value) =>
+                _confirmVacationMode(context, controller, value),
           ),
           const SizedBox(height: 8),
           Divider(color: colors.border),
@@ -796,14 +799,7 @@ class _OperationsCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {
-                context.read<AuthController>().logout();
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.main,
-                  (_) => false,
-                );
-              },
+              onPressed: () => _confirmSellerLogout(context),
               icon: const Icon(Icons.logout_rounded),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.accent,
@@ -817,6 +813,75 @@ class _OperationsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _confirmVacationMode(
+  BuildContext context,
+  SellerStoreController controller,
+  bool nextValue,
+) async {
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: nextValue
+        ? _tr(context, 'Enable vacation mode?', 'تفعيل وضع الإجازة؟')
+        : _tr(context, 'Disable vacation mode?', 'إيقاف وضع الإجازة؟'),
+    message: nextValue
+        ? _tr(
+            context,
+            'Your store products or new orders may become unavailable according to marketplace rules. Existing orders will still require attention.',
+            'قد يتوقف ظهور منتجات المتجر أو استقبال طلبات جديدة حسب إعدادات المنصة. الطلبات الحالية ستظل بحاجة إلى المتابعة.',
+          )
+        : _tr(
+            context,
+            'Eligible products may return to public visibility after vacation mode is disabled.',
+            'قد تعود المنتجات المؤهلة للظهور للعملاء بعد إيقاف وضع الإجازة.',
+          ),
+    cancelLabel: _tr(context, 'Keep Current', 'إبقاء الوضع الحالي'),
+    confirmLabel: nextValue
+        ? _tr(context, 'Enable', 'تفعيل')
+        : _tr(context, 'Disable', 'إيقاف'),
+    icon: nextValue
+        ? Icons.pause_circle_outline_rounded
+        : Icons.play_circle_outline_rounded,
+    tone: AppConfirmationTone.warning,
+  );
+  if (!confirmed) {
+    return;
+  }
+  controller.toggleVacationMode(nextValue);
+  if (context.mounted) {
+    AppActionFeedback.success(
+      context,
+      nextValue
+          ? _tr(context, 'Vacation mode enabled', 'تم تفعيل وضع الإجازة')
+          : _tr(context, 'Vacation mode disabled', 'تم إيقاف وضع الإجازة'),
+    );
+  }
+}
+
+Future<void> _confirmSellerLogout(BuildContext context) async {
+  final authController = context.read<AuthController>();
+  if (!authController.isLoggedIn) {
+    return;
+  }
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: _tr(context, 'Log out?', 'تسجيل الخروج؟'),
+    message: _tr(
+      context,
+      'Are you sure you want to log out? Your saved account data and cart will not be deleted.',
+      'هل أنت متأكد من تسجيل الخروج من حسابك؟ لن يتم حذف السلة أو بيانات الحساب المحفوظة.',
+    ),
+    cancelLabel: _tr(context, 'Stay', 'البقاء'),
+    confirmLabel: _tr(context, 'Log Out', 'تسجيل الخروج'),
+    icon: Icons.logout_rounded,
+    tone: AppConfirmationTone.warning,
+  );
+  if (!context.mounted || !confirmed) {
+    return;
+  }
+  authController.logout();
+  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (_) => false);
 }
 
 class _BusinessSetupCard extends StatelessWidget {

@@ -5,8 +5,10 @@ import '../../../controllers/seller_order_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/localized_status_helper.dart';
 import '../../../core/helpers/locale_formatters.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/order_model.dart';
 import '../../widgets/common/app_header.dart';
@@ -509,8 +511,13 @@ class _SellerOrderCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () =>
-                        controller.updateOrderStatus(order.id, nextStatus),
+                    onPressed: () => _confirmSellerOrderTransition(
+                      context,
+                      controller,
+                      order,
+                      displayStatus,
+                      nextStatus,
+                    ),
                     icon: Icon(_statusIcon(nextStatus), size: 18),
                     label: Text(
                       _localizedPrimaryAction(context, primaryAction),
@@ -523,6 +530,91 @@ class _SellerOrderCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+Future<void> _confirmSellerOrderTransition(
+  BuildContext context,
+  SellerOrderController controller,
+  OrderModel order,
+  String currentStatus,
+  String nextStatus,
+) async {
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: context.tr('Update order status?', 'تحديث حالة الطلب؟'),
+    message: _sellerTransitionMessage(context, nextStatus),
+    cancelLabel: context.tr('Cancel', 'إلغاء'),
+    confirmLabel: localizedOrderStatus(context, nextStatus),
+    icon: _statusIcon(nextStatus),
+    tone: nextStatus == 'Delivered'
+        ? AppConfirmationTone.warning
+        : AppConfirmationTone.neutral,
+    details: AppConfirmationDetails(
+      children: [
+        AppConfirmationDetailRow(
+          label: context.tr('Order', 'الطلب'),
+          value: order.id,
+        ),
+        AppConfirmationDetailRow(
+          label: context.tr('Current status', 'الحالة الحالية'),
+          value: localizedOrderStatus(context, currentStatus),
+        ),
+        AppConfirmationDetailRow(
+          label: context.tr('New status', 'الحالة الجديدة'),
+          value: localizedOrderStatus(context, nextStatus),
+          emphasized: true,
+        ),
+        AppConfirmationDetailRow(
+          label: context.tr('Items', 'المنتجات'),
+          value: '${order.items.length}',
+        ),
+        AppConfirmationDetailRow(
+          label: context.tr('Customer city', 'مدينة العميل'),
+          value: order.address.city,
+        ),
+      ],
+    ),
+  );
+  if (!confirmed) {
+    return;
+  }
+  controller.updateOrderStatus(order.id, nextStatus);
+  if (context.mounted) {
+    AppActionFeedback.success(
+      context,
+      context.tr('Order status updated', 'تم تحديث حالة الطلب'),
+    );
+  }
+}
+
+String _sellerTransitionMessage(BuildContext context, String nextStatus) {
+  switch (nextStatus) {
+    case 'Processing':
+      return context.tr(
+        'Confirm that preparation has started for this customer order.',
+        'أكد بدء تجهيز طلب العميل.',
+      );
+    case 'Ready to Ship':
+      return context.tr(
+        'Confirm that the package is ready for carrier handover.',
+        'أكد أن الطرد جاهز للتسليم لشركة الشحن.',
+      );
+    case 'Shipped':
+      return context.tr(
+        'Confirm that the package has been handed to the carrier. Tracking fields can be connected later.',
+        'أكد تسليم الطرد لشركة الشحن. يمكن ربط بيانات التتبع لاحقاً.',
+      );
+    case 'Delivered':
+      return context.tr(
+        'Confirm delivery only after actual delivery. This may affect finance settlement and customer return timing.',
+        'أكد التسليم فقط بعد وصول الطلب فعلياً. قد يؤثر ذلك في تسوية الأرباح ومدة الإرجاع.',
+      );
+    default:
+      return context.tr(
+        'Confirm this status change before updating the customer order.',
+        'أكد تغيير الحالة قبل تحديث طلب العميل.',
+      );
   }
 }
 

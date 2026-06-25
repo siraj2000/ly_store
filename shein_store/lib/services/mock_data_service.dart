@@ -563,9 +563,9 @@ class MockDataService extends ChangeNotifier {
           ? ''
           : category.subcategories[index % category.subcategories.length];
       const englishDescription =
-          'An original StyleHub pick built for easy styling, comfort, and day-to-night layering.';
+          'An original LY STORE pick built for easy styling, comfort, and day-to-night layering.';
       const arabicDescription =
-          'اختيار أصلي من StyleHub مصمم للتنسيق السهل والراحة والانتقال الأنيق من النهار إلى المساء.';
+          'اختيار أصلي من LY STORE مصمم للتنسيق السهل والراحة والانتقال الأنيق من النهار إلى المساء.';
       final englishMaterial = index.isEven ? 'Cotton Blend' : 'Polyester Blend';
       final arabicMaterial = index.isEven ? 'خليط قطن' : 'خليط بوليستر';
       final englishComposition = index.isEven
@@ -2220,7 +2220,8 @@ class MockDataService extends ChangeNotifier {
             .toList();
     final categoriesNormalized = _normalizeCategoryCatalogData();
     final productCategoriesNormalized = _normalizeProductCategoryIds();
-    final storeAllowedCategoriesNormalized = _normalizeStoreAllowedCategoryIds();
+    final storeAllowedCategoriesNormalized =
+        _normalizeStoreAllowedCategoryIds();
     if (_stores.isEmpty) {
       _stores = _migrateStoresFromUsers();
     }
@@ -2300,7 +2301,7 @@ class MockDataService extends ChangeNotifier {
   String displayNameFromEmail(String email) {
     final localPart = email.split('@').first.trim();
     if (localPart.isEmpty) {
-      return 'StyleHub Member';
+      return 'LY STORE Member';
     }
     return localPart
         .split(RegExp(r'[._-]+'))
@@ -2419,7 +2420,9 @@ class MockDataService extends ChangeNotifier {
 
   bool _normalizeProductCategoryIds() {
     var changed = false;
-    final categoriesById = {for (final category in categories) category.id: category};
+    final categoriesById = {
+      for (final category in categories) category.id: category,
+    };
     final categoriesByName = {
       for (final category in categories)
         _categoryLookupKey(category.nameText.en): category,
@@ -2486,10 +2489,10 @@ class MockDataService extends ChangeNotifier {
   }
 
   String _categoryLookupKey(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9\u0600-\u06ff]+'), '');
+    return value.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9\u0600-\u06ff]+'),
+      '',
+    );
   }
 
   String _temporaryCategoryImageFor(String categoryId) {

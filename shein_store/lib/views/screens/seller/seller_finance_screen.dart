@@ -692,7 +692,8 @@ Future<void> _showTransactionDetails(
 ) async {
   final colors = context.appColors;
   final net = order.sellerNetAmount;
-  final payoutState = order.status == 'Delivered' && order.paymentStatus == 'Paid'
+  final payoutState =
+      order.status == 'Delivered' && order.paymentStatus == 'Paid'
       ? 'Available for payout'
       : 'Still processing';
   final totalItems = order.items.fold<int>(

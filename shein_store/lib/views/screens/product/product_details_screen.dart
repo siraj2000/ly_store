@@ -49,11 +49,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             body: AppEmptyState(
               title: context.tr(
                 'Product unavailable',
-                'Ø§Ù„Ù…Ù†ØªØ¬ ØºÙŠØ± Ù…ØªÙˆÙØ±',
+                'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ™Ë†Ã™ÂÃ˜Â±',
               ),
               message: context.tr(
                 'The item could not be found.',
-                'ØªØ¹Ø°Ø± Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ù‡Ø°Ø§ Ø§Ù„Ù…Ù†ØªØ¬.',
+                'تعذر العثور على هذا المنتج.',
               ),
             ),
           );
@@ -62,13 +62,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         if (!productController.isProductPublic(product)) {
           return Scaffold(
             body: AppEmptyState(
-              title: context.tr(
-                'Product unavailable',
-                'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ™Ë†Ã™ÂÃ˜Â±',
-              ),
+              title: context.tr('Product unavailable', 'المنتج غير متوفر'),
               message: context.tr(
                 'This item is not available for customers right now.',
-                'Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­ Ã™â€žÃ™â€žÃ˜Â¹Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â¡ Ã˜Â­Ã˜Â§Ã™â€žÃ™Å Ã˜Â§Ã™â€¹.',
+                'هذا المنتج غير متاح للعملاء حالياً.',
               ),
             ),
           );
@@ -102,7 +99,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         // ignore: unused_local_variable
         final localizedStoreName =
             store?.localizedName(locale) ??
-            context.tr('Store unavailable', 'Ø§Ù„Ù…ØªØ¬Ø± ØºÙŠØ± Ù…ØªØ§Ø­');
+            context.tr(
+              'Store unavailable',
+              'Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¬Ã˜Â± Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­',
+            );
         final localizedTitle = product.resolvedTitle(locale);
         final localizedDescription = product.resolvedDescription(locale);
         final localizedMaterial = product.resolvedMaterial(locale);
@@ -118,11 +118,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ];
         final highlightLabels = [
           if (product.isFlashSale)
-            context.tr('Flash Sale', 'ØªØ®ÙÙŠØ¶ Ø³Ø±ÙŠØ¹'),
-          if (product.isHot) context.tr('Hot pick', 'Ø§Ø®ØªÙŠØ§Ø± Ø±Ø§Ø¦Ø¬'),
-          if (product.isNew) context.tr('New in', 'ÙˆØµÙ„ Ø­Ø¯ÙŠØ«Ø§Ù‹'),
+            context.tr('Flash Sale', 'Ã˜ÂªÃ˜Â®Ã™ÂÃ™Å Ã˜Â¶ Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹'),
+          if (product.isHot)
+            context.tr('Hot pick', 'Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â±Ã˜Â§Ã˜Â¦Ã˜Â¬'),
+          if (product.isNew)
+            context.tr('New in', 'Ã™Ë†Ã˜ÂµÃ™â€ž Ã˜Â­Ã˜Â¯Ã™Å Ã˜Â«Ã˜Â§Ã™â€¹'),
           if (product.isReturnable)
-            context.tr('30-day return', 'Ø¥Ø±Ø¬Ø§Ø¹ Ø®Ù„Ø§Ù„ 30 ÙŠÙˆÙ…Ø§Ù‹'),
+            context.tr(
+              '30-day return',
+              'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹',
+            ),
         ];
 
         return Scaffold(
@@ -178,11 +183,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               added
                                   ? context.tr(
                                       'Added to wishlist',
-                                      'ØªÙ…Øª Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                      'Ã˜ÂªÃ™â€¦Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜Â¶Ã™â€žÃ˜Â©',
                                     )
                                   : context.tr(
                                       'Removed from wishlist',
-                                      'ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                      'Ã˜ÂªÃ™â€¦Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â²Ã˜Â§Ã™â€žÃ˜Â© Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜Â¶Ã™â€žÃ˜Â©',
                                     ),
                             ),
                           ),
@@ -200,7 +205,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         backgroundColor: colors.surface,
                       ),
                       child: Text(
-                        context.tr('Add to Bag', 'Ø£Ø¶Ù Ø¥Ù„Ù‰ Ø§Ù„Ø³Ù„Ø©'),
+                        context.tr(
+                          'Add to Bag',
+                          'Ã˜Â£Ã˜Â¶Ã™Â Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â³Ã™â€žÃ˜Â©',
+                        ),
                       ),
                     ),
                   ),
@@ -211,7 +219,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                       ),
-                      child: Text(context.tr('Buy Now', 'Ø§Ø´ØªØ± Ø§Ù„Ø¢Ù†')),
+                      child: Text(
+                        context.tr(
+                          'Buy Now',
+                          'Ã˜Â§Ã˜Â´Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ ',
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -227,25 +240,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 onPageChanged: (value) => setState(() => _currentImage = value),
                 topLabel: context.tr(
                   'Editor\'s Pick',
-                  'Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ù…Ø­Ø±Ø±',
+                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â±Ã˜Â±',
                 ),
                 discountLabel: context.tr(
                   '${product.discount}% off',
-                  'Ø®ØµÙ… ${product.discount}%',
+                  'Ã˜Â®Ã˜ÂµÃ™â€¦ ${product.discount}%',
                 ),
                 metrics: [
                   _HeroMetricData(
-                    label: context.tr('Sold', 'ØªÙ… Ø§Ù„Ø¨ÙŠØ¹'),
+                    label: context.tr(
+                      'Sold',
+                      'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã™Å Ã˜Â¹',
+                    ),
                     value: '${product.soldCount}',
                     icon: Icons.local_fire_department_outlined,
                   ),
                   _HeroMetricData(
-                    label: context.tr('Stock', 'Ø§Ù„Ù…Ø®Ø²ÙˆÙ†'),
+                    label: context.tr(
+                      'Stock',
+                      'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â®Ã˜Â²Ã™Ë†Ã™â€ ',
+                    ),
                     value: '${product.stock}',
                     icon: Icons.inventory_2_outlined,
                   ),
                   _HeroMetricData(
-                    label: context.tr('Views', 'Ø§Ù„Ù…Ø´Ø§Ù‡Ø¯Ø§Øª'),
+                    label: context.tr(
+                      'Views',
+                      'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â§Ã™â€¡Ã˜Â¯Ã˜Â§Ã˜Âª',
+                    ),
                     value: '${product.views}',
                     icon: Icons.visibility_outlined,
                   ),
@@ -311,7 +333,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '${context.tr('Sold by', 'ÙŠØ¨Ø§Ø¹ Ø¨ÙˆØ§Ø³Ø·Ø©')} ${product.sellerName}',
+                      '${context.tr('Sold by', 'Ã™Å Ã˜Â¨Ã˜Â§Ã˜Â¹ Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â©')} ${product.sellerName}',
                       style: TextStyle(
                         color: colors.secondaryText,
                         fontSize: 14,
@@ -346,7 +368,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                context.tr('Store SKU', 'Ø±Ù…Ø² Ø§Ù„Ù…Ù†ØªØ¬'),
+                                context.tr(
+                                  'Store SKU',
+                                  'Ã˜Â±Ã™â€¦Ã˜Â² Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬',
+                                ),
                                 style: TextStyle(
                                   color: colors.secondaryText,
                                   fontSize: 11,
@@ -387,26 +412,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     _InfoStrip(
                       items: [
                         _InfoStripItem(
-                          context.tr('Secure pay', 'Ø¯ÙØ¹ Ø¢Ù…Ù†'),
+                          context.tr(
+                            'Secure pay',
+                            'Ã˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¢Ã™â€¦Ã™â€ ',
+                          ),
                           context.tr(
                             'Protected checkout',
-                            'Ø¥ØªÙ…Ø§Ù… Ø´Ø±Ø§Ø¡ Ù…Ø­Ù…ÙŠ',
+                            'Ã˜Â¥Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€¦ Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¦Ã˜Â­Ã™â€¦Ã™Å ',
                           ),
                           Icons.lock_outline_rounded,
                         ),
                         _InfoStripItem(
-                          context.tr('Fast delivery', 'ØªÙˆØµÙŠÙ„ Ø³Ø±ÙŠØ¹'),
+                          context.tr(
+                            'Fast delivery',
+                            'Ã˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹',
+                          ),
                           context.tr(
                             'Express options',
-                            'Ø®ÙŠØ§Ø±Ø§Øª Ø³Ø±ÙŠØ¹Ø©',
+                            'Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹Ã˜Â©',
                           ),
                           Icons.local_shipping_outlined,
                         ),
                         _InfoStripItem(
-                          context.tr('Free return', 'Ø¥Ø±Ø¬Ø§Ø¹ Ù…Ø¬Ø§Ù†ÙŠ'),
+                          context.tr(
+                            'Free return',
+                            'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã™â€¦Ã˜Â¬Ã˜Â§Ã™â€ Ã™Å ',
+                          ),
                           context.tr(
                             'Easy 30-day return',
-                            'Ø¥Ø±Ø¬Ø§Ø¹ Ø³Ù‡Ù„ Ø®Ù„Ø§Ù„ 30 ÙŠÙˆÙ…Ø§Ù‹',
+                            'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â³Ã™â€¡Ã™â€ž Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹',
                           ),
                           Icons.assignment_return_outlined,
                         ),
@@ -420,10 +454,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
               _DetailPanel(
-                title: context.tr('Offer highlights', 'Ø£Ø¨Ø±Ø² Ø§Ù„Ø¹Ø±ÙˆØ¶'),
+                title: context.tr(
+                  'Offer highlights',
+                  'Ã˜Â£Ã˜Â¨Ã˜Â±Ã˜Â² Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶',
+                ),
                 subtitle: context.tr(
                   'The best reasons to shop this item right now.',
-                  'Ø£ÙØ¶Ù„ Ø£Ø³Ø¨Ø§Ø¨ Ø´Ø±Ø§Ø¡ Ù‡Ø°Ø§ Ø§Ù„Ù…Ù†ØªØ¬ Ø§Ù„Ø¢Ù†.',
+                  'Ã˜Â£Ã™ÂÃ˜Â¶Ã™â€ž Ã˜Â£Ã˜Â³Ã˜Â¨Ã˜Â§Ã˜Â¨ Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ .',
                 ),
                 icon: Icons.auto_awesome_rounded,
                 child: Column(
@@ -432,33 +469,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       icon: Icons.sell_outlined,
                       title: context.tr(
                         'Coupon stack',
-                        'Ù‚Ø³Ø§Ø¦Ù… Ù…ØªØ§Ø­Ø©',
+                        'Ã™â€šÃ˜Â³Ã˜Â§Ã˜Â¦Ã™â€¦ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©',
                       ),
                       subtitle: context.tr(
                         'Browse welcome and seasonal coupon offers before checkout.',
-                        'ØªØµÙØ­ Ù‚Ø³Ø§Ø¦Ù… Ø§Ù„ØªØ±Ø­ÙŠØ¨ ÙˆØ§Ù„Ø¹Ø±ÙˆØ¶ Ø§Ù„Ù…ÙˆØ³Ù…ÙŠØ© Ù‚Ø¨Ù„ Ø¥ØªÙ…Ø§Ù… Ø§Ù„Ø·Ù„Ø¨.',
+                        'Ã˜ÂªÃ˜ÂµÃ™ÂÃ˜Â­ Ã™â€šÃ˜Â³Ã˜Â§Ã˜Â¦Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â±Ã˜Â­Ã™Å Ã˜Â¨ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â³Ã™â€¦Ã™Å Ã˜Â© Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¥Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.stars_outlined,
                       title: context.tr(
                         'Reward points',
-                        'Ù†Ù‚Ø§Ø· Ø§Ù„Ù…ÙƒØ§ÙØ¢Øª',
+                        'Ã™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â¢Ã˜Âª',
                       ),
                       subtitle: context.tr(
                         'Earn points on every successful purchase from this listing.',
-                        'Ø§ÙƒØ³Ø¨ Ù†Ù‚Ø§Ø·Ø§Ù‹ Ù…Ø¹ ÙƒÙ„ Ø¹Ù…Ù„ÙŠØ© Ø´Ø±Ø§Ø¡ Ù…ÙƒØªÙ…Ù„Ø© Ù…Ù† Ù‡Ø°Ø§ Ø§Ù„Ù…Ù†ØªØ¬.',
+                        'Ã˜Â§Ã™Æ’Ã˜Â³Ã˜Â¨ Ã™â€ Ã™â€šÃ˜Â§Ã˜Â·Ã˜Â§Ã™â€¹ Ã™â€¦Ã˜Â¹ Ã™Æ’Ã™â€ž Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â© Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¦Ã™Æ’Ã˜ÂªÃ™â€¦Ã™â€žÃ˜Â© Ã™â€¦Ã™â€  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.timer_outlined,
                       title: context.tr(
                         'Sale countdown',
-                        'Ø§Ù„Ø¹Ø¯ Ø§Ù„ØªÙ†Ø§Ø²Ù„ÙŠ',
+                        'Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€ Ã˜Â§Ã˜Â²Ã™â€žÃ™Å ',
                       ),
                       subtitle: context.tr(
                         'Flash event pricing is still active for a limited time.',
-                        'Ø³Ø¹Ø± Ø§Ù„Ø¹Ø±Ø¶ Ø§Ù„Ø³Ø±ÙŠØ¹ Ù…Ø§ Ø²Ø§Ù„ ÙØ¹Ø§Ù„Ø§Ù‹ Ù„ÙØªØ±Ø© Ù…Ø­Ø¯ÙˆØ¯Ø©.',
+                        'Ã˜Â³Ã˜Â¹Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â±Ã™Å Ã˜Â¹ Ã™â€¦Ã˜Â§ Ã˜Â²Ã˜Â§Ã™â€ž Ã™ÂÃ˜Â¹Ã˜Â§Ã™â€žÃ˜Â§Ã™â€¹ Ã™â€žÃ™ÂÃ˜ÂªÃ˜Â±Ã˜Â© Ã™â€¦Ã˜Â­Ã˜Â¯Ã™Ë†Ã˜Â¯Ã˜Â©.',
                       ),
                     ),
                   ],
@@ -467,21 +504,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               _DetailPanel(
                 title: context.tr(
                   'Choose your options',
-                  'Ø§Ø®ØªØ± Ø®ÙŠØ§Ø±Ø§ØªÙƒ',
+                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜ÂªÃ™Æ’',
                 ),
                 subtitle: context.tr(
                   'Pick the right color, size, and quantity before adding to bag.',
-                  'Ø§Ø®ØªØ± Ø§Ù„Ù„ÙˆÙ† ÙˆØ§Ù„Ù…Ù‚Ø§Ø³ ÙˆØ§Ù„ÙƒÙ…ÙŠØ© Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø© Ù‚Ø¨Ù„ Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ø³Ù„Ø©.',
+                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³ Ã™Ë†Ã˜Â§Ã™â€žÃ™Æ’Ã™â€¦Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜Â§Ã˜Â³Ã˜Â¨Ã˜Â© Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â³Ã™â€žÃ˜Â©.',
                 ),
                 icon: Icons.tune_rounded,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _PanelLabel(
-                      title: context.tr('Color', 'Ø§Ù„Ù„ÙˆÙ†'),
+                      title: context.tr('Color', 'Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€ '),
                       subtitle: context.tr(
                         'Available shades',
-                        'Ø§Ù„Ø£Ù„ÙˆØ§Ù† Ø§Ù„Ù…ØªØ§Ø­Ø©',
+                        'Ã˜Â§Ã™â€žÃ˜Â£Ã™â€žÃ™Ë†Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©',
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -494,7 +531,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 label: Text(
                                   context.tr(
                                     'No color selection needed',
-                                    'Ã™â€žÃ˜Â§ Ã™Å Ã™â€žÃ˜Â²Ã™â€¦ Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€žÃ™Ë†Ã™â€ ',
+                                    'لا يلزم اختيار لون',
                                   ),
                                 ),
                               ),
@@ -515,10 +552,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       children: [
                         Expanded(
                           child: _PanelLabel(
-                            title: context.tr('Size', 'Ø§Ù„Ù…Ù‚Ø§Ø³'),
+                            title: context.tr('Size', 'المقاس'),
                             subtitle: context.tr(
                               'Find your best fit',
-                              'Ø§Ø¹Ø«Ø± Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù‚Ø§Ø³ Ø§Ù„Ø£Ù†Ø³Ø¨',
+                              'اعثر على المقاس الأنسب',
                             ),
                           ),
                         ),
@@ -526,10 +563,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           onPressed: () =>
                               AppBottomSheet.showSizeGuide(context),
                           child: Text(
-                            context.tr(
-                              'Size Guide',
-                              'Ø¯Ù„ÙŠÙ„ Ø§Ù„Ù…Ù‚Ø§Ø³Ø§Øª',
-                            ),
+                            context.tr('Size Guide', 'دليل المقاسات'),
                           ),
                         ),
                       ],
@@ -544,7 +578,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 label: Text(
                                   context.tr(
                                     'No size selection needed',
-                                    'Ã™â€žÃ˜Â§ Ã™Å Ã™â€žÃ˜Â²Ã™â€¦ Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã™â€¦Ã™â€šÃ˜Â§Ã˜Â³',
+                                    'لا يلزم اختيار مقاس',
                                   ),
                                 ),
                               ),
@@ -565,10 +599,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       children: [
                         Expanded(
                           child: _PanelLabel(
-                            title: context.tr('Quantity', 'Ø§Ù„ÙƒÙ…ÙŠØ©'),
+                            title: context.tr(
+                              'Quantity',
+                              'Ã˜Â§Ã™â€žÃ™Æ’Ã™â€¦Ã™Å Ã˜Â©',
+                            ),
                             subtitle: context.tr(
                               '${product.stock} pieces ready to ship',
-                              '${product.stock} Ù‚Ø·Ø¹ Ø¬Ø§Ù‡Ø²Ø© Ù„Ù„Ø´Ø­Ù†',
+                              '${product.stock} Ã™â€šÃ˜Â·Ã˜Â¹ Ã˜Â¬Ã˜Â§Ã™â€¡Ã˜Â²Ã˜Â© Ã™â€žÃ™â€žÃ˜Â´Ã˜Â­Ã™â€ ',
                             ),
                           ),
                         ),
@@ -589,11 +626,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               _DetailPanel(
                 title: context.tr(
                   'Shipping and return',
-                  'Ø§Ù„Ø´Ø­Ù† ÙˆØ§Ù„Ø¥Ø±Ø¬Ø§Ø¹',
+                  'Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹',
                 ),
                 subtitle: context.tr(
                   'Helpful delivery details before you place the order.',
-                  'ØªÙØ§ØµÙŠÙ„ Ù…ÙÙŠØ¯Ø© Ø¹Ù† Ø§Ù„ØªÙˆØµÙŠÙ„ Ù‚Ø¨Ù„ ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨.',
+                  'Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã™â€¦Ã™ÂÃ™Å Ã˜Â¯Ã˜Â© Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã™â€šÃ˜Â¨Ã™â€ž Ã˜ÂªÃ™â€ Ã™ÂÃ™Å Ã˜Â° Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
                 ),
                 icon: Icons.local_shipping_outlined,
                 child: Column(
@@ -602,33 +639,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       icon: Icons.delivery_dining_outlined,
                       title: context.tr(
                         'Shipping method',
-                        'Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø´Ø­Ù†',
+                        'Ã˜Â·Ã˜Â±Ã™Å Ã™â€šÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€ ',
                       ),
                       subtitle: context.tr(
                         'Standard and express delivery options are available.',
-                        'Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ø¹Ø§Ø¯ÙŠ ÙˆØ§Ù„Ø³Ø±ÙŠØ¹ Ù…ØªØ§Ø­Ø©.',
+                        'Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â§Ã˜Â¯Ã™Å  Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â±Ã™Å Ã˜Â¹ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.schedule_outlined,
                       title: context.tr(
                         'Estimated delivery',
-                        'Ø§Ù„ØªÙˆØµÙŠÙ„ Ø§Ù„Ù…ØªÙˆÙ‚Ø¹',
+                        'Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ™Ë†Ã™â€šÃ˜Â¹',
                       ),
                       subtitle: context.tr(
                         'Expected arrival within 3 to 7 business days.',
-                        'Ø§Ù„ÙˆØµÙˆÙ„ Ø§Ù„Ù…ØªÙˆÙ‚Ø¹ Ø®Ù„Ø§Ù„ 3 Ø¥Ù„Ù‰ 7 Ø£ÙŠØ§Ù… Ø¹Ù…Ù„.',
+                        'Ã˜Â§Ã™â€žÃ™Ë†Ã˜ÂµÃ™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ™Ë†Ã™â€šÃ˜Â¹ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 3 Ã˜Â¥Ã™â€žÃ™â€° 7 Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜Â¹Ã™â€¦Ã™â€ž.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.assignment_return_outlined,
                       title: context.tr(
                         'Return policy',
-                        'Ø³ÙŠØ§Ø³Ø© Ø§Ù„Ø¥Ø±Ø¬Ø§Ø¹',
+                        'Ã˜Â³Ã™Å Ã˜Â§Ã˜Â³Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹',
                       ),
                       subtitle: context.tr(
                         'Eligible items can be returned within 30 days.',
-                        'ÙŠÙ…ÙƒÙ† Ø¥Ø±Ø¬Ø§Ø¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ù…Ø¤Ù‡Ù„Ø© Ø®Ù„Ø§Ù„ 30 ÙŠÙˆÙ…Ø§Ù‹.',
+                        'Ã™Å Ã™â€¦Ã™Æ’Ã™â€  Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¡Ã™â€žÃ˜Â© Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹.',
                       ),
                     ),
                   ],
@@ -637,30 +674,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               _DetailPanel(
                 title: context.tr(
                   'Product details',
-                  'ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬',
+                  'Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬',
                 ),
                 subtitle: context.tr(
                   'Materials, care, and catalog information in one place.',
-                  'Ø§Ù„Ø®Ø§Ù…Ø§Øª ÙˆØ§Ù„Ø¹Ù†Ø§ÙŠØ© ÙˆÙ…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„ÙƒØªØ§Ù„ÙˆØ¬ ÙÙŠ Ù…ÙƒØ§Ù† ÙˆØ§Ø­Ø¯.',
+                  'Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ã˜Â§Ã˜Âª Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â§Ã™â€žÃ™Ë†Ã˜Â¬ Ã™ÂÃ™Å  Ã™â€¦Ã™Æ’Ã˜Â§Ã™â€  Ã™Ë†Ã˜Â§Ã˜Â­Ã˜Â¯.',
                 ),
                 icon: Icons.inventory_2_outlined,
                 child: Column(
                   children: [
                     _MiniInfoTile(
                       icon: Icons.description_outlined,
-                      title: context.tr('Description', 'Ø§Ù„ÙˆØµÙ'),
+                      title: context.tr('Description', 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜ÂµÃ™Â'),
                       subtitle: localizedDescription,
                     ),
                     _MiniInfoTile(
                       icon: Icons.checkroom_outlined,
-                      title: context.tr('Material', 'Ø§Ù„Ø®Ø§Ù…Ø©'),
+                      title: context.tr(
+                        'Material',
+                        'Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ã˜Â©',
+                      ),
                       subtitle: '$localizedMaterial\n$localizedComposition',
                     ),
                     _MiniInfoTile(
                       icon: Icons.clean_hands_outlined,
                       title: context.tr(
                         'Care instructions',
-                        'ØªØ¹Ù„ÙŠÙ…Ø§Øª Ø§Ù„Ø¹Ù†Ø§ÙŠØ©',
+                        'Ã˜ÂªÃ˜Â¹Ã™â€žÃ™Å Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Å Ã˜Â©',
                       ),
                       subtitle: localizedCareInstructions,
                     ),
@@ -668,10 +708,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       icon: Icons.qr_code_rounded,
                       title: context.tr(
                         'SKU / Category / Season',
-                        'Ø§Ù„Ø±Ù…Ø² / Ø§Ù„ÙØ¦Ø© / Ø§Ù„Ù…ÙˆØ³Ù…',
+                        'Ã˜Â§Ã™â€žÃ˜Â±Ã™â€¦Ã˜Â² / Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¦Ã˜Â© / Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â³Ã™â€¦',
                       ),
                       subtitle:
-                          '${product.sku}\n${product.categoryName}\n${context.tr('All-season', 'Ù…Ù†Ø§Ø³Ø¨ Ù„ÙƒÙ„ Ø§Ù„Ù…ÙˆØ§Ø³Ù…')}',
+                          '${product.sku}\n${product.categoryName}\n${context.tr('All-season', 'Ã™â€¦Ã™â€ Ã˜Â§Ã˜Â³Ã˜Â¨ Ã™â€žÃ™Æ’Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â§Ã˜Â³Ã™â€¦')}',
                     ),
                   ],
                 ),
@@ -694,7 +734,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                context.tr('Reviews', 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…Ø§Øª'),
+                                context.tr(
+                                  'Reviews',
+                                  'Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã˜Âª',
+                                ),
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
@@ -705,7 +748,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               Text(
                                 context.tr(
                                   'What shoppers are saying about the fit, quality, and overall value.',
-                                  'Ù…Ø§Ø°Ø§ ÙŠÙ‚ÙˆÙ„ Ø§Ù„Ù…ØªØ³ÙˆÙ‚ÙˆÙ† Ø¹Ù† Ø§Ù„Ù…Ù‚Ø§Ø³ ÙˆØ§Ù„Ø¬ÙˆØ¯Ø© ÙˆØ§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ø¹Ø§Ù…Ø©.',
+                                  'Ã™â€¦Ã˜Â§Ã˜Â°Ã˜Â§ Ã™Å Ã™â€šÃ™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â³Ã™Ë†Ã™â€šÃ™Ë†Ã™â€  Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â© Ã™Ë†Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â§Ã™â€¦Ã˜Â©.',
                                 ),
                                 style: TextStyle(
                                   color: colors.secondaryText,
@@ -729,16 +772,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       children: [
                         Chip(
                           label: Text(
-                            context.tr('With photos', 'Ù…Ø¹ Ø§Ù„ØµÙˆØ±'),
+                            context.tr(
+                              'With photos',
+                              'Ã™â€¦Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±',
+                            ),
                           ),
-                        ),
-                        Chip(label: Text(context.tr('Size', 'Ø§Ù„Ù…Ù‚Ø§Ø³'))),
-                        Chip(
-                          label: Text(context.tr('Rating', 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…')),
                         ),
                         Chip(
                           label: Text(
-                            context.tr('Most recent', 'Ø§Ù„Ø£Ø­Ø¯Ø«'),
+                            context.tr('Size', 'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³'),
+                          ),
+                        ),
+                        Chip(
+                          label: Text(
+                            context.tr(
+                              'Rating',
+                              'Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦',
+                            ),
+                          ),
+                        ),
+                        Chip(
+                          label: Text(
+                            context.tr(
+                              'Most recent',
+                              'Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â­Ã˜Â¯Ã˜Â«',
+                            ),
                           ),
                         ),
                       ],
@@ -749,11 +807,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         icon: Icons.rate_review_outlined,
                         title: context.tr(
                           'No reviews yet',
-                          'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªÙ‚ÙŠÙŠÙ…Ø§Øª Ø¨Ø¹Ø¯',
+                          'Ã™â€žÃ˜Â§ Ã˜ÂªÃ™Ë†Ã˜Â¬Ã˜Â¯ Ã˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â¨Ã˜Â¹Ã˜Â¯',
                         ),
                         subtitle: context.tr(
                           'Be the first shopper to share an opinion once the order is delivered.',
-                          'ÙƒÙ† Ø£ÙˆÙ„ Ù…Ù† ÙŠØ´Ø§Ø±Ùƒ Ø±Ø£ÙŠÙ‡ Ø¨Ø¹Ø¯ Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø·Ù„Ø¨.',
+                          'Ã™Æ’Ã™â€  Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã™â€  Ã™Å Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’ Ã˜Â±Ã˜Â£Ã™Å Ã™â€¡ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
                         ),
                       )
                     else
@@ -772,7 +830,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       child: TextButton(
                         onPressed: () => _reviewAction(context, authController),
                         child: Text(
-                          context.tr('Write Review', 'Ø§ÙƒØªØ¨ ØªÙ‚ÙŠÙŠÙ…Ø§Ù‹'),
+                          context.tr(
+                            'Write Review',
+                            'Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã™â€¹',
+                          ),
                         ),
                       ),
                     ),
@@ -783,7 +844,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               SectionHeader(
                 title: context.tr(
                   'Recommendations',
-                  'Ù…Ù†ØªØ¬Ø§Øª Ù…Ù‚ØªØ±Ø­Ø©',
+                  'Ã™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬Ã˜Â§Ã˜Âª Ã™â€¦Ã™â€šÃ˜ÂªÃ˜Â±Ã˜Â­Ã˜Â©',
                 ),
               ),
               const SizedBox(height: 10),
@@ -836,17 +897,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(context.tr('Share', 'Ù…Ø´Ø§Ø±ÙƒØ©')),
+        title: Text(context.tr('Share', 'Ã™â€¦Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’Ã˜Â©')),
         content: Text(
           context.tr(
             'Native sharing is not configured in this mock app yet.',
-            'Ø§Ù„Ù…Ø´Ø§Ø±ÙƒØ© Ø§Ù„Ø£ØµÙ„ÙŠØ© ØºÙŠØ± Ù…ÙØ¹Ù„Ø© ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠ Ø¨Ø¹Ø¯.',
+            'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â£Ã˜ÂµÃ™â€žÃ™Å Ã˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€žÃ˜Â© Ã™ÂÃ™Å  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â±Ã™Å Ã˜Â¨Ã™Å  Ã˜Â¨Ã˜Â¹Ã˜Â¯.',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('Close', 'Ø¥ØºÙ„Ø§Ù‚')),
+            child: Text(context.tr('Close', 'Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š')),
           ),
         ],
       ),
@@ -863,7 +924,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         content: Text(
           context.tr(
             'Review form available after delivered purchase',
-            'Ù†Ù…ÙˆØ°Ø¬ Ø§Ù„ØªÙ‚ÙŠÙŠÙ… Ù…ØªØ§Ø­ Ø¨Ø¹Ø¯ Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø·Ù„Ø¨',
+            'Ã™â€ Ã™â€¦Ã™Ë†Ã˜Â°Ã˜Â¬ Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨',
           ),
         ),
       ),
@@ -880,7 +941,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               content: Text(
                 context.tr(
                   'Please choose color and size',
-                  'ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ù„ÙˆÙ† ÙˆØ§Ù„Ù…Ù‚Ø§Ø³',
+                  'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³',
                 ),
               ),
             ),
@@ -908,7 +969,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               content: Text(
                 context.tr(
                   'Please choose color and size',
-                  'ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ù„ÙˆÙ† ÙˆØ§Ù„Ù…Ù‚Ø§Ø³',
+                  'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³',
                 ),
               ),
             ),
@@ -1202,7 +1263,7 @@ class _PriceHero extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
-            context.tr('Save $discount%', 'ÙˆÙØ± $discount%'),
+            context.tr('Save $discount%', 'Ã™Ë†Ã™ÂÃ˜Â± $discount%'),
             style: TextStyle(
               color: colors.discount,
               fontWeight: FontWeight.w800,
@@ -1707,7 +1768,10 @@ class _StoreShowcaseCard extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.store_outlined),
                 label: Text(
-                  context.tr('Visit Store', 'Ø²ÙŠØ§Ø±Ø© Ø§Ù„Ù…ØªØ¬Ø±'),
+                  context.tr(
+                    'Visit Store',
+                    'Ã˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¬Ã˜Â±',
+                  ),
                 ),
               ),
             ),

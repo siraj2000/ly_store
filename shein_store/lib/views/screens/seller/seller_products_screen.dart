@@ -5,9 +5,11 @@ import '../../../controllers/seller_product_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/catalog_localization_helper.dart';
 import '../../../core/helpers/locale_formatters.dart';
 import '../../../core/helpers/localized_status_helper.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/product_model.dart';
 import '../../../models/product_status.dart';
@@ -778,7 +780,7 @@ void _showActionsSheet(
                     : sheetContext.l10n.sellerProductsActivate,
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  controller.toggleActive(product.id);
+                  _confirmToggleProduct(context, controller, product);
                 },
               ),
               _ActionSheetTile(
@@ -787,7 +789,7 @@ void _showActionsSheet(
                 destructive: true,
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  controller.deleteProduct(product.id);
+                  _confirmDeleteProduct(context, controller, product);
                 },
               ),
             ],
@@ -796,6 +798,84 @@ void _showActionsSheet(
       );
     },
   );
+}
+
+Future<void> _confirmToggleProduct(
+  BuildContext context,
+  SellerProductController controller,
+  ProductModel product,
+) async {
+  final locale = Localizations.localeOf(context);
+  final title = product.resolvedTitle(locale);
+  final isDeactivating = product.isActive;
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: isDeactivating
+        ? context.tr('Deactivate product?', 'إيقاف المنتج؟')
+        : context.tr('Activate product?', 'تفعيل المنتج؟'),
+    message: isDeactivating
+        ? context.tr(
+            'Deactivating $title will hide it from guests and customers while keeping it in your product list.',
+            'عند إيقاف $title لن يظهر للضيوف والعملاء، لكنه سيبقى محفوظاً في قائمة منتجاتك.',
+          )
+        : context.tr(
+            'This product may become visible to guests and customers if the product, store, seller, and stock remain eligible.',
+            'قد يصبح هذا المنتج ظاهراً للضيوف والعملاء إذا كان المنتج والمتجر والبائع والمخزون مؤهلين.',
+          ),
+    cancelLabel: context.tr('Cancel', 'إلغاء'),
+    confirmLabel: isDeactivating
+        ? context.tr('Deactivate', 'إيقاف')
+        : context.tr('Activate', 'تفعيل'),
+    icon: isDeactivating
+        ? Icons.visibility_off_outlined
+        : Icons.visibility_outlined,
+    tone: isDeactivating
+        ? AppConfirmationTone.warning
+        : AppConfirmationTone.neutral,
+  );
+  if (!confirmed) {
+    return;
+  }
+  controller.toggleActive(product.id);
+  if (context.mounted) {
+    AppActionFeedback.success(
+      context,
+      isDeactivating
+          ? context.tr('Product deactivated', 'تم إيقاف المنتج')
+          : context.tr('Product activated', 'تم تفعيل المنتج'),
+    );
+  }
+}
+
+Future<void> _confirmDeleteProduct(
+  BuildContext context,
+  SellerProductController controller,
+  ProductModel product,
+) async {
+  final title = product.resolvedTitle(Localizations.localeOf(context));
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: context.tr('Delete product?', 'حذف المنتج؟'),
+    message: context.tr(
+      'Delete $title from your catalog? Historical order data will stay available for reporting.',
+      'هل تريد حذف $title من منتجاتك؟ ستبقى بيانات الطلبات السابقة متاحة للتقارير.',
+    ),
+    cancelLabel: context.tr('Keep Product', 'إبقاء المنتج'),
+    confirmLabel: context.tr('Delete', 'حذف'),
+    icon: Icons.delete_outline_rounded,
+    tone: AppConfirmationTone.destructive,
+    barrierDismissible: false,
+  );
+  if (!confirmed) {
+    return;
+  }
+  controller.deleteProduct(product.id);
+  if (context.mounted) {
+    AppActionFeedback.success(
+      context,
+      context.tr('Product deleted', 'تم حذف المنتج'),
+    );
+  }
 }
 
 class _ActionSheetTile extends StatelessWidget {

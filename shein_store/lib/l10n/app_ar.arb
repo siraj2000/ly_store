@@ -491,11 +491,12 @@
   "categoryPetSupplies": "مستلزمات الحيوانات",
   "categoryAppliances": "الأجهزة المنزلية",
   "categoryViewAll": "عرض الكل",
-  "categoryNoProducts": "?? ???? ??????",
+  "categoryNoProducts": "لا توجد منتجات",
   "categoryNoSubcategories": "لا توجد فئات فرعية",
   "categorySearchHint": "ابحث عن أحذية وحقائب ومكياج...",
   "categoryOpenMenu": "فتح القائمة",
   "categoryCloseMenu": "إغلاق القائمة"
 }
+
 
 

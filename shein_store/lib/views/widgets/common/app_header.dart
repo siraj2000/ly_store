@@ -8,7 +8,7 @@ import 'notification_bell_button.dart';
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   const AppHeader({
     super.key,
-    this.title = 'StyleHub',
+    this.title = 'LY STORE',
     this.leading,
     this.actions = const [],
     this.centerTitle = true,

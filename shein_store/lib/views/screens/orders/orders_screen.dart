@@ -6,7 +6,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../widgets/common/app_header.dart';
 
@@ -147,8 +149,11 @@ class OrdersScreen extends StatelessWidget {
                                     ),
                                   if (order.status == 'Unpaid')
                                     OutlinedButton(
-                                      onPressed: () =>
-                                          orderController.cancelOrder(order.id),
+                                      onPressed: () => _confirmCancelOrder(
+                                        context,
+                                        orderController,
+                                        order.id,
+                                      ),
                                       child: Text(
                                         context.tr(
                                           'Cancel Order',
@@ -158,8 +163,11 @@ class OrdersScreen extends StatelessWidget {
                                     ),
                                   if (order.status == 'Shipped')
                                     OutlinedButton(
-                                      onPressed: () => orderController
-                                          .confirmReceived(order.id),
+                                      onPressed: () => _confirmReceived(
+                                        context,
+                                        orderController,
+                                        order.id,
+                                      ),
                                       child: Text(
                                         context.tr(
                                           'Confirm Received',
@@ -217,6 +225,65 @@ class OrdersScreen extends StatelessWidget {
         return context.tr('Cancelled', 'ملغي');
       default:
         return value;
+    }
+  }
+
+  Future<void> _confirmCancelOrder(
+    BuildContext context,
+    OrderController orderController,
+    String orderId,
+  ) async {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr('Cancel this order?', 'إلغاء الطلب؟'),
+      message: context.tr(
+        'Are you sure you want to cancel order $orderId? This action may not be reversible.',
+        'هل أنت متأكد من إلغاء الطلب $orderId؟ قد لا تتمكن من التراجع بعد التأكيد.',
+      ),
+      cancelLabel: context.tr('Keep Order', 'إبقاء الطلب'),
+      confirmLabel: context.tr('Cancel Order', 'إلغاء الطلب'),
+      icon: Icons.cancel_outlined,
+      tone: AppConfirmationTone.destructive,
+      barrierDismissible: false,
+    );
+    if (!confirmed) {
+      return;
+    }
+    orderController.cancelOrder(orderId);
+    if (context.mounted) {
+      AppActionFeedback.success(
+        context,
+        context.tr('Order cancelled', 'تم إلغاء الطلب'),
+      );
+    }
+  }
+
+  Future<void> _confirmReceived(
+    BuildContext context,
+    OrderController orderController,
+    String orderId,
+  ) async {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr('Confirm order received', 'تأكيد استلام الطلب'),
+      message: context.tr(
+        'Confirm only after all items in this order have arrived correctly. This may affect cancellation and refund eligibility.',
+        'أكد الاستلام فقط بعد وصول جميع منتجات هذا الطلب بحالة صحيحة. قد يؤثر التأكيد في أهلية الإلغاء والاسترداد.',
+      ),
+      cancelLabel: context.tr('Not Yet', 'ليس بعد'),
+      confirmLabel: context.tr('Confirm Received', 'تأكيد الاستلام'),
+      icon: Icons.inventory_2_outlined,
+      tone: AppConfirmationTone.warning,
+    );
+    if (!confirmed) {
+      return;
+    }
+    orderController.confirmReceived(orderId);
+    if (context.mounted) {
+      AppActionFeedback.success(
+        context,
+        context.tr('Order marked as received', 'تم تأكيد استلام الطلب'),
+      );
     }
   }
 }

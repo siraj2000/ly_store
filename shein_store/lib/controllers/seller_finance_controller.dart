@@ -27,10 +27,8 @@ class SellerFinanceController extends ChangeNotifier {
     return orders;
   }
 
-  double get totalEarnings => sellerOrders.fold(
-    0,
-    (sum, order) => sum + _earningFor(order),
-  );
+  double get totalEarnings =>
+      sellerOrders.fold(0, (sum, order) => sum + _earningFor(order));
 
   double get pendingBalance => sellerOrders
       .where((order) => !_isAvailable(order))
@@ -60,10 +58,7 @@ class SellerFinanceController extends ChangeNotifier {
     final weekAgo = now.subtract(const Duration(days: 7));
     return sellerOrders
         .where((order) => order.createdAt.isAfter(weekAgo))
-        .fold(
-          0,
-          (sum, order) => sum + _earningFor(order),
-        );
+        .fold(0, (sum, order) => sum + _earningFor(order));
   }
 
   double get thisMonthNet {
@@ -74,10 +69,7 @@ class SellerFinanceController extends ChangeNotifier {
               order.createdAt.year == now.year &&
               order.createdAt.month == now.month,
         )
-        .fold(
-          0,
-          (sum, order) => sum + _earningFor(order),
-        );
+        .fold(0, (sum, order) => sum + _earningFor(order));
   }
 
   double get payoutReadiness =>

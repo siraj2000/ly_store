@@ -74,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const AuthHero(
                 title: 'Create your account',
                 subtitle:
-                    'Unlock coupons, order tracking, and faster checkout with your StyleHub profile.',
+                    'Unlock coupons, order tracking, and faster checkout with your LY STORE profile.',
               ),
               const SizedBox(height: 14),
               Container(

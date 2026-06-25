@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../controllers/auth_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_motion.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 
@@ -13,10 +14,34 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _logoOpacity;
+  late final Animation<double> _logoScale;
+  late final Animation<double> _wordmarkOpacity;
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: AppMotion.slow,
+    )..forward();
+    _logoOpacity = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0, 0.75, curve: AppMotion.standard),
+    );
+    _logoScale = Tween<double>(begin: 0.9, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0, 0.85, curve: AppMotion.standard),
+      ),
+    );
+    _wordmarkOpacity = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.35, 1, curve: AppMotion.standard),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authController = context.read<AuthController>();
       await authController.initializeSession();
@@ -28,6 +53,12 @@ class _SplashScreenState extends State<SplashScreen> {
             : authController.landingRoute,
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,16 +85,42 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                AppStrings.appName,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
+              FadeTransition(
+                opacity: _logoOpacity,
+                child: ScaleTransition(
+                  scale: _logoScale,
+                  child: Container(
+                    width: 86,
+                    height: 86,
+                    decoration: BoxDecoration(
+                      color: foreground.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: foreground.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.shopping_bag_outlined,
+                      color: foreground,
+                      size: 42,
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 18),
+              FadeTransition(
+                opacity: _wordmarkOpacity,
+                child: Text(
+                  AppStrings.appName,
+                  style: TextStyle(
+                    color: foreground,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               CircularProgressIndicator(color: foreground),
             ],
           ),

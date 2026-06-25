@@ -11,6 +11,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/locale_formatters.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../widgets/cart/cart_item_row.dart';
 import '../../widgets/common/app_header.dart';
@@ -24,22 +25,24 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authController = context.watch<AuthController>();
     return Scaffold(
-      appBar: isTabRoot ? null : AppHeader(title: context.tr('Bag', 'السلة')),
+      appBar: isTabRoot
+          ? null
+          : AppHeader(title: context.tr('Bag', 'Ø§Ù„Ø³Ù„Ø©')),
       body: authController.isGuest
           ? AppEmptyState(
               title: context.tr(
                 'Sign in to view your bag and checkout',
-                'سجل الدخول لعرض سلتك وإتمام الدفع',
+                'Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ø¹Ø±Ø¶ Ø³Ù„ØªÙƒ ÙˆØ¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹',
               ),
               message: context.tr(
                 'Browse freely as a guest, then sign in when you want to save or buy.',
-                'تصفح كضيف بحرية، ثم سجّل الدخول عندما تريد الحفظ أو الشراء.',
+                'ØªØµÙØ­ ÙƒØ¶ÙŠÙ Ø¨Ø­Ø±ÙŠØ©ØŒ Ø«Ù… Ø³Ø¬Ù‘Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¹Ù†Ø¯Ù…Ø§ ØªØ±ÙŠØ¯ Ø§Ù„Ø­ÙØ¸ Ø£Ùˆ Ø§Ù„Ø´Ø±Ø§Ø¡.',
               ),
               action: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppButton(
-                    text: context.tr('Sign In', 'تسجيل الدخول'),
+                    text: context.tr('Sign In', 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„'),
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.login),
                     isExpanded: false,
@@ -49,7 +52,10 @@ class CartScreen extends StatelessWidget {
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.main),
                     child: Text(
-                      context.tr('Continue Shopping', 'متابعة التسوق'),
+                      context.tr(
+                        'Continue Shopping',
+                        'Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„ØªØ³ÙˆÙ‚',
+                      ),
                     ),
                   ),
                 ],
@@ -71,10 +77,10 @@ class _LoggedInCartBody extends StatelessWidget {
       builder: (context, cartController, couponController, wishlistController, _) {
         if (cartController.items.isEmpty) {
           return AppEmptyState(
-            title: context.tr('Your bag is empty', 'سلتك فارغة'),
+            title: context.tr('Your bag is empty', 'Ø³Ù„ØªÙƒ ÙØ§Ø±ØºØ©'),
             message: context.tr(
               'Add a few pieces to unlock checkout, coupons, and order tracking.',
-              'أضف بعض المنتجات لتفعيل الدفع والكوبونات وتتبع الطلبات.',
+              'Ø£Ø¶Ù Ø¨Ø¹Ø¶ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù„ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø¯ÙØ¹ ÙˆØ§Ù„ÙƒÙˆØ¨ÙˆÙ†Ø§Øª ÙˆØªØªØ¨Ø¹ Ø§Ù„Ø·Ù„Ø¨Ø§Øª.',
             ),
           );
         }
@@ -104,7 +110,7 @@ class _LoggedInCartBody extends StatelessWidget {
                         child: Text(
                           context.tr(
                             'Free shipping unlocks automatically on qualifying orders.',
-                            'يتم تفعيل الشحن المجاني تلقائياً للطلبات المؤهلة.',
+                            'ÙŠØªÙ… ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ù„Ù„Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ù…Ø¤Ù‡Ù„Ø©.',
                           ),
                           style: TextStyle(
                             fontSize: 12,
@@ -148,13 +154,16 @@ class _LoggedInCartBody extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.md),
             _Panel(
-              title: context.tr('Promotions', 'العروض'),
+              title: context.tr('Promotions', 'Ø§Ù„Ø¹Ø±ÙˆØ¶'),
               child: Column(
                 children: [
                   TextField(
                     readOnly: true,
                     decoration: InputDecoration(
-                      labelText: context.tr('Coupon input', 'اختيار كوبون'),
+                      labelText: context.tr(
+                        'Coupon input',
+                        'Ø§Ø®ØªÙŠØ§Ø± ÙƒÙˆØ¨ÙˆÙ†',
+                      ),
                       suffixIcon: const Icon(Icons.keyboard_arrow_down),
                     ),
                     onTap: () => _showCouponPicker(
@@ -167,14 +176,19 @@ class _LoggedInCartBody extends StatelessWidget {
                   SwitchListTile(
                     value: cartController.usePoints,
                     contentPadding: EdgeInsets.zero,
-                    title: Text(context.tr('Use points', 'استخدام النقاط')),
+                    title: Text(
+                      context.tr('Use points', 'Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù†Ù‚Ø§Ø·'),
+                    ),
                     onChanged: cartController.setUsePoints,
                   ),
                   SwitchListTile(
                     value: cartController.useWallet,
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      context.tr('Use wallet balance', 'استخدام رصيد المحفظة'),
+                      context.tr(
+                        'Use wallet balance',
+                        'Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø­ÙØ¸Ø©',
+                      ),
                     ),
                     onChanged: cartController.setUseWallet,
                   ),
@@ -182,7 +196,7 @@ class _LoggedInCartBody extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: context.tr(
                         'Gift card code',
-                        'رمز بطاقة الهدية',
+                        'Ø±Ù…Ø² Ø¨Ø·Ø§Ù‚Ø© Ø§Ù„Ù‡Ø¯ÙŠØ©',
                       ),
                     ),
                   ),
@@ -191,35 +205,38 @@ class _LoggedInCartBody extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _Panel(
-              title: context.tr('Summary', 'الملخص'),
+              title: context.tr('Summary', 'Ø§Ù„Ù…Ù„Ø®Øµ'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _SummaryRow(
-                    label: context.tr('Items subtotal', 'إجمالي المنتجات'),
+                    label: context.tr(
+                      'Items subtotal',
+                      'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª',
+                    ),
                     value: cartController.calculateSubtotal(),
                   ),
                   _SummaryRow(
-                    label: context.tr('Discount', 'الخصم'),
+                    label: context.tr('Discount', 'Ø§Ù„Ø®ØµÙ…'),
                     value: -cartController.calculateDiscount(),
                   ),
                   _SummaryRow(
                     label: context.tr(
                       'Shipping estimate',
-                      'تكلفة الشحن المتوقعة',
+                      'ØªÙƒÙ„ÙØ© Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…ØªÙˆÙ‚Ø¹Ø©',
                     ),
                     value: cartController.calculateShipping(),
                   ),
                   _SummaryRow(
                     label: context.tr(
                       'Tax/customs placeholder',
-                      'الضرائب/الجمارك التجريبية',
+                      'Ø§Ù„Ø¶Ø±Ø§Ø¦Ø¨/Ø§Ù„Ø¬Ù…Ø§Ø±Ùƒ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©',
                     ),
                     value: 0,
                   ),
                   const Divider(height: 24),
                   _SummaryRow(
-                    label: context.tr('Total', 'الإجمالي'),
+                    label: context.tr('Total', 'Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ'),
                     value: cartController.calculateTotal(),
                     bold: true,
                   ),
@@ -228,21 +245,26 @@ class _LoggedInCartBody extends StatelessWidget {
                     children: [
                       TextButton(
                         onPressed: () => cartController.selectAll(true),
-                        child: Text(context.tr('Select All', 'تحديد الكل')),
+                        child: Text(
+                          context.tr('Select All', 'ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙƒÙ„'),
+                        ),
                       ),
                       const Spacer(),
                       TextButton(
                         onPressed: () =>
                             Navigator.pushNamed(context, AppRoutes.main),
                         child: Text(
-                          context.tr('Continue Shopping', 'متابعة التسوق'),
+                          context.tr(
+                            'Continue Shopping',
+                            'Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„ØªØ³ÙˆÙ‚',
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   AppButton(
-                    text: context.tr('Checkout', 'إتمام الدفع'),
+                    text: context.tr('Checkout', 'Ø¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹'),
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.checkout),
                   ),
@@ -261,41 +283,37 @@ class _LoggedInCartBody extends StatelessWidget {
   ) {
     final subtotal = cartController.calculateSubtotal();
     if (subtotal >= 49) {
-      return context.tr('You unlocked free shipping', 'تم تفعيل الشحن المجاني');
+      return context.tr(
+        'You unlocked free shipping',
+        'ØªÙ… ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ',
+      );
     }
     final remaining = 49 - subtotal;
     return context.tr(
       'Spend ${formatCurrency(context, remaining)} more for free shipping',
-      'أضف ${formatCurrency(context, remaining)} للحصول على الشحن المجاني',
+      'Ø£Ø¶Ù ${formatCurrency(context, remaining)} Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ',
     );
   }
 
-  void _confirmDelete(BuildContext context, VoidCallback onConfirm) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.tr('Delete item', 'حذف المنتج')),
-        content: Text(
-          context.tr(
-            'Remove this item from your bag?',
-            'هل تريد إزالة هذا المنتج من السلة؟',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('Cancel', 'إلغاء')),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
-            },
-            child: Text(context.tr('Delete', 'حذف')),
-          ),
-        ],
+  Future<void> _confirmDelete(
+    BuildContext context,
+    VoidCallback onConfirm,
+  ) async {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr('Remove item?', 'حذف المنتج؟'),
+      message: context.tr(
+        'This product will be removed from your bag. You can add it again later from the product page.',
+        'سيتم حذف هذا المنتج من السلة. يمكنك إضافته مرة أخرى لاحقاً من صفحة المنتج.',
       ),
+      cancelLabel: context.tr('Keep Item', 'إبقاء المنتج'),
+      confirmLabel: context.tr('Remove', 'حذف'),
+      icon: Icons.delete_outline_rounded,
+      tone: AppConfirmationTone.destructive,
     );
+    if (confirmed) {
+      onConfirm();
+    }
   }
 
   void _showCouponPicker(
@@ -327,10 +345,13 @@ class _LoggedInCartBody extends StatelessWidget {
                       SnackBar(
                         content: Text(
                           applied
-                              ? context.tr('Coupon applied', 'تم تطبيق الكوبون')
+                              ? context.tr(
+                                  'Coupon applied',
+                                  'ØªÙ… ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ÙƒÙˆØ¨ÙˆÙ†',
+                                )
                               : context.tr(
                                   'Coupon minimum not met',
-                                  'لم يتم استيفاء الحد الأدنى للكوبون',
+                                  'Ù„Ù… ÙŠØªÙ… Ø§Ø³ØªÙŠÙØ§Ø¡ Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰ Ù„Ù„ÙƒÙˆØ¨ÙˆÙ†',
                                 ),
                         ),
                       ),

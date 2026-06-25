@@ -6,7 +6,7 @@ import 'package:stylehub_store/services/local_storage_service.dart';
 import 'package:stylehub_store/services/mock_data_service.dart';
 
 void main() {
-  testWidgets('renders StyleHub app after splash', (WidgetTester tester) async {
+  testWidgets('renders LY STORE app after splash', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final localStorageService = await LocalStorageService.create();
     final mockDataService = await MockDataService.create(
@@ -20,7 +20,7 @@ void main() {
       ),
     );
 
-    expect(find.text('StyleHub'), findsOneWidget);
+    expect(find.text('LY STORE'), findsOneWidget);
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
   });

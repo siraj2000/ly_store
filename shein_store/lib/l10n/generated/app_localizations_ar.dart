@@ -1367,7 +1367,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get categoryViewAll => 'عرض الكل';
 
   @override
-  String get categoryNoProducts => '?? ???? ??????';
+  String get categoryNoProducts => 'لا توجد منتجات';
 
   @override
   String get categoryNoSubcategories => 'لا توجد فئات فرعية';

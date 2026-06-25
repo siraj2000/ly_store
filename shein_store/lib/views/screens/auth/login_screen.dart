@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/auth_controller.dart';
@@ -154,50 +155,53 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colors.card,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: colors.border),
+              if (kDebugMode) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: colors.card,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _MockRoleTitle(),
+                      const SizedBox(height: 10),
+                      const _MockAccountLine(
+                        label: 'Customer',
+                        value: 'customer@stylehub.com / 123456',
+                      ),
+                      const _MockAccountLine(
+                        label: 'Seller',
+                        value: 'seller@stylehub.com / 123456',
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _DemoAccountButton(
+                            label: 'Customer Demo',
+                            onPressed: authController.isLoading
+                                ? null
+                                : () =>
+                                      _signInWithDemo('customer@stylehub.com'),
+                          ),
+                          _DemoAccountButton(
+                            label: 'Seller Demo',
+                            onPressed: authController.isLoading
+                                ? null
+                                : () => _signInWithDemo('seller@stylehub.com'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _MockRoleTitle(),
-                    const SizedBox(height: 10),
-                    const _MockAccountLine(
-                      label: 'Customer',
-                      value: 'customer@stylehub.com / 123456',
-                    ),
-                    const _MockAccountLine(
-                      label: 'Seller',
-                      value: 'seller@stylehub.com / 123456',
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _DemoAccountButton(
-                          label: 'Customer Demo',
-                          onPressed: authController.isLoading
-                              ? null
-                              : () => _signInWithDemo('customer@stylehub.com'),
-                        ),
-                        _DemoAccountButton(
-                          label: 'Seller Demo',
-                          onPressed: authController.isLoading
-                              ? null
-                              : () => _signInWithDemo('seller@stylehub.com'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
               TextButton(
                 onPressed: () =>
                     Navigator.pushNamed(context, AppRoutes.register),
@@ -267,7 +271,7 @@ class AuthHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'STYLEHUB',
+            'LY STORE',
             style: TextStyle(
               color: supportingColor,
               fontSize: 11,

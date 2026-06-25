@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../../../controllers/seller_product_controller.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/helpers/catalog_localization_helper.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
+import '../../../core/helpers/catalog_localization_helper.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/product_model.dart';
@@ -525,57 +527,135 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
   }
 
   Future<void> _submitForm(SellerProductController controller) async {
-    final result = controller.saveAsDraft
-        ? await controller.saveProductAsDraft(
-            formKey: _formKey,
-            existingProduct: widget.product,
-            titleEn: _titleEn.text,
-            titleAr: _titleAr.text,
-            descriptionEn: _descriptionEn.text,
-            descriptionAr: _descriptionAr.text,
-            price: _price.text,
-            oldPrice: _oldPrice.text,
-            stock: _stock.text,
-            sku: _sku.text,
-            materialEn: _materialEn.text,
-            materialAr: _materialAr.text,
-            compositionEn: _compositionEn.text,
-            compositionAr: _compositionAr.text,
-            careInstructionsEn: _careEn.text,
-            careInstructionsAr: _careAr.text,
-          )
-        : await controller.submitProductForApproval(
-            formKey: _formKey,
-            existingProduct: widget.product,
-            titleEn: _titleEn.text,
-            titleAr: _titleAr.text,
-            descriptionEn: _descriptionEn.text,
-            descriptionAr: _descriptionAr.text,
-            price: _price.text,
-            oldPrice: _oldPrice.text,
-            stock: _stock.text,
-            sku: _sku.text,
-            materialEn: _materialEn.text,
-            materialAr: _materialAr.text,
-            compositionEn: _compositionEn.text,
-            compositionAr: _compositionAr.text,
-            careInstructionsEn: _careEn.text,
-            careInstructionsAr: _careAr.text,
-          );
+    if (controller.saveAsDraft) {
+      final result = await controller.saveProductAsDraft(
+        formKey: _formKey,
+        existingProduct: widget.product,
+        titleEn: _titleEn.text,
+        titleAr: _titleAr.text,
+        descriptionEn: _descriptionEn.text,
+        descriptionAr: _descriptionAr.text,
+        price: _price.text,
+        oldPrice: _oldPrice.text,
+        stock: _stock.text,
+        sku: _sku.text,
+        materialEn: _materialEn.text,
+        materialAr: _materialAr.text,
+        compositionEn: _compositionEn.text,
+        compositionAr: _compositionAr.text,
+        careInstructionsEn: _careEn.text,
+        careInstructionsAr: _careAr.text,
+      );
+      if (!mounted || result == null) {
+        return;
+      }
+      AppActionFeedback.success(context, context.l10n.sellerProductSaved);
+      Navigator.pop(context);
+      return;
+    }
+
+    final isValid = controller.validateProductInput(
+      formKey: _formKey,
+      saveAsDraft: false,
+      titleEn: _titleEn.text,
+      titleAr: _titleAr.text,
+      descriptionEn: _descriptionEn.text,
+      descriptionAr: _descriptionAr.text,
+      price: _price.text,
+      oldPrice: _oldPrice.text,
+      stock: _stock.text,
+      sku: _sku.text,
+      materialEn: _materialEn.text,
+      materialAr: _materialAr.text,
+    );
+    if (!isValid) {
+      return;
+    }
+
+    final requiresApproval = controller.requiresProductApproval;
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: requiresApproval
+          ? context.tr('Submit for review?', 'إرسال المنتج للمراجعة؟')
+          : context.tr('Publish product?', 'نشر المنتج؟'),
+      message: requiresApproval
+          ? context.tr(
+              'After confirmation, the product will be submitted for review and will not appear publicly until approved through the separate Admin application.',
+              'بعد التأكيد سيتم إرسال المنتج للمراجعة، ولن يظهر للضيوف والعملاء حتى تتم الموافقة عليه من تطبيق الإدارة المنفصل.',
+            )
+          : context.tr(
+              'After confirmation, this product will be published and shown to guests and customers immediately, provided the product, store, seller, and stock remain eligible.',
+              'بعد التأكيد سيُنشر المنتج ويظهر للضيوف والعملاء فوراً، بشرط أن يكون المنتج والمتجر والبائع نشطين وأن يتوفر مخزون.',
+            ),
+      cancelLabel: context.tr('Review Again', 'العودة للمراجعة'),
+      confirmLabel: requiresApproval
+          ? context.tr('Submit for Review', 'إرسال للمراجعة')
+          : context.tr('Publish Product', 'نشر المنتج'),
+      icon: Icons.inventory_2_outlined,
+      tone: AppConfirmationTone.purchase,
+      barrierDismissible: false,
+      details: AppConfirmationDetails(
+        children: [
+          AppConfirmationDetailRow(
+            label: context.tr('Product name', 'اسم المنتج'),
+            value: _titleEn.text.trim().isEmpty ? '-' : _titleEn.text.trim(),
+          ),
+          AppConfirmationDetailRow(
+            label: context.tr('Category', 'الفئة'),
+            value: controller.selectedCategory.isEmpty
+                ? '-'
+                : localizedCategoryName(context, controller.selectedCategory),
+          ),
+          AppConfirmationDetailRow(
+            label: context.tr('Price', 'السعر'),
+            value: _price.text.trim().isEmpty ? '-' : _price.text.trim(),
+          ),
+          AppConfirmationDetailRow(
+            label: context.tr('Stock', 'المخزون'),
+            value: _stock.text.trim().isEmpty ? '-' : _stock.text.trim(),
+          ),
+          AppConfirmationDetailRow(
+            label: context.tr('Images', 'الصور'),
+            value: '${controller.selectedImages.length}',
+          ),
+          AppConfirmationDetailRow(
+            label: context.tr('Resulting status', 'الحالة بعد الحفظ'),
+            value: requiresApproval
+                ? context.tr('Pending Approval', 'بانتظار الموافقة')
+                : context.tr('Active', 'نشط'),
+            emphasized: true,
+          ),
+        ],
+      ),
+    );
+    if (!mounted || !confirmed) {
+      return;
+    }
+
+    final result = await controller.submitProductForApproval(
+      formKey: _formKey,
+      existingProduct: widget.product,
+      titleEn: _titleEn.text,
+      titleAr: _titleAr.text,
+      descriptionEn: _descriptionEn.text,
+      descriptionAr: _descriptionAr.text,
+      price: _price.text,
+      oldPrice: _oldPrice.text,
+      stock: _stock.text,
+      sku: _sku.text,
+      materialEn: _materialEn.text,
+      materialAr: _materialAr.text,
+      compositionEn: _compositionEn.text,
+      compositionAr: _compositionAr.text,
+      careInstructionsEn: _careEn.text,
+      careInstructionsAr: _careAr.text,
+    );
 
     if (!mounted || result == null) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          controller.saveAsDraft
-              ? context.l10n.sellerProductSaved
-              : context.l10n.sellerProductSubmitted,
-        ),
-      ),
-    );
+    AppActionFeedback.success(context, context.l10n.sellerProductSubmitted);
     Navigator.pop(context);
   }
 }
@@ -1052,13 +1132,13 @@ String _validationMessage(BuildContext context, String message) {
       return l10n.validationCategoryRequired;
     case 'This category is not allowed for your store.':
       return Localizations.localeOf(context).languageCode == 'ar'
-          ? 'هذا التصنيف غير مسموح لهذا المتجر.'
+          ? 'Ù‡Ø°Ø§ Ø§Ù„ØªØµÙ†ÙŠÙ ØºÙŠØ± Ù…Ø³Ù…ÙˆØ­ Ù„Ù‡Ø°Ø§ Ø§Ù„Ù…ØªØ¬Ø±.'
           : 'This category is not allowed for your store.';
     case 'Please select a subcategory':
       return l10n.validationSubcategoryRequired;
     case 'Add at least a title, SKU, image, or category.':
       return Localizations.localeOf(context).languageCode == 'ar'
-          ? 'أضف عنوانا أو SKU أو صورة أو تصنيفا على الأقل.'
+          ? 'Ø£Ø¶Ù Ø¹Ù†ÙˆØ§Ù†Ø§ Ø£Ùˆ SKU Ø£Ùˆ ØµÙˆØ±Ø© Ø£Ùˆ ØªØµÙ†ÙŠÙØ§ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.'
           : 'Add at least a title, SKU, image, or category.';
     case 'Select at least one color':
       return l10n.validationColorRequired;

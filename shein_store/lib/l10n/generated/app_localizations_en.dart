@@ -53,7 +53,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navProfile => 'Me';
 
   @override
-  String get trendsTitle => 'StyleHub Trends';
+  String get trendsTitle => 'LY STORE Trends';
 
   @override
   String get trendsSearchHint => 'Search trends, stores, or products';
@@ -255,7 +255,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileCustomerService => 'Customer Service';
 
   @override
-  String get profileWelcomeTitle => 'Welcome to StyleHub';
+  String get profileWelcomeTitle => 'Welcome to LY STORE';
 
   @override
   String get profileWelcomeSubtitle =>

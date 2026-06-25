@@ -6,8 +6,10 @@ import '../../../controllers/language_controller.dart';
 import '../../../controllers/settings_controller.dart';
 import '../../../controllers/theme_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../widgets/common/app_header.dart';
 import '../../widgets/common/profile_menu_item.dart';
 
@@ -156,28 +158,30 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context, AuthController authController) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.settingsLogoutTitle),
-        content: Text(context.l10n.settingsLogoutMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              authController.logout();
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: Text(context.l10n.commonLogout),
-          ),
-        ],
+  Future<void> _confirmLogout(
+    BuildContext context,
+    AuthController authController,
+  ) async {
+    if (!authController.isLoggedIn) {
+      return;
+    }
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr('Log out?', 'تسجيل الخروج؟'),
+      message: context.tr(
+        'Are you sure you want to log out? Your saved account data and cart will not be deleted.',
+        'هل أنت متأكد من تسجيل الخروج من حسابك؟ لن يتم حذف السلة أو بيانات الحساب المحفوظة.',
       ),
+      cancelLabel: context.tr('Stay', 'البقاء'),
+      confirmLabel: context.tr('Log Out', 'تسجيل الخروج'),
+      icon: Icons.logout_rounded,
+      tone: AppConfirmationTone.warning,
     );
+    if (!context.mounted || !confirmed) {
+      return;
+    }
+    authController.logout();
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (_) => false);
   }
 }
 

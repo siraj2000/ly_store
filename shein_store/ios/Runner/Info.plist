@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>StyleHub</string>
+	<string>LY STORE</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -46,8 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>StyleHub needs access to your photo library so sellers can add product images.</string>
+	<string>LY STORE needs access to your photo library so sellers can add product images.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>StyleHub uses photo library access for saving and selecting product images in seller tools.</string>
+	<string>LY STORE uses photo library access for saving and selecting product images in seller tools.</string>
 </dict>
 </plist>

@@ -270,8 +270,8 @@ class _PreferencesPage extends StatelessWidget {
                       children: [
                         _EditorialTag(
                           label: context.tr(
-                            'PERSONALIZE STYLEHUB',
-                            'خصص StyleHub',
+                            'PERSONALIZE LY STORE',
+                            'خصص LY STORE',
                           ),
                           dark: !context.isDarkMode,
                         ),
@@ -930,7 +930,7 @@ class _TopChrome extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              'StyleHub',
+              'LY STORE',
               style: TextStyle(
                 color: foreground,
                 fontWeight: FontWeight.w900,

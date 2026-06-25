@@ -20,29 +20,32 @@ import 'package:stylehub_store/services/order_service.dart';
 
 void main() {
   group('seller marketplace safety', () {
-    test('seller cannot activate directly when product approval is required', () async {
-      final context = await _SellerTestContext.create(
-        requiresProductApproval: true,
-      );
-      final controller = context.productController;
-      final original = context.mockData.productsForSeller('seller_1').first;
-      context.mockData.addOrUpdateProduct(
-        original.copyWith(
-          status: ProductStatus.inactive,
-          isActive: false,
-          clearPublishedAt: true,
-        ),
-      );
+    test(
+      'seller cannot activate directly when product approval is required',
+      () async {
+        final context = await _SellerTestContext.create(
+          requiresProductApproval: true,
+        );
+        final controller = context.productController;
+        final original = context.mockData.productsForSeller('seller_1').first;
+        context.mockData.addOrUpdateProduct(
+          original.copyWith(
+            status: ProductStatus.inactive,
+            isActive: false,
+            clearPublishedAt: true,
+          ),
+        );
 
-      controller.toggleActive(original.id);
-      await _settleAsync();
+        controller.toggleActive(original.id);
+        await _settleAsync();
 
-      final updated = context.mockData
-          .productsForSeller('seller_1')
-          .firstWhere((product) => product.id == original.id);
-      expect(updated.status, ProductStatus.pendingApproval);
-      expect(updated.isActive, isFalse);
-    });
+        final updated = context.mockData
+            .productsForSeller('seller_1')
+            .firstWhere((product) => product.id == original.id);
+        expect(updated.status, ProductStatus.pendingApproval);
+        expect(updated.isActive, isFalse);
+      },
+    );
 
     test('rejected product resubmits to pending approval', () async {
       final context = await _SellerTestContext.create(
@@ -106,155 +109,196 @@ void main() {
       expect(updated.isActive, isFalse);
     });
 
-    test('draft validation is relaxed while publish validation is strict', () async {
-      final context = await _SellerTestContext.create();
-      final controller = context.productController;
+    test(
+      'draft validation is relaxed while publish validation is strict',
+      () async {
+        final context = await _SellerTestContext.create();
+        final controller = context.productController;
 
-      expect(
-        controller.validateProductInput(
-          saveAsDraft: true,
-          titleEn: 'Draft idea',
-          titleAr: '',
-          descriptionEn: '',
-          descriptionAr: '',
-          price: '',
-          oldPrice: '',
-          stock: '',
-          sku: '',
-          materialEn: '',
-          materialAr: '',
-        ),
-        isTrue,
-      );
-
-      expect(
-        controller.validateProductInput(
-          saveAsDraft: false,
-          titleEn: 'Publish idea',
-          titleAr: '',
-          descriptionEn: '',
-          descriptionAr: '',
-          price: '',
-          oldPrice: '',
-          stock: '',
-          sku: '',
-          materialEn: '',
-          materialAr: '',
-        ),
-        isFalse,
-      );
-      expect(controller.validationErrors['images'], isNotNull);
-      expect(controller.validationErrors['titleAr'], isNotNull);
-    });
-
-    test('seller categories use central IDs and enforce store allowed categories', () async {
-      final context = await _SellerTestContext.create();
-      final store = context.mockData.storeBySellerId('seller_1')!;
-      context.mockData.addOrUpdateStore(
-        store.copyWith(allowedCategoryIds: const ['women']),
-      );
-      await context.rebindProductController();
-
-      expect(context.productController.categoriesForSelectedDepartment, isEmpty);
-      context.productController.setDepartment('women');
-      expect(context.productController.categoriesForSelectedDepartment, ['women']);
-
-      context.productController.setDepartment('electronics');
-      context.productController.setCategory('electronics');
-      final valid = context.productController.validateProductInput(
-        saveAsDraft: false,
-        titleEn: 'Phone stand',
-        titleAr: 'حامل هاتف',
-        descriptionEn: 'Desk phone stand',
-        descriptionAr: 'حامل هاتف للمكتب',
-        price: '10',
-        oldPrice: '12',
-        stock: '4',
-        sku: 'PHONE-STAND',
-        materialEn: 'Metal',
-        materialAr: 'معدن',
-      );
-      expect(valid, isFalse);
-      expect(
-        context.productController.validationErrors['category'],
-        'This category is not allowed for your store.',
-      );
-    });
-
-    test('seller order update recomputes master status and notifies customer', () async {
-      final context = await _SellerTestContext.create();
-      final orderService = OrderService(context.mockData);
-      final controller = SellerOrderController(orderService: orderService)
-        ..bind(authController: context.authController);
-      final fixture = _createSplitOrder(context.mockData);
-      context.mockData.createOrder(fixture.masterOrder, sellerOrders: fixture.sellerOrders);
-
-      controller.updateOrderStatus(fixture.sellerOrders.first.id, 'Delivered');
-
-      final master = context.mockData.platformOrders
-          .firstWhere((order) => order.id == fixture.masterOrder.id);
-      expect(master.status, 'Processing');
-      expect(master.paymentStatus, 'Pending');
-      final notifications = context.mockData.notificationsForUser('customer_1');
-      expect(
-        notifications.any(
-          (notification) =>
-              notification.data['sellerOrderId'] == fixture.sellerOrders.first.id &&
-              notification.data['newStatus'] == 'Delivered',
-        ),
-        isTrue,
-      );
-    });
-
-    test('seller finance excludes pending and refunded returned orders', () async {
-      final context = await _SellerTestContext.create();
-      final controller = SellerFinanceController(
-        orderService: OrderService(context.mockData),
-      )..bind(authController: context.authController);
-      final fixture = _createSplitOrder(context.mockData);
-      context.mockData.saveSellerOrders([
-        fixture.sellerOrders.first.copyWith(
-          status: 'Delivered',
-          paymentStatus: 'Paid',
-        ),
-        fixture.sellerOrders.last.copyWith(
-          status: 'Returned',
-          paymentStatus: 'Refunded',
-        ),
-      ]);
-      await _settleAsync();
-
-      expect(controller.availableBalance, fixture.sellerOrders.first.sellerNetAmount);
-      expect(controller.totalEarnings, fixture.sellerOrders.first.sellerNetAmount);
-    });
-
-    test('store rating and public visibility do not use fake fallbacks', () async {
-      final context = await _SellerTestContext.create();
-      final store = context.mockData.storeBySellerId('seller_1')!;
-      context.mockData.addOrUpdateStore(
-        store.copyWith(rating: 0, reviewCount: 0, followersCount: 0),
-      );
-      final storeController = SellerStoreController(
-        marketplaceRepository: context.marketplaceRepository,
-      )..bind(
-          authController: context.authController,
-          sellerProductController: context.productController,
+        expect(
+          controller.validateProductInput(
+            saveAsDraft: true,
+            titleEn: 'Draft idea',
+            titleAr: '',
+            descriptionEn: '',
+            descriptionAr: '',
+            price: '',
+            oldPrice: '',
+            stock: '',
+            sku: '',
+            materialEn: '',
+            materialAr: '',
+          ),
+          isTrue,
         );
-      await _settleAsync();
 
-      expect(storeController.storeRating, 0);
-      expect(storeController.followers, 0);
+        expect(
+          controller.validateProductInput(
+            saveAsDraft: false,
+            titleEn: 'Publish idea',
+            titleAr: '',
+            descriptionEn: '',
+            descriptionAr: '',
+            price: '',
+            oldPrice: '',
+            stock: '',
+            sku: '',
+            materialEn: '',
+            materialAr: '',
+          ),
+          isFalse,
+        );
+        expect(controller.validationErrors['images'], isNotNull);
+        expect(controller.validationErrors['titleAr'], isNotNull);
+      },
+    );
 
-      final product = context.mockData.productsForSeller('seller_1').first;
-      expect(
-        context.mockData.isProductPublic(product.copyWith(sellerId: 'missing')),
-        isFalse,
-      );
-      expect(
-        context.mockData.isProductPublic(product.copyWith(storeId: 'missing')),
-        isFalse,
-      );
-    });
+    test(
+      'seller categories use central IDs and enforce store allowed categories',
+      () async {
+        final context = await _SellerTestContext.create();
+        final store = context.mockData.storeBySellerId('seller_1')!;
+        context.mockData.addOrUpdateStore(
+          store.copyWith(allowedCategoryIds: const ['women']),
+        );
+        await context.rebindProductController();
+
+        expect(
+          context.productController.categoriesForSelectedDepartment,
+          isEmpty,
+        );
+        context.productController.setDepartment('women');
+        expect(context.productController.categoriesForSelectedDepartment, [
+          'women',
+        ]);
+
+        context.productController.setDepartment('electronics');
+        context.productController.setCategory('electronics');
+        final valid = context.productController.validateProductInput(
+          saveAsDraft: false,
+          titleEn: 'Phone stand',
+          titleAr: 'حامل هاتف',
+          descriptionEn: 'Desk phone stand',
+          descriptionAr: 'حامل هاتف للمكتب',
+          price: '10',
+          oldPrice: '12',
+          stock: '4',
+          sku: 'PHONE-STAND',
+          materialEn: 'Metal',
+          materialAr: 'معدن',
+        );
+        expect(valid, isFalse);
+        expect(
+          context.productController.validationErrors['category'],
+          'This category is not allowed for your store.',
+        );
+      },
+    );
+
+    test(
+      'seller order update recomputes master status and notifies customer',
+      () async {
+        final context = await _SellerTestContext.create();
+        final orderService = OrderService(context.mockData);
+        final controller = SellerOrderController(orderService: orderService)
+          ..bind(authController: context.authController);
+        final fixture = _createSplitOrder(context.mockData);
+        context.mockData.createOrder(
+          fixture.masterOrder,
+          sellerOrders: fixture.sellerOrders,
+        );
+
+        controller.updateOrderStatus(
+          fixture.sellerOrders.first.id,
+          'Delivered',
+        );
+
+        final master = context.mockData.platformOrders.firstWhere(
+          (order) => order.id == fixture.masterOrder.id,
+        );
+        expect(master.status, 'Processing');
+        expect(master.paymentStatus, 'Pending');
+        final notifications = context.mockData.notificationsForUser(
+          'customer_1',
+        );
+        expect(
+          notifications.any(
+            (notification) =>
+                notification.data['sellerOrderId'] ==
+                    fixture.sellerOrders.first.id &&
+                notification.data['newStatus'] == 'Delivered',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'seller finance excludes pending and refunded returned orders',
+      () async {
+        final context = await _SellerTestContext.create();
+        final controller = SellerFinanceController(
+          orderService: OrderService(context.mockData),
+        )..bind(authController: context.authController);
+        final fixture = _createSplitOrder(context.mockData);
+        context.mockData.saveSellerOrders([
+          fixture.sellerOrders.first.copyWith(
+            status: 'Delivered',
+            paymentStatus: 'Paid',
+          ),
+          fixture.sellerOrders.last.copyWith(
+            status: 'Returned',
+            paymentStatus: 'Refunded',
+          ),
+        ]);
+        await _settleAsync();
+
+        expect(
+          controller.availableBalance,
+          fixture.sellerOrders.first.sellerNetAmount,
+        );
+        expect(
+          controller.totalEarnings,
+          fixture.sellerOrders.first.sellerNetAmount,
+        );
+      },
+    );
+
+    test(
+      'store rating and public visibility do not use fake fallbacks',
+      () async {
+        final context = await _SellerTestContext.create();
+        final store = context.mockData.storeBySellerId('seller_1')!;
+        context.mockData.addOrUpdateStore(
+          store.copyWith(rating: 0, reviewCount: 0, followersCount: 0),
+        );
+        final storeController =
+            SellerStoreController(
+              marketplaceRepository: context.marketplaceRepository,
+            )..bind(
+              authController: context.authController,
+              sellerProductController: context.productController,
+            );
+        await _settleAsync();
+
+        expect(storeController.storeRating, 0);
+        expect(storeController.followers, 0);
+
+        final product = context.mockData.productsForSeller('seller_1').first;
+        expect(
+          context.mockData.isProductPublic(
+            product.copyWith(sellerId: 'missing'),
+          ),
+          isFalse,
+        );
+        expect(
+          context.mockData.isProductPublic(
+            product.copyWith(storeId: 'missing'),
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('dashboard conversion is data-derived, not hardcoded', () async {
       final context = await _SellerTestContext.create();
@@ -309,9 +353,7 @@ class _SellerTestContext {
         refundMakerCheckerThreshold: 150,
       ),
     );
-    final authController = AuthController(
-      authService: AuthService(mockData),
-    );
+    final authController = AuthController(authService: AuthService(mockData));
     await authController.loginWithEmail('seller@stylehub.com', '123456');
     final marketplaceRepository = LocalMarketplaceRepository(
       mockDataService: mockData,
@@ -425,7 +467,10 @@ _SplitOrderFixture _createSplitOrder(MockDataService mockData) {
       estimatedDelivery: now.add(const Duration(days: 5)),
     ),
   ];
-  return _SplitOrderFixture(masterOrder: masterOrder, sellerOrders: sellerOrders);
+  return _SplitOrderFixture(
+    masterOrder: masterOrder,
+    sellerOrders: sellerOrders,
+  );
 }
 
 Future<void> _settleAsync() async {

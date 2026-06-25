@@ -20,11 +20,11 @@ class AppTheme {
           seedColor: colors.accent,
           brightness: brightness,
         ).copyWith(
-          primary: colors.primaryText,
+          primary: colors.accent,
           onPrimary: brightness == Brightness.dark
               ? colors.background
               : colors.surface,
-          secondary: colors.accent,
+          secondary: AppColors.ink,
           onSecondary: brightness == Brightness.dark
               ? colors.background
               : colors.surface,
@@ -132,7 +132,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.primaryText, width: 1.1),
+          borderSide: BorderSide(color: colors.accent, width: 1.1),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -181,7 +181,7 @@ class AppTheme {
       iconTheme: IconThemeData(color: colors.icon),
       dividerTheme: DividerThemeData(color: colors.border, thickness: 1),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colors.primaryText,
+        backgroundColor: colors.accent,
         foregroundColor: brightness == Brightness.dark
             ? colors.background
             : colors.surface,
@@ -197,14 +197,14 @@ class AppTheme {
                 ? FontWeight.w700
                 : FontWeight.w500,
             color: states.contains(WidgetState.selected)
-                ? colors.primaryText
+                ? colors.accent
                 : colors.inactiveIcon,
           ),
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
-                ? colors.primaryText
+                ? colors.accent
                 : colors.inactiveIcon,
           ),
         ),
@@ -216,14 +216,14 @@ class AppTheme {
         ),
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? colors.primaryText
+              ? colors.accent
               : Colors.transparent,
         ),
       ),
       radioTheme: RadioThemeData(
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? colors.primaryText
+              ? colors.accent
               : colors.inactiveIcon,
         ),
       ),
@@ -235,7 +235,7 @@ class AppTheme {
         ),
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? colors.primaryText
+              ? colors.accent
               : colors.border,
         ),
       ),
@@ -257,7 +257,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: colors.primaryText,
+          backgroundColor: colors.accent,
           foregroundColor: brightness == Brightness.dark
               ? colors.background
               : colors.surface,
@@ -270,7 +270,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: colors.primaryText,
+          backgroundColor: colors.accent,
           foregroundColor: brightness == Brightness.dark
               ? colors.background
               : colors.surface,
