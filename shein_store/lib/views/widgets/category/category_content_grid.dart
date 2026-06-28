@@ -25,20 +25,16 @@ class CategoryContentGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth < 250
-            ? 2
-            : (constraints.maxWidth > 700 ? 4 : 3);
-
+      builder: (context, _) {
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 136,
             crossAxisSpacing: 8,
             mainAxisSpacing: 12,
-            mainAxisExtent: 122,
+            mainAxisExtent: 132,
           ),
           itemBuilder: (context, index) => CategoryGridItem(
             item: items[index],
@@ -106,11 +102,11 @@ class CategoryProductGrid extends StatelessWidget {
                         added
                             ? context.tr(
                                 'Added to wishlist',
-                                'ØªÙ…Øª Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                'تمت الإضافة إلى المفضلة',
                               )
                             : context.tr(
                                 'Removed from wishlist',
-                                'ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                'تمت الإزالة من المفضلة',
                               ),
                       ),
                     ),

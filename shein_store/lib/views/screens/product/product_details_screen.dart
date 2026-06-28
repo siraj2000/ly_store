@@ -47,10 +47,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         if (product == null) {
           return Scaffold(
             body: AppEmptyState(
-              title: context.tr(
-                'Product unavailable',
-                'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ™Ë†Ã™ÂÃ˜Â±',
-              ),
+              title: context.tr('Product unavailable', 'المنتج غير متوفر'),
               message: context.tr(
                 'The item could not be found.',
                 'تعذر العثور على هذا المنتج.',
@@ -99,10 +96,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         // ignore: unused_local_variable
         final localizedStoreName =
             store?.localizedName(locale) ??
-            context.tr(
-              'Store unavailable',
-              'Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¬Ã˜Â± Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­',
-            );
+            context.tr('Store unavailable', 'المتجر غير متاح');
         final localizedTitle = product.resolvedTitle(locale);
         final localizedDescription = product.resolvedDescription(locale);
         final localizedMaterial = product.resolvedMaterial(locale);
@@ -117,17 +111,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   product.imageUrl!,
               ];
         final highlightLabels = [
-          if (product.isFlashSale)
-            context.tr('Flash Sale', 'Ã˜ÂªÃ˜Â®Ã™ÂÃ™Å Ã˜Â¶ Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹'),
-          if (product.isHot)
-            context.tr('Hot pick', 'Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â±Ã˜Â§Ã˜Â¦Ã˜Â¬'),
-          if (product.isNew)
-            context.tr('New in', 'Ã™Ë†Ã˜ÂµÃ™â€ž Ã˜Â­Ã˜Â¯Ã™Å Ã˜Â«Ã˜Â§Ã™â€¹'),
+          if (product.isFlashSale) context.tr('Flash Sale', 'تخفيض سريع'),
+          if (product.isHot) context.tr('Hot pick', 'اختيار رائج'),
+          if (product.isNew) context.tr('New in', 'وصل حديثاً'),
           if (product.isReturnable)
-            context.tr(
-              '30-day return',
-              'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹',
-            ),
+            context.tr('30-day return', 'إرجاع خلال 30 يوماً'),
         ];
 
         return Scaffold(
@@ -183,11 +171,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               added
                                   ? context.tr(
                                       'Added to wishlist',
-                                      'Ã˜ÂªÃ™â€¦Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜Â¶Ã™â€žÃ˜Â©',
+                                      'تمت الإضافة إلى المفضلة',
                                     )
                                   : context.tr(
                                       'Removed from wishlist',
-                                      'Ã˜ÂªÃ™â€¦Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â²Ã˜Â§Ã™â€žÃ˜Â© Ã™â€¦Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã™ÂÃ˜Â¶Ã™â€žÃ˜Â©',
+                                      'تمت الإزالة من المفضلة',
                                     ),
                             ),
                           ),
@@ -204,12 +192,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         side: BorderSide(color: colors.border),
                         backgroundColor: colors.surface,
                       ),
-                      child: Text(
-                        context.tr(
-                          'Add to Bag',
-                          'Ã˜Â£Ã˜Â¶Ã™Â Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â³Ã™â€žÃ˜Â©',
-                        ),
-                      ),
+                      child: Text(context.tr('Add to Bag', 'أضف إلى السلة')),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -219,12 +202,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                       ),
-                      child: Text(
-                        context.tr(
-                          'Buy Now',
-                          'Ã˜Â§Ã˜Â´Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ ',
-                        ),
-                      ),
+                      child: Text(context.tr('Buy Now', 'اشتر الآن')),
                     ),
                   ),
                 ],
@@ -238,36 +216,24 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 gallery: gallery,
                 currentImage: _currentImage,
                 onPageChanged: (value) => setState(() => _currentImage = value),
-                topLabel: context.tr(
-                  'Editor\'s Pick',
-                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â­Ã˜Â±Ã˜Â±',
-                ),
+                topLabel: context.tr('Editor\'s Pick', 'اختيار المحرر'),
                 discountLabel: context.tr(
                   '${product.discount}% off',
-                  'Ã˜Â®Ã˜ÂµÃ™â€¦ ${product.discount}%',
+                  'خصم ${product.discount}%',
                 ),
                 metrics: [
                   _HeroMetricData(
-                    label: context.tr(
-                      'Sold',
-                      'Ã˜ÂªÃ™â€¦ Ã˜Â§Ã™â€žÃ˜Â¨Ã™Å Ã˜Â¹',
-                    ),
+                    label: context.tr('Sold', 'تم البيع'),
                     value: '${product.soldCount}',
                     icon: Icons.local_fire_department_outlined,
                   ),
                   _HeroMetricData(
-                    label: context.tr(
-                      'Stock',
-                      'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â®Ã˜Â²Ã™Ë†Ã™â€ ',
-                    ),
+                    label: context.tr('Stock', 'المخزون'),
                     value: '${product.stock}',
                     icon: Icons.inventory_2_outlined,
                   ),
                   _HeroMetricData(
-                    label: context.tr(
-                      'Views',
-                      'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â§Ã™â€¡Ã˜Â¯Ã˜Â§Ã˜Âª',
-                    ),
+                    label: context.tr('Views', 'المشاهدات'),
                     value: '${product.views}',
                     icon: Icons.visibility_outlined,
                   ),
@@ -333,7 +299,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '${context.tr('Sold by', 'Ã™Å Ã˜Â¨Ã˜Â§Ã˜Â¹ Ã˜Â¨Ã™Ë†Ã˜Â§Ã˜Â³Ã˜Â·Ã˜Â©')} ${product.sellerName}',
+                      '${context.tr('Sold by', 'يباع بواسطة')} ${product.sellerName}',
                       style: TextStyle(
                         color: colors.secondaryText,
                         fontSize: 14,
@@ -368,10 +334,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                context.tr(
-                                  'Store SKU',
-                                  'Ã˜Â±Ã™â€¦Ã˜Â² Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬',
-                                ),
+                                context.tr('Store SKU', 'رمز المنتج'),
                                 style: TextStyle(
                                   color: colors.secondaryText,
                                   fontSize: 11,
@@ -412,35 +375,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     _InfoStrip(
                       items: [
                         _InfoStripItem(
-                          context.tr(
-                            'Secure pay',
-                            'Ã˜Â¯Ã™ÂÃ˜Â¹ Ã˜Â¢Ã™â€¦Ã™â€ ',
-                          ),
-                          context.tr(
-                            'Protected checkout',
-                            'Ã˜Â¥Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€¦ Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¦Ã˜Â­Ã™â€¦Ã™Å ',
-                          ),
+                          context.tr('Secure pay', 'دفع آمن'),
+                          context.tr('Protected checkout', 'إتمام شراء محمي'),
                           Icons.lock_outline_rounded,
                         ),
                         _InfoStripItem(
-                          context.tr(
-                            'Fast delivery',
-                            'Ã˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹',
-                          ),
-                          context.tr(
-                            'Express options',
-                            'Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â³Ã˜Â±Ã™Å Ã˜Â¹Ã˜Â©',
-                          ),
+                          context.tr('Fast delivery', 'توصيل سريع'),
+                          context.tr('Express options', 'خيارات سريعة'),
                           Icons.local_shipping_outlined,
                         ),
                         _InfoStripItem(
-                          context.tr(
-                            'Free return',
-                            'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã™â€¦Ã˜Â¬Ã˜Â§Ã™â€ Ã™Å ',
-                          ),
+                          context.tr('Free return', 'إرجاع مجاني'),
                           context.tr(
                             'Easy 30-day return',
-                            'Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â³Ã™â€¡Ã™â€ž Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹',
+                            'إرجاع سهل خلال 30 يوماً',
                           ),
                           Icons.assignment_return_outlined,
                         ),
@@ -454,71 +402,56 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
               _DetailPanel(
-                title: context.tr(
-                  'Offer highlights',
-                  'Ã˜Â£Ã˜Â¨Ã˜Â±Ã˜Â² Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶',
-                ),
+                title: context.tr('Offer highlights', 'أبرز العروض'),
                 subtitle: context.tr(
                   'The best reasons to shop this item right now.',
-                  'Ã˜Â£Ã™ÂÃ˜Â¶Ã™â€ž Ã˜Â£Ã˜Â³Ã˜Â¨Ã˜Â§Ã˜Â¨ Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬ Ã˜Â§Ã™â€žÃ˜Â¢Ã™â€ .',
+                  'أفضل أسباب شراء هذا المنتج الآن.',
                 ),
                 icon: Icons.auto_awesome_rounded,
                 child: Column(
                   children: [
                     _MiniInfoTile(
                       icon: Icons.sell_outlined,
-                      title: context.tr(
-                        'Coupon stack',
-                        'Ã™â€šÃ˜Â³Ã˜Â§Ã˜Â¦Ã™â€¦ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©',
-                      ),
+                      title: context.tr('Coupon stack', 'قسائم متاحة'),
                       subtitle: context.tr(
                         'Browse welcome and seasonal coupon offers before checkout.',
-                        'Ã˜ÂªÃ˜ÂµÃ™ÂÃ˜Â­ Ã™â€šÃ˜Â³Ã˜Â§Ã˜Â¦Ã™â€¦ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â±Ã˜Â­Ã™Å Ã˜Â¨ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã™Ë†Ã˜Â¶ Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â³Ã™â€¦Ã™Å Ã˜Â© Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â¥Ã˜ÂªÃ™â€¦Ã˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
+                        'تصفح قسائم الترحيب والعروض الموسمية قبل إتمام الطلب.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.stars_outlined,
-                      title: context.tr(
-                        'Reward points',
-                        'Ã™â€ Ã™â€šÃ˜Â§Ã˜Â· Ã˜Â§Ã™â€žÃ™â€¦Ã™Æ’Ã˜Â§Ã™ÂÃ˜Â¢Ã˜Âª',
-                      ),
+                      title: context.tr('Reward points', 'نقاط المكافآت'),
                       subtitle: context.tr(
                         'Earn points on every successful purchase from this listing.',
-                        'Ã˜Â§Ã™Æ’Ã˜Â³Ã˜Â¨ Ã™â€ Ã™â€šÃ˜Â§Ã˜Â·Ã˜Â§Ã™â€¹ Ã™â€¦Ã˜Â¹ Ã™Æ’Ã™â€ž Ã˜Â¹Ã™â€¦Ã™â€žÃ™Å Ã˜Â© Ã˜Â´Ã˜Â±Ã˜Â§Ã˜Â¡ Ã™â€¦Ã™Æ’Ã˜ÂªÃ™â€¦Ã™â€žÃ˜Â© Ã™â€¦Ã™â€  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬.',
+                        'اكسب نقاطاً مع كل عملية شراء مكتملة من هذا المنتج.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.timer_outlined,
-                      title: context.tr(
-                        'Sale countdown',
-                        'Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â¯ Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€ Ã˜Â§Ã˜Â²Ã™â€žÃ™Å ',
-                      ),
+                      title: context.tr('Sale countdown', 'العد التنازلي'),
                       subtitle: context.tr(
                         'Flash event pricing is still active for a limited time.',
-                        'Ã˜Â³Ã˜Â¹Ã˜Â± Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â±Ã˜Â¶ Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â±Ã™Å Ã˜Â¹ Ã™â€¦Ã˜Â§ Ã˜Â²Ã˜Â§Ã™â€ž Ã™ÂÃ˜Â¹Ã˜Â§Ã™â€žÃ˜Â§Ã™â€¹ Ã™â€žÃ™ÂÃ˜ÂªÃ˜Â±Ã˜Â© Ã™â€¦Ã˜Â­Ã˜Â¯Ã™Ë†Ã˜Â¯Ã˜Â©.',
+                        'سعر العرض السريع ما زال فعالاً لفترة محدودة.',
                       ),
                     ),
                   ],
                 ),
               ),
               _DetailPanel(
-                title: context.tr(
-                  'Choose your options',
-                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜ÂªÃ™Æ’',
-                ),
+                title: context.tr('Choose your options', 'اختر خياراتك'),
                 subtitle: context.tr(
                   'Pick the right color, size, and quantity before adding to bag.',
-                  'Ã˜Â§Ã˜Â®Ã˜ÂªÃ˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³ Ã™Ë†Ã˜Â§Ã™â€žÃ™Æ’Ã™â€¦Ã™Å Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜Â§Ã˜Â³Ã˜Â¨Ã˜Â© Ã™â€šÃ˜Â¨Ã™â€ž Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â¶Ã˜Â§Ã™ÂÃ˜Â© Ã˜Â¥Ã™â€žÃ™â€° Ã˜Â§Ã™â€žÃ˜Â³Ã™â€žÃ˜Â©.',
+                  'اختر اللون والمقاس والكمية المناسبة قبل الإضافة إلى السلة.',
                 ),
                 icon: Icons.tune_rounded,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _PanelLabel(
-                      title: context.tr('Color', 'Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€ '),
+                      title: context.tr('Color', 'اللون'),
                       subtitle: context.tr(
                         'Available shades',
-                        'Ã˜Â§Ã™â€žÃ˜Â£Ã™â€žÃ™Ë†Ã˜Â§Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©',
+                        'الألوان المتاحة',
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -599,13 +532,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       children: [
                         Expanded(
                           child: _PanelLabel(
-                            title: context.tr(
-                              'Quantity',
-                              'Ã˜Â§Ã™â€žÃ™Æ’Ã™â€¦Ã™Å Ã˜Â©',
-                            ),
+                            title: context.tr('Quantity', 'الكمية'),
                             subtitle: context.tr(
                               '${product.stock} pieces ready to ship',
-                              '${product.stock} Ã™â€šÃ˜Â·Ã˜Â¹ Ã˜Â¬Ã˜Â§Ã™â€¡Ã˜Â²Ã˜Â© Ã™â€žÃ™â€žÃ˜Â´Ã˜Â­Ã™â€ ',
+                              '${product.stock} قطع جاهزة للشحن',
                             ),
                           ),
                         ),
@@ -624,94 +554,76 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
               _DetailPanel(
-                title: context.tr(
-                  'Shipping and return',
-                  'Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹',
-                ),
+                title: context.tr('Shipping and return', 'الشحن والإرجاع'),
                 subtitle: context.tr(
                   'Helpful delivery details before you place the order.',
-                  'Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã™â€¦Ã™ÂÃ™Å Ã˜Â¯Ã˜Â© Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã™â€šÃ˜Â¨Ã™â€ž Ã˜ÂªÃ™â€ Ã™ÂÃ™Å Ã˜Â° Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
+                  'تفاصيل مفيدة عن التوصيل قبل تنفيذ الطلب.',
                 ),
                 icon: Icons.local_shipping_outlined,
                 child: Column(
                   children: [
                     _MiniInfoTile(
                       icon: Icons.delivery_dining_outlined,
-                      title: context.tr(
-                        'Shipping method',
-                        'Ã˜Â·Ã˜Â±Ã™Å Ã™â€šÃ˜Â© Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€ ',
-                      ),
+                      title: context.tr('Shipping method', 'طريقة الشحن'),
                       subtitle: context.tr(
                         'Standard and express delivery options are available.',
-                        'Ã˜Â®Ã™Å Ã˜Â§Ã˜Â±Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â´Ã˜Â­Ã™â€  Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â§Ã˜Â¯Ã™Å  Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â³Ã˜Â±Ã™Å Ã˜Â¹ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­Ã˜Â©.',
+                        'خيارات الشحن العادي والسريع متاحة.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.schedule_outlined,
                       title: context.tr(
                         'Estimated delivery',
-                        'Ã˜Â§Ã™â€žÃ˜ÂªÃ™Ë†Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ™Ë†Ã™â€šÃ˜Â¹',
+                        'التوصيل المتوقع',
                       ),
                       subtitle: context.tr(
                         'Expected arrival within 3 to 7 business days.',
-                        'Ã˜Â§Ã™â€žÃ™Ë†Ã˜ÂµÃ™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ™Ë†Ã™â€šÃ˜Â¹ Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 3 Ã˜Â¥Ã™â€žÃ™â€° 7 Ã˜Â£Ã™Å Ã˜Â§Ã™â€¦ Ã˜Â¹Ã™â€¦Ã™â€ž.',
+                        'الوصول المتوقع خلال 3 إلى 7 أيام عمل.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.assignment_return_outlined,
-                      title: context.tr(
-                        'Return policy',
-                        'Ã˜Â³Ã™Å Ã˜Â§Ã˜Â³Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹',
-                      ),
+                      title: context.tr('Return policy', 'سياسة الإرجاع'),
                       subtitle: context.tr(
                         'Eligible items can be returned within 30 days.',
-                        'Ã™Å Ã™â€¦Ã™Æ’Ã™â€  Ã˜Â¥Ã˜Â±Ã˜Â¬Ã˜Â§Ã˜Â¹ Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â¤Ã™â€¡Ã™â€žÃ˜Â© Ã˜Â®Ã™â€žÃ˜Â§Ã™â€ž 30 Ã™Å Ã™Ë†Ã™â€¦Ã˜Â§Ã™â€¹.',
+                        'يمكن إرجاع المنتجات المؤهلة خلال 30 يوماً.',
                       ),
                     ),
                   ],
                 ),
               ),
               _DetailPanel(
-                title: context.tr(
-                  'Product details',
-                  'Ã˜ÂªÃ™ÂÃ˜Â§Ã˜ÂµÃ™Å Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬',
-                ),
+                title: context.tr('Product details', 'تفاصيل المنتج'),
                 subtitle: context.tr(
                   'Materials, care, and catalog information in one place.',
-                  'Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ã˜Â§Ã˜Âª Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Å Ã˜Â© Ã™Ë†Ã™â€¦Ã˜Â¹Ã™â€žÃ™Ë†Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ™Æ’Ã˜ÂªÃ˜Â§Ã™â€žÃ™Ë†Ã˜Â¬ Ã™ÂÃ™Å  Ã™â€¦Ã™Æ’Ã˜Â§Ã™â€  Ã™Ë†Ã˜Â§Ã˜Â­Ã˜Â¯.',
+                  'الخامات والعناية ومعلومات الكتالوج في مكان واحد.',
                 ),
                 icon: Icons.inventory_2_outlined,
                 child: Column(
                   children: [
                     _MiniInfoTile(
                       icon: Icons.description_outlined,
-                      title: context.tr('Description', 'Ã˜Â§Ã™â€žÃ™Ë†Ã˜ÂµÃ™Â'),
+                      title: context.tr('Description', 'الوصف'),
                       subtitle: localizedDescription,
                     ),
                     _MiniInfoTile(
                       icon: Icons.checkroom_outlined,
-                      title: context.tr(
-                        'Material',
-                        'Ã˜Â§Ã™â€žÃ˜Â®Ã˜Â§Ã™â€¦Ã˜Â©',
-                      ),
+                      title: context.tr('Material', 'الخامة'),
                       subtitle: '$localizedMaterial\n$localizedComposition',
                     ),
                     _MiniInfoTile(
                       icon: Icons.clean_hands_outlined,
-                      title: context.tr(
-                        'Care instructions',
-                        'Ã˜ÂªÃ˜Â¹Ã™â€žÃ™Å Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â§Ã™â€žÃ˜Â¹Ã™â€ Ã˜Â§Ã™Å Ã˜Â©',
-                      ),
+                      title: context.tr('Care instructions', 'تعليمات العناية'),
                       subtitle: localizedCareInstructions,
                     ),
                     _MiniInfoTile(
                       icon: Icons.qr_code_rounded,
                       title: context.tr(
                         'SKU / Category / Season',
-                        'Ã˜Â§Ã™â€žÃ˜Â±Ã™â€¦Ã˜Â² / Ã˜Â§Ã™â€žÃ™ÂÃ˜Â¦Ã˜Â© / Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â³Ã™â€¦',
+                        'الرمز / الفئة / الموسم',
                       ),
                       subtitle:
-                          '${product.sku}\n${product.categoryName}\n${context.tr('All-season', 'Ã™â€¦Ã™â€ Ã˜Â§Ã˜Â³Ã˜Â¨ Ã™â€žÃ™Æ’Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã™Ë†Ã˜Â§Ã˜Â³Ã™â€¦')}',
+                          '${product.sku}\n${product.categoryName}\n${context.tr('All-season', 'مناسب لكل المواسم')}',
                     ),
                   ],
                 ),
@@ -734,10 +646,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                context.tr(
-                                  'Reviews',
-                                  'Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã˜Âª',
-                                ),
+                                context.tr('Reviews', 'التقييمات'),
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w900,
@@ -748,7 +657,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               Text(
                                 context.tr(
                                   'What shoppers are saying about the fit, quality, and overall value.',
-                                  'Ã™â€¦Ã˜Â§Ã˜Â°Ã˜Â§ Ã™Å Ã™â€šÃ™Ë†Ã™â€ž Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â³Ã™Ë†Ã™â€šÃ™Ë†Ã™â€  Ã˜Â¹Ã™â€  Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³ Ã™Ë†Ã˜Â§Ã™â€žÃ˜Â¬Ã™Ë†Ã˜Â¯Ã˜Â© Ã™Ë†Ã˜Â§Ã™â€žÃ™â€šÃ™Å Ã™â€¦Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â¹Ã˜Â§Ã™â€¦Ã˜Â©.',
+                                  'ماذا يقول المتسوقون عن المقاس والجودة والقيمة العامة.',
                                 ),
                                 style: TextStyle(
                                   color: colors.secondaryText,
@@ -771,34 +680,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       runSpacing: 8,
                       children: [
                         Chip(
-                          label: Text(
-                            context.tr(
-                              'With photos',
-                              'Ã™â€¦Ã˜Â¹ Ã˜Â§Ã™â€žÃ˜ÂµÃ™Ë†Ã˜Â±',
-                            ),
-                          ),
+                          label: Text(context.tr('With photos', 'مع الصور')),
                         ),
-                        Chip(
-                          label: Text(
-                            context.tr('Size', 'Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³'),
-                          ),
-                        ),
-                        Chip(
-                          label: Text(
-                            context.tr(
-                              'Rating',
-                              'Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦',
-                            ),
-                          ),
-                        ),
-                        Chip(
-                          label: Text(
-                            context.tr(
-                              'Most recent',
-                              'Ã˜Â§Ã™â€žÃ˜Â£Ã˜Â­Ã˜Â¯Ã˜Â«',
-                            ),
-                          ),
-                        ),
+                        Chip(label: Text(context.tr('Size', 'المقاس'))),
+                        Chip(label: Text(context.tr('Rating', 'التقييم'))),
+                        Chip(label: Text(context.tr('Most recent', 'الأحدث'))),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -807,11 +693,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         icon: Icons.rate_review_outlined,
                         title: context.tr(
                           'No reviews yet',
-                          'Ã™â€žÃ˜Â§ Ã˜ÂªÃ™Ë†Ã˜Â¬Ã˜Â¯ Ã˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã˜Âª Ã˜Â¨Ã˜Â¹Ã˜Â¯',
+                          'لا توجد تقييمات بعد',
                         ),
                         subtitle: context.tr(
                           'Be the first shopper to share an opinion once the order is delivered.',
-                          'Ã™Æ’Ã™â€  Ã˜Â£Ã™Ë†Ã™â€ž Ã™â€¦Ã™â€  Ã™Å Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’ Ã˜Â±Ã˜Â£Ã™Å Ã™â€¡ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨.',
+                          'كن أول من يشارك رأيه بعد استلام الطلب.',
                         ),
                       )
                     else
@@ -829,12 +715,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       alignment: AlignmentDirectional.centerEnd,
                       child: TextButton(
                         onPressed: () => _reviewAction(context, authController),
-                        child: Text(
-                          context.tr(
-                            'Write Review',
-                            'Ã˜Â§Ã™Æ’Ã˜ÂªÃ˜Â¨ Ã˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦Ã˜Â§Ã™â€¹',
-                          ),
-                        ),
+                        child: Text(context.tr('Write Review', 'اكتب تقييماً')),
                       ),
                     ),
                   ],
@@ -842,10 +723,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
               const SizedBox(height: 18),
               SectionHeader(
-                title: context.tr(
-                  'Recommendations',
-                  'Ã™â€¦Ã™â€ Ã˜ÂªÃ˜Â¬Ã˜Â§Ã˜Âª Ã™â€¦Ã™â€šÃ˜ÂªÃ˜Â±Ã˜Â­Ã˜Â©',
-                ),
+                title: context.tr('Recommendations', 'منتجات مقترحة'),
               ),
               const SizedBox(height: 10),
               Builder(
@@ -897,17 +775,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(context.tr('Share', 'Ã™â€¦Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’Ã˜Â©')),
+        title: Text(context.tr('Share', 'مشاركة')),
         content: Text(
           context.tr(
             'Native sharing is not configured in this mock app yet.',
-            'Ã˜Â§Ã™â€žÃ™â€¦Ã˜Â´Ã˜Â§Ã˜Â±Ã™Æ’Ã˜Â© Ã˜Â§Ã™â€žÃ˜Â£Ã˜ÂµÃ™â€žÃ™Å Ã˜Â© Ã˜ÂºÃ™Å Ã˜Â± Ã™â€¦Ã™ÂÃ˜Â¹Ã™â€žÃ˜Â© Ã™ÂÃ™Å  Ã™â€¡Ã˜Â°Ã˜Â§ Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â·Ã˜Â¨Ã™Å Ã™â€š Ã˜Â§Ã™â€žÃ˜ÂªÃ˜Â¬Ã˜Â±Ã™Å Ã˜Â¨Ã™Å  Ã˜Â¨Ã˜Â¹Ã˜Â¯.',
+            'المشاركة الأصلية غير مفعلة في هذا التطبيق التجريبي بعد.',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('Close', 'Ã˜Â¥Ã˜ÂºÃ™â€žÃ˜Â§Ã™â€š')),
+            child: Text(context.tr('Close', 'إغلاق')),
           ),
         ],
       ),
@@ -924,7 +802,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         content: Text(
           context.tr(
             'Review form available after delivered purchase',
-            'Ã™â€ Ã™â€¦Ã™Ë†Ã˜Â°Ã˜Â¬ Ã˜Â§Ã™â€žÃ˜ÂªÃ™â€šÃ™Å Ã™Å Ã™â€¦ Ã™â€¦Ã˜ÂªÃ˜Â§Ã˜Â­ Ã˜Â¨Ã˜Â¹Ã˜Â¯ Ã˜Â§Ã˜Â³Ã˜ÂªÃ™â€žÃ˜Â§Ã™â€¦ Ã˜Â§Ã™â€žÃ˜Â·Ã™â€žÃ˜Â¨',
+            'نموذج التقييم متاح بعد استلام الطلب',
           ),
         ),
       ),
@@ -941,7 +819,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               content: Text(
                 context.tr(
                   'Please choose color and size',
-                  'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³',
+                  'يرجى اختيار اللون والمقاس',
                 ),
               ),
             ),
@@ -969,7 +847,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               content: Text(
                 context.tr(
                   'Please choose color and size',
-                  'Ã™Å Ã˜Â±Ã˜Â¬Ã™â€° Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â± Ã˜Â§Ã™â€žÃ™â€žÃ™Ë†Ã™â€  Ã™Ë†Ã˜Â§Ã™â€žÃ™â€¦Ã™â€šÃ˜Â§Ã˜Â³',
+                  'يرجى اختيار اللون والمقاس',
                 ),
               ),
             ),
@@ -1226,8 +1104,10 @@ class _PriceHero extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.end,
           children: [
             Text(
               formatCurrency(price),
@@ -1239,7 +1119,6 @@ class _PriceHero extends StatelessWidget {
               ),
             ),
             if (oldPrice != null) ...[
-              const SizedBox(width: 8),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
@@ -1263,7 +1142,7 @@ class _PriceHero extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
-            context.tr('Save $discount%', 'Ã™Ë†Ã™ÂÃ˜Â± $discount%'),
+            context.tr('Save $discount%', 'وفر $discount%'),
             style: TextStyle(
               color: colors.discount,
               fontWeight: FontWeight.w800,
@@ -1767,12 +1646,7 @@ class _StoreShowcaseCard extends StatelessWidget {
                   arguments: store.id,
                 ),
                 icon: const Icon(Icons.store_outlined),
-                label: Text(
-                  context.tr(
-                    'Visit Store',
-                    'Ã˜Â²Ã™Å Ã˜Â§Ã˜Â±Ã˜Â© Ã˜Â§Ã™â€žÃ™â€¦Ã˜ÂªÃ˜Â¬Ã˜Â±',
-                  ),
-                ),
+                label: Text(context.tr('Visit Store', 'زيارة المتجر')),
               ),
             ),
           ],

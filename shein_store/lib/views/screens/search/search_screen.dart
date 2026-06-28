@@ -43,7 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         }
         return Scaffold(
-          appBar: AppHeader(title: context.tr('Search', 'Ø§Ù„Ø¨Ø­Ø«')),
+          appBar: AppHeader(title: context.tr('Search', 'البحث')),
           body: Padding(
             padding: const EdgeInsets.all(AppSizes.lg),
             child: Column(
@@ -58,7 +58,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           searchController.addRecentSearch(_controller.text);
                           searchController.search();
                         },
-                        child: Text(context.tr('Search', 'Ø¨Ø­Ø«')),
+                        child: Text(context.tr('Search', 'بحث')),
                       ),
                     );
 
@@ -68,7 +68,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           SearchBarWidget(
                             hintText: context.tr(
                               'Search dresses, shoes, beauty...',
-                              'Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„ÙØ³Ø§ØªÙŠÙ† ÙˆØ§Ù„Ø£Ø­Ø°ÙŠØ© ÙˆØ§Ù„Ø¬Ù…Ø§Ù„...',
+                              'ابحث عن الفساتين والأحذية والجمال...',
                             ),
                             readOnly: false,
                             controller: _controller,
@@ -93,7 +93,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: SearchBarWidget(
                             hintText: context.tr(
                               'Search dresses, shoes, beauty...',
-                              'Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„ÙØ³Ø§ØªÙŠÙ† ÙˆØ§Ù„Ø£Ø­Ø°ÙŠØ© ÙˆØ§Ù„Ø¬Ù…Ø§Ù„...',
+                              'ابحث عن الفساتين والأحذية والجمال...',
                             ),
                             readOnly: false,
                             controller: _controller,
@@ -126,7 +126,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         }
                       },
                       icon: const Icon(Icons.filter_list),
-                      label: Text(context.tr('Filter', 'ØªØµÙÙŠØ©')),
+                      label: Text(context.tr('Filter', 'تصفية')),
                     );
                     final sortButton = OutlinedButton.icon(
                       onPressed: () async {
@@ -139,13 +139,11 @@ class _SearchScreenState extends State<SearchScreen> {
                         }
                       },
                       icon: const Icon(Icons.swap_vert),
-                      label: Text(context.tr('Sort', 'ØªØ±ØªÙŠØ¨')),
+                      label: Text(context.tr('Sort', 'ترتيب')),
                     );
                     final clearButton = TextButton(
                       onPressed: searchController.clearRecentSearches,
-                      child: Text(
-                        context.tr('Clear history', 'Ù…Ø³Ø­ Ø§Ù„Ø³Ø¬Ù„'),
-                      ),
+                      child: Text(context.tr('Clear history', 'مسح السجل')),
                     );
 
                     if (constraints.maxWidth < 520) {
@@ -174,7 +172,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         _SearchSection(
                           title: context.tr(
                             'Recent searches',
-                            'Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ø¨Ø­Ø« Ø§Ù„Ø£Ø®ÙŠØ±Ø©',
+                            'عمليات البحث الأخيرة',
                           ),
                         ),
                         Wrap(
@@ -199,7 +197,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         _SearchSection(
                           title: context.tr(
                             'Hot searches',
-                            'Ø¹Ù…Ù„ÙŠØ§Øª Ø§Ù„Ø¨Ø­Ø« Ø§Ù„Ø´Ø§Ø¦Ø¹Ø©',
+                            'عمليات البحث الشائعة',
                           ),
                         ),
                         Wrap(
@@ -221,20 +219,17 @@ class _SearchScreenState extends State<SearchScreen> {
                       ] else if (searchController.results.isEmpty) ...[
                         const SizedBox(height: 60),
                         AppEmptyState(
-                          title: context.tr(
-                            'No results',
-                            'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù†ØªØ§Ø¦Ø¬',
-                          ),
+                          title: context.tr('No results', 'لا توجد نتائج'),
                           message: context.tr(
                             'Try another keyword, category, or filter combination.',
-                            'Ø¬Ø±Ù‘Ø¨ ÙƒÙ„Ù…Ø© Ù…Ø®ØªÙ„ÙØ© Ø£Ùˆ ÙØ¦Ø© Ø£Ø®Ø±Ù‰ Ø£Ùˆ Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª ØªØµÙÙŠØ© Ù…Ø®ØªÙ„ÙØ©.',
+                            'جرّب كلمة مختلفة أو فئة أخرى أو إعدادات تصفية مختلفة.',
                           ),
                         ),
                       ] else ...[
                         _SearchSection(
                           title: context.tr(
                             '${searchController.results.length} Results',
-                            '${searchController.results.length} Ù†ØªÙŠØ¬Ø©',
+                            '${searchController.results.length} نتيجة',
                           ),
                         ),
                         LayoutBuilder(
@@ -283,11 +278,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                             added
                                                 ? context.tr(
                                                     'Added to wishlist',
-                                                    'ØªÙ…Øª Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                                    'تمت الإضافة إلى المفضلة',
                                                   )
                                                 : context.tr(
                                                     'Removed from wishlist',
-                                                    'ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                                                    'تمت الإزالة من المفضلة',
                                                   ),
                                           ),
                                         ),

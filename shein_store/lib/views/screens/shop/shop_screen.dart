@@ -101,7 +101,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 body: AppLoading(
                   message: context.tr(
                     'Loading storefront...',
-                    'Ø¬Ø§Ø±Ù ØªØ­Ù…ÙŠÙ„ ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„ØªØ³ÙˆÙ‚...',
+                    'جارٍ تحميل واجهة التسوق...',
                   ),
                 ),
               );
@@ -206,7 +206,7 @@ class _ShopScreenState extends State<ShopScreen> {
       children: [
         const NotificationBellButton(),
         IconButton(
-          tooltip: context.tr('Orders', 'Ø§Ù„Ø·Ù„Ø¨Ø§Øª'),
+          tooltip: context.tr('Orders', 'الطلبات'),
           onPressed: () {
             if (authController.isGuest) {
               AppBottomSheet.showAuthRequired(context);
@@ -238,7 +238,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       border: InputBorder.none,
                       hintText: context.tr(
                         'Search dresses, shoes, beauty...',
-                        'Ø§Ø¨Ø­Ø« Ø¹Ù† ÙØ³Ø§ØªÙŠÙ† ÙˆØ£Ø­Ø°ÙŠØ© ÙˆØ¬Ù…Ø§Ù„...',
+                        'ابحث عن فساتين وأحذية وجمال...',
                       ),
                       hintStyle: TextStyle(color: colors.secondaryText),
                     ),
@@ -246,10 +246,7 @@ class _ShopScreenState extends State<ShopScreen> {
                   ),
                 ),
                 IconButton(
-                  tooltip: context.tr(
-                    'Image search',
-                    'Ø§Ù„Ø¨Ø­Ø« Ø¨Ø§Ù„ØµÙˆØ±',
-                  ),
+                  tooltip: context.tr('Image search', 'البحث بالصور'),
                   onPressed: () => _openImageSearchPlaceholder(context),
                   icon: const Icon(Icons.camera_alt_outlined),
                 ),
@@ -275,7 +272,7 @@ class _ShopScreenState extends State<ShopScreen> {
         ),
         const SizedBox(width: 4),
         IconButton(
-          tooltip: context.tr('Wishlist', 'Ø§Ù„Ù…ÙØ¶Ù„Ø©'),
+          tooltip: context.tr('Wishlist', 'المفضلة'),
           onPressed: () {
             if (authController.isGuest) {
               AppBottomSheet.showAuthRequired(context);
@@ -306,17 +303,17 @@ class _ShopScreenState extends State<ShopScreen> {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(context.tr('Image search', 'Ø§Ù„Ø¨Ø­Ø« Ø¨Ø§Ù„ØµÙˆØ±')),
+        title: Text(context.tr('Image search', 'البحث بالصور')),
         content: Text(
           context.tr(
             'Visual search placeholder ready for future API integration.',
-            'ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ø¨Ø­Ø« Ø¨Ø§Ù„ØµÙˆØ± Ø¬Ø§Ù‡Ø²Ø© Ø­Ø§Ù„ÙŠØ§Ù‹ ÙƒÙ†Ø³Ø®Ø© ØªØ¬Ø±ÙŠØ¨ÙŠØ© Ù„Ø±Ø¨Ø·Ù‡Ø§ Ù„Ø§Ø­Ù‚Ø§Ù‹.',
+            'واجهة البحث بالصور جاهزة حالياً كنسخة تجريبية لربطها لاحقاً.',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('Close', 'Ø¥ØºÙ„Ø§Ù‚')),
+            child: Text(context.tr('Close', 'إغلاق')),
           ),
         ],
       ),
@@ -391,17 +388,17 @@ class _ShopScreenState extends State<ShopScreen> {
       case 'all':
         return context.l10n.statusAll;
       case 'women':
-        return context.tr('Women', 'Ø§Ù„Ù†Ø³Ø§Ø¡');
+        return context.tr('Women', 'النساء');
       case 'shoes':
-        return context.tr('Shoes', 'Ø§Ù„Ø£Ø­Ø°ÙŠØ©');
+        return context.tr('Shoes', 'الأحذية');
       case 'men':
-        return context.tr('Men', 'Ø§Ù„Ø±Ø¬Ø§Ù„');
+        return context.tr('Men', 'الرجال');
       case 'curve':
-        return context.tr('Curve', 'ÙƒÙŠØ±Ù');
+        return context.tr('Curve', 'كيرف');
       case 'kids':
-        return context.tr('Kids', 'Ø§Ù„Ø£Ø·ÙØ§Ù„');
+        return context.tr('Kids', 'الأطفال');
       case 'jewelry':
-        return context.tr('Jewelry', 'Ø§Ù„Ù…Ø¬ÙˆÙ‡Ø±Ø§Øª');
+        return context.tr('Jewelry', 'المجوهرات');
       default:
         return id;
     }
@@ -489,27 +486,27 @@ class _ShopScreenState extends State<ShopScreen> {
               onTap: () => showDialog<void>(
                 context: context,
                 builder: (dialogContext) => AlertDialog(
-                  title: Text(context.tr('Free Shipping', 'Ø´Ø­Ù† Ù…Ø¬Ø§Ù†ÙŠ')),
+                  title: Text(context.tr('Free Shipping', 'شحن مجاني')),
                   content: Text(
                     context.tr(
                       'Buy 129.00 or more to unlock free shipping.',
-                      'Ø§Ø´ØªØ±Ù Ø¨Ù‚ÙŠÙ…Ø© 129.00 Ø£Ùˆ Ø£ÙƒØ«Ø± Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø´Ø­Ù† Ù…Ø¬Ø§Ù†ÙŠ.',
+                      'اشترِ بقيمة 129.00 أو أكثر للحصول على شحن مجاني.',
                     ),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(dialogContext),
-                      child: Text(context.tr('Close', 'Ø¥ØºÙ„Ø§Ù‚')),
+                      child: Text(context.tr('Close', 'إغلاق')),
                     ),
                   ],
                 ),
               ),
               child: _ServiceStripItem(
                 icon: Icons.local_shipping_outlined,
-                title: context.tr('Free Shipping', 'Ø´Ø­Ù† Ù…Ø¬Ø§Ù†ÙŠ'),
+                title: context.tr('Free Shipping', 'شحن مجاني'),
                 subtitle: context.tr(
                   'Buy 129.00 or more',
-                  'Ø¹Ù†Ø¯ Ø§Ù„Ø´Ø±Ø§Ø¡ Ø¨Ù‚ÙŠÙ…Ø© 129.00 Ø£Ùˆ Ø£ÙƒØ«Ø±',
+                  'عند الشراء بقيمة 129.00 أو أكثر',
                 ),
               ),
             ),
@@ -521,14 +518,14 @@ class _ShopScreenState extends State<ShopScreen> {
                 context,
                 AppRoutes.productListing,
                 arguments: {
-                  'title': context.tr('Flash Sale', 'Ø¹Ø±ÙˆØ¶ Ø³Ø±ÙŠØ¹Ø©'),
+                  'title': context.tr('Flash Sale', 'عروض سريعة'),
                   'campaignTag': 'Sale',
                 },
               ),
               child: _ServiceStripItem(
                 icon: Icons.flash_on_outlined,
-                title: context.tr('Flash Sale', 'Ø¹Ø±ÙˆØ¶ Ø³Ø±ÙŠØ¹Ø©'),
-                subtitle: context.tr('View more', 'Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø²ÙŠØ¯'),
+                title: context.tr('Flash Sale', 'عروض سريعة'),
+                subtitle: context.tr('View more', 'عرض المزيد'),
               ),
             ),
           ),
@@ -582,10 +579,10 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget _buildFeedTabs(BuildContext context) {
     final colors = context.appColors;
     final tabs = [
-      ('for_you', context.tr('For You', 'Ù„Ùƒ')),
-      ('new_in', context.tr('New In', 'Ø¬Ø¯ÙŠØ¯Ù†Ø§')),
-      ('deals', context.tr('Deals', 'Ø§Ù„Ø¹Ø±ÙˆØ¶')),
-      ('bestsellers', context.tr('Bestsellers', 'Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø¨ÙŠØ¹Ø§Ù‹')),
+      ('for_you', context.tr('For You', 'لك')),
+      ('new_in', context.tr('New In', 'جديدنا')),
+      ('deals', context.tr('Deals', 'العروض')),
+      ('bestsellers', context.tr('Bestsellers', 'الأكثر مبيعاً')),
     ];
 
     return Container(
@@ -633,19 +630,13 @@ class _ShopScreenState extends State<ShopScreen> {
 
   List<_ShortcutItem> _shortcutItems(BuildContext context) => [
     _ShortcutItem(
-      context.tr('Sale', 'ØªØ®ÙÙŠØ¶Ø§Øª'),
+      context.tr('Sale', 'تخفيضات'),
       Icons.local_fire_department_outlined,
     ),
+    _ShortcutItem(context.tr('Coupons', 'كوبونات'), Icons.local_offer_outlined),
+    _ShortcutItem(context.tr('New In', 'جديدنا'), Icons.fiber_new_outlined),
     _ShortcutItem(
-      context.tr('Coupons', 'ÙƒÙˆØ¨ÙˆÙ†Ø§Øª'),
-      Icons.local_offer_outlined,
-    ),
-    _ShortcutItem(
-      context.tr('New In', 'Ø¬Ø¯ÙŠØ¯Ù†Ø§'),
-      Icons.fiber_new_outlined,
-    ),
-    _ShortcutItem(
-      context.tr('Best Sellers', 'Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø¨ÙŠØ¹Ø§Ù‹'),
+      context.tr('Best Sellers', 'الأكثر مبيعاً'),
       Icons.workspace_premium_outlined,
     ),
   ];
@@ -653,22 +644,13 @@ class _ShopScreenState extends State<ShopScreen> {
   String _localizedCampaignTitle(BuildContext context, String title) {
     switch (title) {
       case 'Summer Layers':
-        return context.tr('Summer Layers', 'Ø·Ø¨Ù‚Ø§Øª Ø§Ù„ØµÙŠÙ');
+        return context.tr('Summer Layers', 'طبقات الصيف');
       case 'Mini Trend Drop':
-        return context.tr(
-          'Mini Trend Drop',
-          'ØµÙŠØ­Ø§Øª ØµØºÙŠØ±Ø© Ø¬Ø¯ÙŠØ¯Ø©',
-        );
+        return context.tr('Mini Trend Drop', 'صيحات صغيرة جديدة');
       case 'Office Reset':
-        return context.tr(
-          'Office Reset',
-          'ØªØ¬Ø¯ÙŠØ¯ Ø¥Ø·Ù„Ø§Ù„Ø© Ø§Ù„Ù…ÙƒØªØ¨',
-        );
+        return context.tr('Office Reset', 'تجديد إطلالة المكتب');
       case 'Weekend Sale':
-        return context.tr(
-          'Weekend Sale',
-          'ØªØ®ÙÙŠØ¶Ø§Øª Ù†Ù‡Ø§ÙŠØ© Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹',
-        );
+        return context.tr('Weekend Sale', 'تخفيضات نهاية الأسبوع');
       default:
         return title;
     }
@@ -683,22 +665,22 @@ class _ShopScreenState extends State<ShopScreen> {
       case 'Summer Layers':
         return context.tr(
           fallback,
-          'Ù‚Ø·Ø¹ ÙŠÙˆÙ…ÙŠØ© Ø£Ù†ÙŠÙ‚Ø© Ø¨Ø£Ø³Ø¹Ø§Ø± Ø£Ù„Ø·Ù ÙˆÙ„Ù…Ø³Ø§Øª ØªÙ†Ø³ÙŠÙ‚ Ø£Ø³Ø±Ø¹.',
+          'قطع يومية أنيقة بأسعار ألطف ولمسات تنسيق أسرع.',
         );
       case 'Mini Trend Drop':
         return context.tr(
           fallback,
-          'Ø§Ø®ØªÙŠØ§Ø±Ø§Øª Ø¬Ø¯ÙŠØ¯Ø© Ù„Ù„Ø£Ø·ÙØ§Ù„ ÙˆØ§Ù„Ø¯Ù†ÙŠÙ… ÙˆØ¥Ø·Ù„Ø§Ù„Ø§Øª Ù†Ù‡Ø§ÙŠØ© Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹ ÙÙŠ Ù…ÙƒØ§Ù† ÙˆØ§Ø­Ø¯.',
+          'اختيارات جديدة للأطفال والدنيم وإطلالات نهاية الأسبوع في مكان واحد.',
         );
       case 'Office Reset':
         return context.tr(
           fallback,
-          'Ø£Ø³Ø§Ø³ÙŠØ§Øª Ø­Ø§Ø¯Ø© ÙˆØªÙØµÙŠÙ„ Ø³Ù‡Ù„ ÙˆØ¥ÙƒØ³Ø³ÙˆØ§Ø±Ø§Øª Ù†Ø¸ÙŠÙØ© Ù„Ù„Ø§Ø±ØªØ¯Ø§Ø¡ Ø§Ù„ÙŠÙˆÙ…ÙŠ.',
+          'أساسيات حادة وتفصيل سهل وإكسسوارات نظيفة للارتداء اليومي.',
         );
       case 'Weekend Sale':
         return context.tr(
           fallback,
-          'ØªØ³ÙˆÙ‚ÙŠ Ø§Ù„ØªØ®ÙÙŠØ¶Ø§Øª Ø¹Ù„Ù‰ Ø§Ù„ÙØ³Ø§ØªÙŠÙ† ÙˆØ§Ù„Ø£Ø­Ø°ÙŠØ© ÙˆØ§Ù„Ø­Ù‚Ø§Ø¦Ø¨ Ø§Ù„ÙŠÙˆÙ…ÙŠØ©.',
+          'تسوقي التخفيضات على الفساتين والأحذية والحقائب اليومية.',
         );
       default:
         return fallback;
@@ -706,7 +688,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   void _handleShortcutTap(_ShortcutItem item) {
-    if (item.label == 'Coupons' || item.label == 'ÙƒÙˆØ¨ÙˆÙ†Ø§Øª') {
+    if (item.label == 'Coupons' || item.label == 'كوبونات') {
       AuthRequiredHelper.guard(
         context,
         onAuthenticated: () => Navigator.pushNamed(context, AppRoutes.coupons),
@@ -714,13 +696,12 @@ class _ShopScreenState extends State<ShopScreen> {
       return;
     }
 
-    if (item.label == 'New In' || item.label == 'Ø¬Ø¯ÙŠØ¯Ù†Ø§') {
+    if (item.label == 'New In' || item.label == 'جديدنا') {
       setState(() => _selectedFeedTab = 'new_in');
       return;
     }
 
-    if (item.label == 'Best Sellers' ||
-        item.label == 'Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø¨ÙŠØ¹Ø§Ù‹') {
+    if (item.label == 'Best Sellers' || item.label == 'الأكثر مبيعاً') {
       setState(() => _selectedFeedTab = 'bestsellers');
       return;
     }
@@ -730,7 +711,7 @@ class _ShopScreenState extends State<ShopScreen> {
       AppRoutes.productListing,
       arguments: {
         'title': item.label,
-        if (item.label == 'Sale' || item.label == 'ØªØ®ÙÙŠØ¶Ø§Øª')
+        if (item.label == 'Sale' || item.label == 'تخفيضات')
           'campaignTag': 'Sale',
       },
     );
@@ -759,7 +740,7 @@ class _ShopScreenState extends State<ShopScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  context.tr('Shop Menu', 'Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„ØªØ³ÙˆÙ‚'),
+                  context.tr('Shop Menu', 'قائمة التسوق'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
@@ -770,7 +751,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 Text(
                   context.tr(
                     'Open shortcuts and browse departments from one place.',
-                    'Ø§ÙØªØ­ Ø§Ù„Ø§Ø®ØªØµØ§Ø±Ø§Øª ÙˆØªØµÙØ­ Ø§Ù„Ø£Ù‚Ø³Ø§Ù… Ù…Ù† Ù…ÙƒØ§Ù† ÙˆØ§Ø­Ø¯.',
+                    'افتح الاختصارات وتصفح الأقسام من مكان واحد.',
                   ),
                   style: TextStyle(
                     fontSize: 14,
@@ -780,7 +761,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  context.tr('Quick Actions', 'Ø¥Ø¬Ø±Ø§Ø¡Ø§Øª Ø³Ø±ÙŠØ¹Ø©'),
+                  context.tr('Quick Actions', 'إجراءات سريعة'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -806,7 +787,9 @@ class _ShopScreenState extends State<ShopScreen> {
                         ),
                       ),
                       trailing: Icon(
-                        Icons.arrow_forward_ios_rounded,
+                        Directionality.of(context) == TextDirection.rtl
+                            ? Icons.arrow_back_ios_new_rounded
+                            : Icons.arrow_forward_ios_rounded,
                         size: 16,
                         color: colors.inactiveIcon,
                       ),
@@ -822,7 +805,7 @@ class _ShopScreenState extends State<ShopScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        context.tr('Categories', 'Ø§Ù„ÙØ¦Ø§Øª'),
+                        context.tr('Categories', 'الفئات'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -835,7 +818,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         Navigator.pop(sheetContext);
                         Navigator.pushNamed(context, AppRoutes.categories);
                       },
-                      child: Text(context.tr('View All', 'Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„')),
+                      child: Text(context.tr('View All', 'عرض الكل')),
                     ),
                   ],
                 ),
@@ -889,13 +872,10 @@ class _ShopScreenState extends State<ShopScreen> {
           SnackBar(
             content: Text(
               added
-                  ? context.tr(
-                      'Added to wishlist',
-                      'ØªÙ…Øª Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©',
-                    )
+                  ? context.tr('Added to wishlist', 'تمت الإضافة إلى المفضلة')
                   : context.tr(
                       'Removed from wishlist',
-                      'ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+                      'تمت الإزالة من المفضلة',
                     ),
             ),
           ),
@@ -961,7 +941,7 @@ class _HomeProductGridSliver extends StatelessWidget {
               Text(
                 context.tr(
                   'No products found in this category.',
-                  'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª ÙÙŠ Ù‡Ø°Ù‡ Ø§Ù„ÙØ¦Ø© Ø­Ø§Ù„ÙŠØ§Ù‹.',
+                  'لا توجد منتجات في هذه الفئة حالياً.',
                 ),
                 textAlign: TextAlign.center,
                 style: TextStyle(

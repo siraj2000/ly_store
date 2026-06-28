@@ -50,12 +50,20 @@ class _ProfileHeaderActions extends StatelessWidget {
           tooltip: languageController.isArabic
               ? context.l10n.profileSwitchToEnglish
               : context.l10n.profileSwitchToArabic,
-          onTap: () {
+          onTap: () async {
             if (languageController.isArabic) {
-              languageController.setEnglish();
+              await languageController.setEnglish();
+            } else {
+              await languageController.setArabic();
+            }
+            if (!context.mounted) {
               return;
             }
-            languageController.setArabic();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.tr('Language changed', 'تم تغيير اللغة')),
+              ),
+            );
           },
           child: Stack(
             clipBehavior: Clip.none,
@@ -781,7 +789,9 @@ class _MenuLockTrailing extends StatelessWidget {
         const _LockBadge(),
         const SizedBox(width: 6),
         Icon(
-          Icons.chevron_right_rounded,
+          Directionality.of(context) == TextDirection.rtl
+              ? Icons.chevron_left_rounded
+              : Icons.chevron_right_rounded,
           color: context.appColors.inactiveIcon,
         ),
       ],

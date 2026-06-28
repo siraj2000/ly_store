@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_routes.dart';
 import '../constants/app_sizes.dart';
 import '../extensions/localization_extension.dart';
+import 'animated_page_wrapper.dart';
 import 'app_button.dart';
 
 class AppBottomSheet {
@@ -26,20 +27,23 @@ class AppBottomSheet {
           top: AppSizes.lg,
           bottom: MediaQuery.of(context).viewInsets.bottom + AppSizes.lg,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: colors.border,
-                borderRadius: BorderRadius.circular(999),
+        child: AnimatedPageWrapper(
+          beginOffset: const Offset(0, 0.04),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: colors.border,
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
-            ),
-            child,
-          ],
+              child,
+            ],
+          ),
         ),
       ),
     );

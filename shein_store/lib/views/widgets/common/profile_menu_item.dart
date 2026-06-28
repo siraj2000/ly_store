@@ -58,7 +58,12 @@ class ProfileMenuItem extends StatelessWidget {
               ),
         trailing:
             trailing ??
-            Icon(Icons.chevron_right_rounded, color: colors.inactiveIcon),
+            Icon(
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left_rounded
+                  : Icons.chevron_right_rounded,
+              color: colors.inactiveIcon,
+            ),
       ),
     );
   }

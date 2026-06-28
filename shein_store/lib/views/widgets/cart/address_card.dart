@@ -74,7 +74,12 @@ class AddressCard extends StatelessWidget {
             ),
           ),
         ),
-        trailing: Icon(Icons.chevron_right_rounded, color: colors.inactiveIcon),
+        trailing: Icon(
+          Directionality.of(context) == TextDirection.rtl
+              ? Icons.chevron_left_rounded
+              : Icons.chevron_right_rounded,
+          color: colors.inactiveIcon,
+        ),
       ),
     );
   }

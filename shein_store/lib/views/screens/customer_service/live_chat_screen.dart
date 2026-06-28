@@ -14,7 +14,7 @@ class LiveChatScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: Chip(
               label: Text(
                 context.tr(
@@ -26,7 +26,7 @@ class LiveChatScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: Chip(
               label: Text(
                 context.tr(
@@ -38,7 +38,7 @@ class LiveChatScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: Chip(
               label: Text(
                 context.tr(

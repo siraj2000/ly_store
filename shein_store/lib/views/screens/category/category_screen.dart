@@ -240,9 +240,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       Expanded(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: context.isArabic
-                              ? [contentPane, const SizedBox(width: 12), menu]
-                              : [menu, const SizedBox(width: 12), contentPane],
+                          children: [
+                            menu,
+                            const SizedBox(width: 12),
+                            contentPane,
+                          ],
                         ),
                       ),
                     ],
@@ -283,7 +285,217 @@ class _CategoryScreenState extends State<CategoryScreen> {
     return filtered.isEmpty ? entries : filtered;
   }
 
-  List<_CategoryMenuEntry> _allMenuEntries(BuildContext context) => [
+  _CategoryMenuEntry _categoryEntry({
+    required String id,
+    required String labelEn,
+    required String labelAr,
+    required IconData icon,
+    required Set<String> departments,
+    required String categoryId,
+    String? titleEn,
+    String? titleAr,
+    String? preferredDepartmentId,
+    List<String>? categoryIds,
+    List<String> keywords = const [],
+  }) {
+    final ids = categoryIds ?? <String>[categoryId];
+    return _CategoryMenuEntry(
+      id: id,
+      label: (context) => context.tr(labelEn, labelAr),
+      title: (context) => context.tr(titleEn ?? labelEn, titleAr ?? labelAr),
+      icon: icon,
+      departments: departments,
+      primaryCategoryId: categoryId,
+      categoryIds: ids,
+      preferredDepartmentId: preferredDepartmentId,
+      keywords: keywords,
+    );
+  }
+
+  List<_CategoryMenuEntry> _categoryMenuEntries(BuildContext _) => [
+    _CategoryMenuEntry(
+      id: 'just_for_you',
+      label: (context) => context.tr('For You', 'مخصص لك'),
+      title: (context) => context.tr('Picks for You', 'مختارات لك'),
+      icon: Icons.star_border_rounded,
+      departments: const {'all'},
+    ),
+    _CategoryMenuEntry(
+      id: 'new_in',
+      label: (context) => context.tr('New In', 'وصل حديثا'),
+      title: (context) => context.tr('New arrivals', 'وصل حديثا'),
+      icon: Icons.fiber_new_outlined,
+      departments: const {'all'},
+      onlyNew: true,
+    ),
+    _CategoryMenuEntry(
+      id: 'sale',
+      label: (context) => context.tr('Sale', 'التخفيضات'),
+      title: (context) => context.tr('Sale Picks', 'اختيارات التخفيضات'),
+      icon: Icons.local_offer_outlined,
+      departments: const {'all', 'women', 'curve', 'kids', 'men', 'home'},
+      primaryCategoryId: 'sale',
+      categoryIds: const ['sale'],
+      onlySale: true,
+    ),
+    _categoryEntry(
+      id: 'women_dresses',
+      labelEn: 'Dresses',
+      labelAr: 'فساتين',
+      icon: Icons.checkroom_outlined,
+      departments: const {'all', 'women', 'curve'},
+      categoryId: 'dresses',
+      preferredDepartmentId: 'women',
+    ),
+    _categoryEntry(
+      id: 'women_tops',
+      labelEn: 'Tops & Blouses',
+      labelAr: 'بلايز وقمصان',
+      icon: Icons.style_outlined,
+      departments: const {'all', 'women', 'curve'},
+      categoryId: 'tops',
+      preferredDepartmentId: 'women',
+    ),
+    _categoryEntry(
+      id: 'women_bottoms',
+      labelEn: 'Pants & Bottoms',
+      labelAr: 'بناطيل وقطع سفلية',
+      icon: Icons.accessibility_new_outlined,
+      departments: const {'all', 'women', 'curve'},
+      categoryId: 'women',
+      preferredDepartmentId: 'women',
+      keywords: const ['jeans', 'pants', 'skirts', 'shorts', 'leggings'],
+    ),
+    _categoryEntry(
+      id: 'underwear_sleepwear',
+      labelEn: 'Underwear & Sleepwear',
+      labelAr: 'ملابس داخلية ونوم',
+      icon: Icons.nightlight_outlined,
+      departments: const {'all', 'women', 'curve'},
+      categoryId: 'sleepwear',
+      preferredDepartmentId: 'women',
+    ),
+    _categoryEntry(
+      id: 'shoes',
+      labelEn: 'Shoes',
+      labelAr: 'أحذية',
+      icon: Icons.hiking_outlined,
+      departments: const {'all', 'women', 'curve', 'men', 'kids'},
+      categoryId: 'shoes',
+    ),
+    _categoryEntry(
+      id: 'bags_luggage',
+      labelEn: 'Bags',
+      labelAr: 'حقائب',
+      icon: Icons.luggage_outlined,
+      departments: const {'all', 'women', 'men'},
+      categoryId: 'bags',
+    ),
+    _categoryEntry(
+      id: 'jewelry_accessories',
+      labelEn: 'Jewelry & Accessories',
+      labelAr: 'مجوهرات وإكسسوارات',
+      icon: Icons.diamond_outlined,
+      departments: const {'all', 'women'},
+      categoryId: 'jewelry',
+    ),
+    _categoryEntry(
+      id: 'beauty_health',
+      labelEn: 'Beauty & Health',
+      labelAr: 'الجمال والصحة',
+      icon: Icons.spa_outlined,
+      departments: const {'all', 'women', 'curve'},
+      categoryId: 'beauty',
+    ),
+    _categoryEntry(
+      id: 'curve',
+      labelEn: 'Curve',
+      labelAr: 'كيرف',
+      icon: Icons.auto_awesome_outlined,
+      departments: const {'all', 'curve'},
+      categoryId: 'curve',
+      preferredDepartmentId: 'curve',
+    ),
+    _categoryEntry(
+      id: 'men_clothing',
+      labelEn: 'Men Clothing',
+      labelAr: 'ملابس رجالية',
+      icon: Icons.male_outlined,
+      departments: const {'all', 'men'},
+      categoryId: 'men',
+      preferredDepartmentId: 'men',
+    ),
+    _categoryEntry(
+      id: 'men_trends',
+      labelEn: 'Men Trends',
+      labelAr: 'صيحات الرجال',
+      icon: Icons.trending_up_rounded,
+      departments: const {'all', 'men'},
+      categoryId: 'men-trends',
+      preferredDepartmentId: 'men',
+    ),
+    _categoryEntry(
+      id: 'kids_clothing',
+      labelEn: 'Kids Clothing',
+      labelAr: 'ملابس الأطفال',
+      icon: Icons.child_care_outlined,
+      departments: const {'all', 'kids'},
+      categoryId: 'kids',
+      preferredDepartmentId: 'kids',
+    ),
+    _categoryEntry(
+      id: 'toys_games',
+      labelEn: 'Toys & Games',
+      labelAr: 'ألعاب',
+      icon: Icons.toys_outlined,
+      departments: const {'all', 'kids'},
+      categoryId: 'kids',
+      preferredDepartmentId: 'kids',
+      keywords: const ['toy', 'games'],
+    ),
+    _categoryEntry(
+      id: 'home_living',
+      labelEn: 'Home & Living',
+      labelAr: 'المنزل والمعيشة',
+      icon: Icons.chair_outlined,
+      departments: const {'all', 'home'},
+      categoryId: 'home',
+      categoryIds: const ['home', 'house'],
+    ),
+    _categoryEntry(
+      id: 'kitchen',
+      labelEn: 'Kitchen',
+      labelAr: 'المطبخ',
+      icon: Icons.kitchen_outlined,
+      departments: const {'all', 'home'},
+      categoryId: 'kitchen',
+    ),
+    _categoryEntry(
+      id: 'home_storage',
+      labelEn: 'Storage & Decor',
+      labelAr: 'تخزين وديكور',
+      icon: Icons.inventory_2_outlined,
+      departments: const {'all', 'home'},
+      categoryId: 'house',
+      categoryIds: const ['house', 'home'],
+      keywords: const ['storage', 'decor', 'wall art', 'vases', 'candles'],
+    ),
+    _categoryEntry(
+      id: 'electronics',
+      labelEn: 'Electronics',
+      labelAr: 'إلكترونيات',
+      icon: Icons.devices_outlined,
+      departments: const {'all', 'home', 'kids'},
+      categoryId: 'electronics',
+    ),
+  ];
+
+  List<_CategoryMenuEntry> _allMenuEntries(BuildContext context) =>
+      _categoryMenuEntries(context);
+
+  // Kept as a reference list while the category flow moves to stable IDs.
+  // ignore: unused_element
+  List<_CategoryMenuEntry> _legacyAllMenuEntries(BuildContext context) => [
     _CategoryMenuEntry(
       id: 'just_for_you',
       label: (context) => context.tr('Just for You', 'مخصص لك'),
@@ -644,9 +856,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
       );
     }
 
-    var products = List<ProductModel>.from(productController.products);
+    var products = List<ProductModel>.from(
+      productController.marketplaceProducts,
+    );
 
-    if (entry.preferredDepartmentId != null &&
+    if (entry.categoryIds.isEmpty &&
+        entry.preferredDepartmentId != null &&
         entry.preferredDepartmentId!.isNotEmpty &&
         entry.preferredDepartmentId != 'all') {
       products = products
@@ -740,14 +955,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
     if (item.id.startsWith('category:')) {
       final categoryId = item.id.split(':').last;
-      final category = categoryController.categoryById(categoryId);
       Navigator.pushNamed(
         context,
         AppRoutes.productListing,
         arguments: {
           'title': item.label,
           'categoryId': categoryId,
-          'department': category?.departmentId,
+          'categoryIds': [categoryId],
         },
       );
       return;
@@ -757,15 +971,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
       final parts = item.id.split(':');
       final categoryId = parts[1];
       final subcategoryId = parts.sublist(2).join(':');
-      final category = categoryController.categoryById(categoryId);
       Navigator.pushNamed(
         context,
         AppRoutes.productListing,
         arguments: {
           'title': item.label,
           'categoryId': categoryId,
+          'categoryIds': [categoryId],
           'subcategoryId': subcategoryId,
-          'department': category?.departmentId,
         },
       );
     }
@@ -779,14 +992,20 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final primaryCategory = categoryController.categoryById(
       entry.primaryCategoryId,
     );
+    final categoryIds = <String>{
+      ...entry.categoryIds,
+      if (primaryCategory != null) primaryCategory.id,
+    }.toList();
     Navigator.pushNamed(
       context,
       AppRoutes.productListing,
       arguments: {
         'title': entry.title(context),
         'categoryId': primaryCategory?.id,
-        'department':
-            entry.preferredDepartmentId ?? primaryCategory?.departmentId,
+        'categoryIds': categoryIds,
+        if (categoryIds.isEmpty)
+          'department':
+              entry.preferredDepartmentId ?? primaryCategory?.departmentId,
         if (entry.onlySale) 'campaignTag': 'Sale',
       },
     );

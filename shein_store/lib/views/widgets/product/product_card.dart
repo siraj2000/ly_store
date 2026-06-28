@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../controllers/product_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_motion.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/catalog_localization_helper.dart';
+import '../../../core/widgets/animated_pressable.dart';
+import '../../../core/widgets/app_animated_switcher.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/product_model.dart';
 import '../../../models/store_model.dart';
@@ -66,26 +69,27 @@ class ProductCard extends StatelessWidget {
             constraints.hasBoundedHeight &&
             constraints.maxHeight < (expectedHeight - 50);
 
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.card,
-            borderRadius: BorderRadius.circular(compact ? 12 : 14),
-            border: Border.all(color: colors.border),
-            boxShadow: [
-              BoxShadow(
-                color: colors.background.withValues(
-                  alpha: context.isDarkMode ? 0.22 : 0.08,
+        final radius = BorderRadius.circular(compact ? 12 : 14);
+        return AnimatedPressable(
+          onTap: onTap,
+          borderRadius: radius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.card,
+              borderRadius: radius,
+              border: Border.all(color: colors.border),
+              boxShadow: [
+                BoxShadow(
+                  color: colors.background.withValues(
+                    alpha: context.isDarkMode ? 0.22 : 0.08,
+                  ),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(compact ? 12 : 14),
-              onTap: onTap,
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
               child: useHorizontalLayout
                   ? _HorizontalProductCard(
                       product: product,
@@ -466,20 +470,29 @@ class _ProductImageStack extends StatelessWidget {
           Positioned(
             top: 8,
             left: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-              decoration: BoxDecoration(
-                color: colors.discount,
-                borderRadius: BorderRadius.circular(999),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.92, end: 1),
+              duration: AppMotion.duration(context, AppMotion.fast),
+              curve: AppMotion.standard,
+              builder: (context, scale, child) => Transform.scale(
+                scale: scale,
+                child: Opacity(opacity: scale.clamp(0.0, 1.0), child: child),
               ),
-              child: Text(
-                '-${product.discount}%',
-                style: TextStyle(
-                  color: context.isDarkMode
-                      ? colors.background
-                      : colors.surface,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colors.discount,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '-${product.discount}%',
+                  style: TextStyle(
+                    color: context.isDarkMode
+                        ? colors.background
+                        : colors.surface,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -492,9 +505,12 @@ class _ProductImageStack extends StatelessWidget {
             iconSize: actionIconSize,
             backgroundColor: colors.surface,
             onPressed: onWishlistTap,
-            icon: Icon(
-              isWishlisted ? Icons.favorite : Icons.favorite_border_outlined,
-              color: isWishlisted ? colors.accent : colors.icon,
+            icon: AppAnimatedSwitcher(
+              child: Icon(
+                isWishlisted ? Icons.favorite : Icons.favorite_border_outlined,
+                key: ValueKey(isWishlisted),
+                color: isWishlisted ? colors.accent : colors.icon,
+              ),
             ),
           ),
         ),
@@ -540,40 +556,46 @@ class _ActionCircleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Material(
-      color: backgroundColor,
-      shape: const CircleBorder(),
-      elevation: 0,
-      child: Ink(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
-          border:
-              backgroundColor == AppColors.lightSurface ||
-                  backgroundColor == colors.surface ||
-                  backgroundColor == colors.surfaceSoft
-              ? Border.all(color: colors.border)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: colors.background.withValues(
-                alpha: context.isDarkMode ? 0.2 : 0.08,
+    return AnimatedPressable(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(999),
+      scale: 0.9,
+      child: Material(
+        color: backgroundColor,
+        shape: const CircleBorder(),
+        elevation: 0,
+        child: Ink(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: BoxShape.circle,
+            border:
+                backgroundColor == AppColors.lightSurface ||
+                    backgroundColor == colors.surface ||
+                    backgroundColor == colors.surfaceSoft
+                ? Border.all(color: colors.border)
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: colors.background.withValues(
+                  alpha: context.isDarkMode ? 0.2 : 0.08,
+                ),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+            ],
+          ),
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Center(
+              child: IconTheme.merge(
+                data: IconThemeData(size: iconSize, color: iconColor),
+                child: icon,
+              ),
             ),
-          ],
-        ),
-        child: IconButton(
-          onPressed: onPressed,
-          visualDensity: VisualDensity.compact,
-          constraints: BoxConstraints.tightFor(width: size, height: size),
-          padding: EdgeInsets.zero,
-          iconSize: iconSize,
-          color: iconColor,
-          icon: icon,
+          ),
         ),
       ),
     );

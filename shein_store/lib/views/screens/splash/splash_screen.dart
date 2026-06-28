@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _animationController,
       curve: const Interval(0, 0.75, curve: AppMotion.standard),
     );
-    _logoScale = Tween<double>(begin: 0.9, end: 1).animate(
+    _logoScale = Tween<double>(begin: 0.94, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0, 0.85, curve: AppMotion.standard),
@@ -110,13 +110,29 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 18),
               FadeTransition(
                 opacity: _wordmarkOpacity,
-                child: Text(
-                  AppStrings.appName,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2.2,
+                child: SlideTransition(
+                  position:
+                      Tween<Offset>(
+                        begin: const Offset(0, 0.16),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: _animationController,
+                          curve: const Interval(
+                            0.35,
+                            1,
+                            curve: AppMotion.standard,
+                          ),
+                        ),
+                      ),
+                  child: Text(
+                    AppStrings.appName,
+                    style: TextStyle(
+                      color: foreground,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2.2,
+                    ),
                   ),
                 ),
               ),

@@ -18,10 +18,16 @@ class AppConfirmationDialog {
     Widget? details,
     bool barrierDismissible = true,
   }) async {
-    final result = await showDialog<bool>(
+    final result = await showGeneralDialog<bool>(
       context: context,
       barrierDismissible: barrierDismissible,
-      builder: (dialogContext) => _AppConfirmationDialogBody(
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54,
+      transitionDuration: AppMotion.duration(
+        context,
+        AppMotion.dialogTransition,
+      ),
+      pageBuilder: (dialogContext, _, _) => _AppConfirmationDialogBody(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
@@ -30,6 +36,23 @@ class AppConfirmationDialog {
         tone: tone,
         details: details,
       ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        if (AppMotion.reduceMotion(context)) {
+          return child;
+        }
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: AppMotion.standard,
+          reverseCurve: AppMotion.emphasized,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.96, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
     return result ?? false;
   }
@@ -107,6 +130,7 @@ class _AppConfirmationDialogBodyState
                 const SizedBox(height: 18),
                 Text(
                   widget.title,
+                  textAlign: TextAlign.start,
                   style: TextStyle(
                     color: colors.primaryText,
                     fontSize: 22,
@@ -117,6 +141,7 @@ class _AppConfirmationDialogBodyState
                 const SizedBox(height: 10),
                 Text(
                   widget.message,
+                  textAlign: TextAlign.start,
                   style: TextStyle(
                     color: colors.secondaryText,
                     fontSize: 14,

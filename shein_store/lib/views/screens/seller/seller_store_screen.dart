@@ -136,12 +136,22 @@ class _SellerProfileActions extends StatelessWidget {
           tooltip: languageController.isArabic
               ? _tr(context, 'Switch to English', 'التبديل إلى الإنجليزية')
               : _tr(context, 'Switch to Arabic', 'التبديل إلى العربية'),
-          onTap: () {
+          onTap: () async {
             if (languageController.isArabic) {
-              languageController.setEnglish();
+              await languageController.setEnglish();
+            } else {
+              await languageController.setArabic();
+            }
+            if (!context.mounted) {
               return;
             }
-            languageController.setArabic();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  _tr(context, 'Language changed', 'تم تغيير اللغة'),
+                ),
+              ),
+            );
           },
           child: Stack(
             clipBehavior: Clip.none,

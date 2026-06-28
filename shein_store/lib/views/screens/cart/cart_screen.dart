@@ -25,24 +25,22 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authController = context.watch<AuthController>();
     return Scaffold(
-      appBar: isTabRoot
-          ? null
-          : AppHeader(title: context.tr('Bag', 'Ø§Ù„Ø³Ù„Ø©')),
+      appBar: isTabRoot ? null : AppHeader(title: context.tr('Bag', 'السلة')),
       body: authController.isGuest
           ? AppEmptyState(
               title: context.tr(
                 'Sign in to view your bag and checkout',
-                'Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ø¹Ø±Ø¶ Ø³Ù„ØªÙƒ ÙˆØ¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹',
+                'سجل الدخول لعرض سلتك وإتمام الدفع',
               ),
               message: context.tr(
                 'Browse freely as a guest, then sign in when you want to save or buy.',
-                'ØªØµÙØ­ ÙƒØ¶ÙŠÙ Ø¨Ø­Ø±ÙŠØ©ØŒ Ø«Ù… Ø³Ø¬Ù‘Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø¹Ù†Ø¯Ù…Ø§ ØªØ±ÙŠØ¯ Ø§Ù„Ø­ÙØ¸ Ø£Ùˆ Ø§Ù„Ø´Ø±Ø§Ø¡.',
+                'تصفح كضيف بحرية، ثم سجّل الدخول عندما تريد الحفظ أو الشراء.',
               ),
               action: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppButton(
-                    text: context.tr('Sign In', 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„'),
+                    text: context.tr('Sign In', 'تسجيل الدخول'),
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.login),
                     isExpanded: false,
@@ -52,10 +50,7 @@ class CartScreen extends StatelessWidget {
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.main),
                     child: Text(
-                      context.tr(
-                        'Continue Shopping',
-                        'Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„ØªØ³ÙˆÙ‚',
-                      ),
+                      context.tr('Continue Shopping', 'متابعة التسوق'),
                     ),
                   ),
                 ],
@@ -77,10 +72,10 @@ class _LoggedInCartBody extends StatelessWidget {
       builder: (context, cartController, couponController, wishlistController, _) {
         if (cartController.items.isEmpty) {
           return AppEmptyState(
-            title: context.tr('Your bag is empty', 'Ø³Ù„ØªÙƒ ÙØ§Ø±ØºØ©'),
+            title: context.tr('Your bag is empty', 'سلتك فارغة'),
             message: context.tr(
               'Add a few pieces to unlock checkout, coupons, and order tracking.',
-              'Ø£Ø¶Ù Ø¨Ø¹Ø¶ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù„ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø¯ÙØ¹ ÙˆØ§Ù„ÙƒÙˆØ¨ÙˆÙ†Ø§Øª ÙˆØªØªØ¨Ø¹ Ø§Ù„Ø·Ù„Ø¨Ø§Øª.',
+              'أضف بعض المنتجات لتفعيل الدفع والكوبونات وتتبع الطلبات.',
             ),
           );
         }
@@ -110,7 +105,7 @@ class _LoggedInCartBody extends StatelessWidget {
                         child: Text(
                           context.tr(
                             'Free shipping unlocks automatically on qualifying orders.',
-                            'ÙŠØªÙ… ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ù„Ù„Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ù…Ø¤Ù‡Ù„Ø©.',
+                            'يتم تفعيل الشحن المجاني تلقائياً للطلبات المؤهلة.',
                           ),
                           style: TextStyle(
                             fontSize: 12,
@@ -154,16 +149,13 @@ class _LoggedInCartBody extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.md),
             _Panel(
-              title: context.tr('Promotions', 'Ø§Ù„Ø¹Ø±ÙˆØ¶'),
+              title: context.tr('Promotions', 'العروض'),
               child: Column(
                 children: [
                   TextField(
                     readOnly: true,
                     decoration: InputDecoration(
-                      labelText: context.tr(
-                        'Coupon input',
-                        'Ø§Ø®ØªÙŠØ§Ø± ÙƒÙˆØ¨ÙˆÙ†',
-                      ),
+                      labelText: context.tr('Coupon input', 'اختيار كوبون'),
                       suffixIcon: const Icon(Icons.keyboard_arrow_down),
                     ),
                     onTap: () => _showCouponPicker(
@@ -176,19 +168,14 @@ class _LoggedInCartBody extends StatelessWidget {
                   SwitchListTile(
                     value: cartController.usePoints,
                     contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      context.tr('Use points', 'Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù†Ù‚Ø§Ø·'),
-                    ),
+                    title: Text(context.tr('Use points', 'استخدام النقاط')),
                     onChanged: cartController.setUsePoints,
                   ),
                   SwitchListTile(
                     value: cartController.useWallet,
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      context.tr(
-                        'Use wallet balance',
-                        'Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø­ÙØ¸Ø©',
-                      ),
+                      context.tr('Use wallet balance', 'استخدام رصيد المحفظة'),
                     ),
                     onChanged: cartController.setUseWallet,
                   ),
@@ -196,7 +183,7 @@ class _LoggedInCartBody extends StatelessWidget {
                     decoration: InputDecoration(
                       labelText: context.tr(
                         'Gift card code',
-                        'Ø±Ù…Ø² Ø¨Ø·Ø§Ù‚Ø© Ø§Ù„Ù‡Ø¯ÙŠØ©',
+                        'رمز بطاقة الهدية',
                       ),
                     ),
                   ),
@@ -205,38 +192,35 @@ class _LoggedInCartBody extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _Panel(
-              title: context.tr('Summary', 'Ø§Ù„Ù…Ù„Ø®Øµ'),
+              title: context.tr('Summary', 'الملخص'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _SummaryRow(
-                    label: context.tr(
-                      'Items subtotal',
-                      'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª',
-                    ),
+                    label: context.tr('Items subtotal', 'إجمالي المنتجات'),
                     value: cartController.calculateSubtotal(),
                   ),
                   _SummaryRow(
-                    label: context.tr('Discount', 'Ø§Ù„Ø®ØµÙ…'),
+                    label: context.tr('Discount', 'الخصم'),
                     value: -cartController.calculateDiscount(),
                   ),
                   _SummaryRow(
                     label: context.tr(
                       'Shipping estimate',
-                      'ØªÙƒÙ„ÙØ© Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…ØªÙˆÙ‚Ø¹Ø©',
+                      'تكلفة الشحن المتوقعة',
                     ),
                     value: cartController.calculateShipping(),
                   ),
                   _SummaryRow(
                     label: context.tr(
                       'Tax/customs placeholder',
-                      'Ø§Ù„Ø¶Ø±Ø§Ø¦Ø¨/Ø§Ù„Ø¬Ù…Ø§Ø±Ùƒ Ø§Ù„ØªØ¬Ø±ÙŠØ¨ÙŠØ©',
+                      'الضرائب/الجمارك التجريبية',
                     ),
                     value: 0,
                   ),
                   const Divider(height: 24),
                   _SummaryRow(
-                    label: context.tr('Total', 'Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ'),
+                    label: context.tr('Total', 'الإجمالي'),
                     value: cartController.calculateTotal(),
                     bold: true,
                   ),
@@ -245,26 +229,21 @@ class _LoggedInCartBody extends StatelessWidget {
                     children: [
                       TextButton(
                         onPressed: () => cartController.selectAll(true),
-                        child: Text(
-                          context.tr('Select All', 'ØªØ­Ø¯ÙŠØ¯ Ø§Ù„ÙƒÙ„'),
-                        ),
+                        child: Text(context.tr('Select All', 'تحديد الكل')),
                       ),
                       const Spacer(),
                       TextButton(
                         onPressed: () =>
                             Navigator.pushNamed(context, AppRoutes.main),
                         child: Text(
-                          context.tr(
-                            'Continue Shopping',
-                            'Ù…ØªØ§Ø¨Ø¹Ø© Ø§Ù„ØªØ³ÙˆÙ‚',
-                          ),
+                          context.tr('Continue Shopping', 'متابعة التسوق'),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   AppButton(
-                    text: context.tr('Checkout', 'Ø¥ØªÙ…Ø§Ù… Ø§Ù„Ø¯ÙØ¹'),
+                    text: context.tr('Checkout', 'إتمام الدفع'),
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.checkout),
                   ),
@@ -283,15 +262,12 @@ class _LoggedInCartBody extends StatelessWidget {
   ) {
     final subtotal = cartController.calculateSubtotal();
     if (subtotal >= 49) {
-      return context.tr(
-        'You unlocked free shipping',
-        'ØªÙ… ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ',
-      );
+      return context.tr('You unlocked free shipping', 'تم تفعيل الشحن المجاني');
     }
     final remaining = 49 - subtotal;
     return context.tr(
       'Spend ${formatCurrency(context, remaining)} more for free shipping',
-      'Ø£Ø¶Ù ${formatCurrency(context, remaining)} Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ø§Ù„Ø´Ø­Ù† Ø§Ù„Ù…Ø¬Ø§Ù†ÙŠ',
+      'أضف ${formatCurrency(context, remaining)} للحصول على الشحن المجاني',
     );
   }
 
@@ -337,7 +313,11 @@ class _LoggedInCartBody extends StatelessWidget {
                 child: ListTile(
                   title: Text(coupon.title),
                   subtitle: Text(coupon.code),
-                  trailing: const Icon(Icons.chevron_right_rounded),
+                  trailing: Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left_rounded
+                        : Icons.chevron_right_rounded,
+                  ),
                   onTap: () {
                     final applied = cartController.applyCoupon(coupon);
                     Navigator.pop(context);
@@ -345,13 +325,10 @@ class _LoggedInCartBody extends StatelessWidget {
                       SnackBar(
                         content: Text(
                           applied
-                              ? context.tr(
-                                  'Coupon applied',
-                                  'ØªÙ… ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„ÙƒÙˆØ¨ÙˆÙ†',
-                                )
+                              ? context.tr('Coupon applied', 'تم تطبيق الكوبون')
                               : context.tr(
                                   'Coupon minimum not met',
-                                  'Ù„Ù… ÙŠØªÙ… Ø§Ø³ØªÙŠÙØ§Ø¡ Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ø¯Ù†Ù‰ Ù„Ù„ÙƒÙˆØ¨ÙˆÙ†',
+                                  'لم يتم استيفاء الحد الأدنى للكوبون',
                                 ),
                         ),
                       ),

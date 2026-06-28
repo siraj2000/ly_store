@@ -4,7 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../constants/app_motion.dart';
 import '../constants/app_sizes.dart';
+import '../extensions/localization_extension.dart';
+import 'app_skeleton_loader.dart';
 
 class ProductImage extends StatelessWidget {
   const ProductImage({
@@ -70,10 +73,15 @@ class _ResolvedProductImage extends StatelessWidget {
       resolvedUrl,
       fit: fit,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) {
+        if (wasSynchronouslyLoaded) {
           return child;
         }
-        return const _ProductImageLoading();
+        return AnimatedOpacity(
+          opacity: frame == null ? 0 : 1,
+          duration: AppMotion.duration(context, AppMotion.normal),
+          curve: AppMotion.standard,
+          child: child,
+        );
       },
       loadingBuilder: (context, child, progress) {
         if (progress == null) {
@@ -93,23 +101,7 @@ class _ProductImageLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceSoft,
-        border: Border.all(color: colors.border),
-      ),
-      child: Center(
-        child: SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.2,
-            color: colors.inactiveIcon,
-          ),
-        ),
-      ),
-    );
+    return const AppSkeletonLoader(height: double.infinity, borderRadius: 0);
   }
 }
 
@@ -147,7 +139,7 @@ class _ProductImageFallback extends StatelessWidget {
                     if (!isCompact) ...[
                       SizedBox(height: spacing),
                       Text(
-                        'Image coming soon',
+                        context.tr('Image coming soon', 'الصورة قريباً'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 11,

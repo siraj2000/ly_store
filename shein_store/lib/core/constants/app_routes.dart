@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../models/user_role.dart';
+import 'app_motion.dart';
 import '../../views/screens/address/address_book_screen.dart';
 import '../../views/screens/address/address_form_screen.dart';
 import '../../views/screens/auth/forgot_password_screen.dart';
@@ -115,20 +116,27 @@ class AppRoutes {
   static Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
       case splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return _animatedRoute(
+          routeSettings,
+          child: const SplashScreen(),
+          animate: false,
+        );
       case onboarding:
-        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+        return _animatedRoute(routeSettings, child: const OnboardingScreen());
       case main:
         return _guardedRoute(
           allowedRoles: const {UserRole.guest, UserRole.customer},
           child: const MainTabScreen(),
         );
       case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return _animatedRoute(routeSettings, child: const LoginScreen());
       case register:
-        return MaterialPageRoute(builder: (_) => const RegisterScreen());
+        return _animatedRoute(routeSettings, child: const RegisterScreen());
       case forgotPassword:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
+        return _animatedRoute(
+          routeSettings,
+          child: const ForgotPasswordScreen(),
+        );
       case search:
         return _guardedRoute(
           allowedRoles: const {UserRole.guest, UserRole.customer},
@@ -141,6 +149,9 @@ class AppRoutes {
           child: ProductListingScreen(
             title: args['title'] as String? ?? 'Products',
             categoryId: args['categoryId'] as String?,
+            categoryIds: (args['categoryIds'] as List<dynamic>? ?? const [])
+                .whereType<String>()
+                .toList(),
             subcategoryId: args['subcategoryId'] as String?,
             department: args['department'] as String?,
             campaignTag: args['campaignTag'] as String?,
@@ -350,18 +361,56 @@ class AppRoutes {
       case adminReports:
       case adminComplaints:
       case adminSettings:
-        return MaterialPageRoute(builder: (_) => const _AdminMovedScreen());
+        return _animatedRoute(routeSettings, child: const _AdminMovedScreen());
       default:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
+        return _animatedRoute(routeSettings, child: const SplashScreen());
     }
   }
 
-  static MaterialPageRoute<dynamic> _guardedRoute({
+  static Route<dynamic> _guardedRoute({
     required Set<UserRole> allowedRoles,
     required Widget child,
   }) {
-    return MaterialPageRoute(
-      builder: (_) => _RoleGuard(allowedRoles: allowedRoles, child: child),
+    return _animatedRoute(
+      null,
+      child: _RoleGuard(allowedRoles: allowedRoles, child: child),
+    );
+  }
+
+  static Route<dynamic> _animatedRoute(
+    RouteSettings? settings, {
+    required Widget child,
+    bool animate = true,
+  }) {
+    if (!animate) {
+      return MaterialPageRoute(settings: settings, builder: (_) => child);
+    }
+
+    return PageRouteBuilder<dynamic>(
+      settings: settings,
+      transitionDuration: AppMotion.pageTransition,
+      reverseTransitionDuration: AppMotion.fast,
+      pageBuilder: (_, _, _) => child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (AppMotion.reduceMotion(context)) {
+          return child;
+        }
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: AppMotion.standard,
+          reverseCurve: AppMotion.emphasized,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: AppMotion.pageSlideOffset(context),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

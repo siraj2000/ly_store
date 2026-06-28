@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_motion.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/widgets/app_animated_switcher.dart';
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({
@@ -89,7 +91,8 @@ class _BottomNavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: AppMotion.duration(context, AppMotion.fast),
+              curve: AppMotion.standard,
               width: 20,
               height: 3,
               margin: const EdgeInsets.only(bottom: 6),
@@ -98,18 +101,26 @@ class _BottomNavItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
-            Icon(item.icon, size: 23, color: color),
+            AnimatedScale(
+              scale: isActive ? 1.08 : 1,
+              duration: AppMotion.duration(context, AppMotion.fast),
+              curve: AppMotion.standard,
+              child: Icon(item.icon, size: 23, color: color),
+            ),
             const SizedBox(height: 4),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: color,
-                height: 1,
+            AppAnimatedSwitcher(
+              child: Text(
+                item.label,
+                key: ValueKey('${item.label}-$isActive'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  color: color,
+                  height: 1,
+                ),
               ),
             ),
           ],

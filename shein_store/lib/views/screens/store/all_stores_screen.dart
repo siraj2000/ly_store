@@ -148,7 +148,9 @@ class _StoreListCard extends StatelessWidget {
           ),
         ),
         trailing: Icon(
-          Icons.arrow_forward_ios_rounded,
+          Directionality.of(context) == TextDirection.rtl
+              ? Icons.arrow_back_ios_new_rounded
+              : Icons.arrow_forward_ios_rounded,
           color: colors.icon,
           size: 16,
         ),

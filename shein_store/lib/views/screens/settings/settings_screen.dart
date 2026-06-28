@@ -215,9 +215,19 @@ class _LanguageSelector extends StatelessWidget {
           const SizedBox(height: 8),
           RadioGroup<AppLanguage>(
             groupValue: controller.selectedLanguage,
-            onChanged: (value) {
+            onChanged: (value) async {
               if (value != null) {
-                controller.setLanguage(value);
+                await controller.setLanguage(value);
+                if (!context.mounted) {
+                  return;
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      context.tr('Language changed', 'تم تغيير اللغة'),
+                    ),
+                  ),
+                );
               }
             },
             child: Column(

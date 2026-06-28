@@ -25,6 +25,7 @@ class ProductListingScreen extends StatefulWidget {
     super.key,
     required this.title,
     this.categoryId,
+    this.categoryIds = const [],
     this.subcategoryId,
     this.department,
     this.campaignTag,
@@ -32,6 +33,7 @@ class ProductListingScreen extends StatefulWidget {
 
   final String title;
   final String? categoryId;
+  final List<String> categoryIds;
   final String? subcategoryId;
   final String? department;
   final String? campaignTag;
@@ -49,252 +51,272 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
     final colors = context.appColors;
     final localizedTitle = _localizedListingTitle(context, widget.title);
     return Consumer3<ProductController, WishlistController, SearchController>(
-      builder: (context, productController, wishlistController, searchController, _) {
-        if (productController.isLoading) {
-          return const Scaffold(body: AppLoading());
-        }
-        if (productController.errorMessage != null) {
-          return Scaffold(
-            appBar: AppHeader(title: localizedTitle),
-            body: AppErrorState(
-              message: productController.errorMessage!,
-              onRetry: productController.loadInitialData,
-            ),
-          );
-        }
-        List<ProductModel> products = productController.marketplaceProducts;
-        if (widget.categoryId != null) {
-          products = productController.byCategory(widget.categoryId);
-        }
-        if (widget.subcategoryId != null &&
-            widget.subcategoryId!.trim().isNotEmpty) {
-          final subcategoryProducts = productController.bySubcategory(
-            widget.subcategoryId,
-          );
-          final productIds = subcategoryProducts.map((item) => item.id).toSet();
-          products = products
-              .where((item) => productIds.contains(item.id))
-              .toList();
-        }
-        if (widget.department != null) {
-          products = products
-              .where(
-                (item) =>
-                    item.department.toLowerCase() ==
-                    widget.department!.toLowerCase(),
-              )
-              .toList();
-        }
-        if (widget.campaignTag != null) {
-          switch (widget.campaignTag!.toLowerCase()) {
-            case 'sale':
+      builder:
+          (
+            context,
+            productController,
+            wishlistController,
+            searchController,
+            _,
+          ) {
+            if (productController.isLoading) {
+              return const Scaffold(body: AppLoading());
+            }
+            if (productController.errorMessage != null) {
+              return Scaffold(
+                appBar: AppHeader(title: localizedTitle),
+                body: AppErrorState(
+                  message: productController.errorMessage!,
+                  onRetry: productController.loadInitialData,
+                ),
+              );
+            }
+            final selectedCategoryIds = <String>{
+              ...widget.categoryIds
+                  .map((item) => item.trim())
+                  .where((item) => item.isNotEmpty),
+              if (widget.categoryId != null &&
+                  widget.categoryId!.trim().isNotEmpty)
+                widget.categoryId!.trim(),
+            };
+
+            List<ProductModel> products = productController.marketplaceProducts;
+            if (selectedCategoryIds.isNotEmpty) {
+              products = productController.productsForCategoryIds(
+                selectedCategoryIds,
+              );
+            }
+            if (widget.subcategoryId != null &&
+                widget.subcategoryId!.trim().isNotEmpty) {
+              final subcategoryProducts = productController.bySubcategory(
+                widget.subcategoryId,
+              );
+              final productIds = subcategoryProducts
+                  .map((item) => item.id)
+                  .toSet();
+              products = products
+                  .where((item) => productIds.contains(item.id))
+                  .toList();
+            }
+            if (widget.department != null && selectedCategoryIds.isEmpty) {
               products = products
                   .where(
-                    (item) => item.oldPrice > item.price || item.discount > 0,
+                    (item) =>
+                        item.department.toLowerCase() ==
+                        widget.department!.toLowerCase(),
                   )
                   .toList();
-              break;
-            case 'campaign':
-              products = List<ProductModel>.from(products)
-                ..sort(
-                  (a, b) => (b.publishedAt ?? b.createdAt).compareTo(
-                    a.publishedAt ?? a.createdAt,
+            }
+            if (widget.campaignTag != null) {
+              switch (widget.campaignTag!.toLowerCase()) {
+                case 'sale':
+                  products = products
+                      .where(
+                        (item) =>
+                            item.oldPrice > item.price || item.discount > 0,
+                      )
+                      .toList();
+                  break;
+                case 'campaign':
+                  products = List<ProductModel>.from(products)
+                    ..sort(
+                      (a, b) => (b.publishedAt ?? b.createdAt).compareTo(
+                        a.publishedAt ?? a.createdAt,
+                      ),
+                    );
+                  break;
+              }
+            }
+            if (products.isEmpty) {
+              return Scaffold(
+                appBar: AppHeader(title: localizedTitle),
+                body: AppEmptyState(
+                  title: context.tr(
+                    'No products found in this category.',
+                    'لا توجد منتجات في هذا التصنيف.',
                   ),
-                );
-              break;
-          }
-        }
-        if (products.isEmpty) {
-          return Scaffold(
-            appBar: AppHeader(title: localizedTitle),
-            body: AppEmptyState(
-              title: context.tr(
-                'No products found in this category.',
-                'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª ÙÙŠ Ù‡Ø°Ø§ Ø§Ù„ØªØµÙ†ÙŠÙ.',
-              ),
-              message: context.tr(
-                'Try changing the department, sort, or filters.',
-                'Ø¬Ø±Ù‘Ø¨ ØªØºÙŠÙŠØ± Ø§Ù„Ù‚Ø³Ù… Ø£Ùˆ Ø§Ù„ØªØ±ØªÙŠØ¨ Ø£Ùˆ Ø§Ù„ÙÙ„Ø§ØªØ±.',
-              ),
-              action: FilledButton(
-                onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AppRoutes.main,
-                  (_) => false,
-                ),
-                child: Text(
-                  context.tr(
-                    'View All Products',
-                    'Ø¹Ø±Ø¶ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª',
+                  message: context.tr(
+                    'Try changing the department, sort, or filters.',
+                    'جرّب تغيير القسم أو الترتيب أو الفلاتر.',
+                  ),
+                  action: FilledButton(
+                    onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.main,
+                      (_) => false,
+                    ),
+                    child: Text(
+                      context.tr('View All Products', 'عرض جميع المنتجات'),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
-        }
-        return Scaffold(
-          appBar: AppHeader(
-            title: localizedTitle,
-            leading: BackButton(onPressed: () => Navigator.pop(context)),
-            actions: [
-              IconButton(
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.search),
-                icon: const Icon(Icons.search),
-              ),
-              IconButton(
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
-                icon: const Icon(Icons.shopping_bag_outlined),
-              ),
-            ],
-          ),
-          body: ListView(
-            padding: const EdgeInsets.all(AppSizes.lg),
-            children: [
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  Chip(label: Text(context.tr('Category', 'Ø§Ù„ÙØ¦Ø©'))),
-                  Chip(label: Text(context.tr('Size', 'Ø§Ù„Ù…Ù‚Ø§Ø³'))),
-                  Chip(label: Text(context.tr('Color', 'Ø§Ù„Ù„ÙˆÙ†'))),
-                  Chip(label: Text(context.tr('Price', 'Ø§Ù„Ø³Ø¹Ø±'))),
-                  Chip(label: Text(context.tr('Discount', 'Ø§Ù„Ø®ØµÙ…'))),
-                  Chip(label: Text(context.tr('Rating', 'Ø§Ù„ØªÙ‚ÙŠÙŠÙ…'))),
+              );
+            }
+            return Scaffold(
+              appBar: AppHeader(
+                title: localizedTitle,
+                leading: BackButton(onPressed: () => Navigator.pop(context)),
+                actions: [
+                  IconButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.search),
+                    icon: const Icon(Icons.search),
+                  ),
+                  IconButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.cart),
+                    icon: const Icon(Icons.shopping_bag_outlined),
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.card,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colors.border),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      context.tr(
-                        '${products.length} products',
-                        '${products.length} Ù…Ù†ØªØ¬Ù‹Ø§',
-                      ),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: colors.primaryText,
-                      ),
+              body: ListView(
+                padding: const EdgeInsets.all(AppSizes.lg),
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Chip(label: Text(context.tr('Category', 'الفئة'))),
+                      Chip(label: Text(context.tr('Size', 'المقاس'))),
+                      Chip(label: Text(context.tr('Color', 'اللون'))),
+                      Chip(label: Text(context.tr('Price', 'السعر'))),
+                      Chip(label: Text(context.tr('Discount', 'الخصم'))),
+                      Chip(label: Text(context.tr('Rating', 'التقييم'))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
                     ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => setState(() => _gridView = !_gridView),
-                      icon: Icon(
-                        _gridView
-                            ? Icons.view_agenda_outlined
-                            : Icons.grid_view_rounded,
-                      ),
+                    decoration: BoxDecoration(
+                      color: colors.card,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colors.border),
                     ),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final sort = await AppBottomSheet.showSortOptions(
-                          context,
-                          selected: _sort,
-                        );
-                        if (sort != null) {
-                          setState(() => _sort = sort);
-                        }
-                      },
-                      icon: const Icon(Icons.swap_vert),
-                      label: Text(context.tr('Sort', 'ØªØ±ØªÙŠØ¨')),
-                    ),
-                    TextButton.icon(
-                      onPressed: () async {
-                        final filters = await AppBottomSheet.showFilterOptions(
-                          context,
-                        );
-                        if (filters != null) {
-                          searchController.applyFilters(filters);
-                        }
-                      },
-                      icon: const Icon(Icons.filter_alt_outlined),
-                      label: Text(context.tr('Filter', 'ØªØµÙÙŠØ©')),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  const spacing = 10.0;
-                  final crossAxisCount = _gridView ? 2 : 1;
-                  final cardWidth =
-                      (constraints.maxWidth -
-                          (spacing * (crossAxisCount - 1))) /
-                      crossAxisCount;
-                  final cardHeight = _gridView
-                      ? ProductCard.mainAxisExtentForWidth(
-                          cardWidth,
-                          compact: true,
-                        )
-                      : 188.0;
-
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: products.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: spacing,
-                      mainAxisExtent: cardHeight,
-                    ),
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return ProductCard(
-                        product: product,
-                        compact: _gridView,
-                        showRating: _gridView,
-                        isWishlisted: wishlistController.isWishlisted(
-                          product.id,
+                    child: Row(
+                      children: [
+                        Text(
+                          context.tr(
+                            '${products.length} products',
+                            '${products.length} منتجًا',
+                          ),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: colors.primaryText,
+                          ),
                         ),
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          AppRoutes.productDetails,
-                          arguments: product.id,
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () =>
+                              setState(() => _gridView = !_gridView),
+                          icon: Icon(
+                            _gridView
+                                ? Icons.view_agenda_outlined
+                                : Icons.grid_view_rounded,
+                          ),
                         ),
-                        onWishlistTap: () => AuthRequiredHelper.guard(
-                          context,
-                          onAuthenticated: () {
-                            final added = wishlistController.toggleWishlist(
-                              product,
+                        TextButton.icon(
+                          onPressed: () async {
+                            final sort = await AppBottomSheet.showSortOptions(
+                              context,
+                              selected: _sort,
                             );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  added
-                                      ? context.tr(
-                                          'Added to wishlist',
-                                          'ØªÙ…Øª Ø§Ù„Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙØ¶Ù„Ø©',
-                                        )
-                                      : context.tr(
-                                          'Removed from wishlist',
-                                          'ØªÙ…Øª Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ù…ÙØ¶Ù„Ø©',
-                                        ),
-                                ),
-                              ),
-                            );
+                            if (sort != null) {
+                              setState(() => _sort = sort);
+                            }
                           },
+                          icon: const Icon(Icons.swap_vert),
+                          label: Text(context.tr('Sort', 'ترتيب')),
                         ),
-                        onQuickAddTap: () => _quickAdd(context, product),
+                        TextButton.icon(
+                          onPressed: () async {
+                            final filters =
+                                await AppBottomSheet.showFilterOptions(context);
+                            if (filters != null) {
+                              searchController.applyFilters(filters);
+                            }
+                          },
+                          icon: const Icon(Icons.filter_alt_outlined),
+                          label: Text(context.tr('Filter', 'تصفية')),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const spacing = 10.0;
+                      final crossAxisCount = _gridView ? 2 : 1;
+                      final cardWidth =
+                          (constraints.maxWidth -
+                              (spacing * (crossAxisCount - 1))) /
+                          crossAxisCount;
+                      final cardHeight = _gridView
+                          ? ProductCard.mainAxisExtentForWidth(
+                              cardWidth,
+                              compact: true,
+                            )
+                          : 188.0;
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: products.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: spacing,
+                          mainAxisExtent: cardHeight,
+                        ),
+                        itemBuilder: (context, index) {
+                          final product = products[index];
+                          return ProductCard(
+                            product: product,
+                            compact: _gridView,
+                            showRating: _gridView,
+                            isWishlisted: wishlistController.isWishlisted(
+                              product.id,
+                            ),
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.productDetails,
+                              arguments: product.id,
+                            ),
+                            onWishlistTap: () => AuthRequiredHelper.guard(
+                              context,
+                              onAuthenticated: () {
+                                final added = wishlistController.toggleWishlist(
+                                  product,
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      added
+                                          ? context.tr(
+                                              'Added to wishlist',
+                                              'تمت الإضافة إلى المفضلة',
+                                            )
+                                          : context.tr(
+                                              'Removed from wishlist',
+                                              'تمت الإزالة من المفضلة',
+                                            ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            onQuickAddTap: () => _quickAdd(context, product),
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            );
+          },
     );
   }
 
@@ -309,17 +331,17 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
     }
     switch (value) {
       case 'Summer Layers':
-        return context.tr(value, 'Ø·Ø¨Ù‚Ø§Øª Ø§Ù„ØµÙŠÙ');
+        return context.tr(value, 'طبقات الصيف');
       case 'Mini Trend Drop':
-        return context.tr(value, 'ØµÙŠØ­Ø§Øª ØµØºÙŠØ±Ø© Ø¬Ø¯ÙŠØ¯Ø©');
+        return context.tr(value, 'صيحات صغيرة جديدة');
       case 'Office Reset':
-        return context.tr(value, 'ØªØ¬Ø¯ÙŠØ¯ Ø¥Ø·Ù„Ø§Ù„Ø© Ø§Ù„Ù…ÙƒØªØ¨');
+        return context.tr(value, 'تجديد إطلالة المكتب');
       case 'Weekend Sale':
-        return context.tr(value, 'ØªØ®ÙÙŠØ¶Ø§Øª Ù†Ù‡Ø§ÙŠØ© Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹');
+        return context.tr(value, 'تخفيضات نهاية الأسبوع');
       case 'Flash Sale':
-        return context.tr(value, 'ØªØ®ÙÙŠØ¶Ø§Øª Ø³Ø±ÙŠØ¹Ø©');
+        return context.tr(value, 'تخفيضات سريعة');
       case 'New Arrivals':
-        return context.tr(value, 'ÙˆØµÙ„ Ø­Ø¯ÙŠØ«Ø§Ù‹');
+        return context.tr(value, 'وصل حديثاً');
       default:
         return value;
     }

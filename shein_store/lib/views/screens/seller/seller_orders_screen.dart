@@ -254,7 +254,7 @@ class _OrderStatusChip extends StatelessWidget {
     final count = controller.countForStatus(label);
 
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsetsDirectional.only(end: 8),
       child: ChoiceChip(
         label: Text(
           context.l10n.commonCountWithLabel(

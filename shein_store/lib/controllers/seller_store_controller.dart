@@ -26,11 +26,11 @@ class SellerStoreController extends ChangeNotifier {
   bool notificationsEnabled = true;
   LocalizedTextModel storeNameText = const LocalizedTextModel(
     en: 'Store',
-    ar: 'Ø§Ù„Ù…ØªØ¬Ø±',
+    ar: 'المتجر',
   );
   LocalizedTextModel storeDescriptionText = const LocalizedTextModel(
     en: 'Original daily-wear edits with easy silhouettes and polished basics.',
-    ar: 'ØªØ´ÙƒÙŠÙ„Ø§Øª ÙŠÙˆÙ…ÙŠØ© Ø£ØµÙ„ÙŠØ© Ø¨Ù‚ØµÙ‘Ø§Øª Ø³Ù‡Ù„Ø© ÙˆØ£Ø³Ø§Ø³ÙŠÙ‘Ø§Øª Ø£Ù†ÙŠÙ‚Ø©.',
+    ar: 'تشكيلات يومية أصلية بقصّات سهلة وأساسيّات أنيقة.',
   );
 
   void bind({

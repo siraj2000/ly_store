@@ -24,18 +24,18 @@ class WishlistScreen extends StatelessWidget {
     final authController = context.watch<AuthController>();
     if (authController.isGuest) {
       return Scaffold(
-        appBar: AppHeader(title: context.tr('Wishlist', 'Ø§Ù„Ù…ÙØ¶Ù„Ø©')),
+        appBar: AppHeader(title: context.tr('Wishlist', 'المفضلة')),
         body: AppEmptyState(
           title: context.tr(
             'Sign in to use wishlist',
-            'Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„Ù…ÙØ¶Ù„Ø©',
+            'سجل الدخول لاستخدام المفضلة',
           ),
           message: context.tr(
             'Save favorites, organize boards, and track price drops after you sign in.',
-            'Ø§Ø­ÙØ¸ Ø§Ù„Ù…ÙØ¶Ù„Ø© ÙˆÙ†Ø¸Ù… Ø§Ù„Ù‚ÙˆØ§Ø¦Ù… ÙˆØªØ§Ø¨Ø¹ Ø§Ù†Ø®ÙØ§Ø¶ Ø§Ù„Ø£Ø³Ø¹Ø§Ø± Ø¨Ø¹Ø¯ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„.',
+            'احفظ المفضلة ونظم القوائم وتابع انخفاض الأسعار بعد تسجيل الدخول.',
           ),
           action: AppButton(
-            text: context.tr('Sign In', 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„'),
+            text: context.tr('Sign In', 'تسجيل الدخول'),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
             isExpanded: false,
           ),
@@ -46,23 +46,16 @@ class WishlistScreen extends StatelessWidget {
       length: 4,
       child: Consumer<WishlistController>(
         builder: (context, wishlistController, _) => Scaffold(
-          appBar: AppHeader(title: context.tr('Wishlist', 'Ø§Ù„Ù…ÙØ¶Ù„Ø©')),
+          appBar: AppHeader(title: context.tr('Wishlist', 'المفضلة')),
           body: Column(
             children: [
               TabBar(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 tabs: [
-                  Tab(text: context.tr('Items', 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª')),
-                  Tab(text: context.tr('Boards', 'Ø§Ù„Ù‚ÙˆØ§Ø¦Ù…')),
-                  Tab(
-                    text: context.tr(
-                      'Price Drops',
-                      'Ø§Ù†Ø®ÙØ§Ø¶ Ø§Ù„Ø£Ø³Ø¹Ø§Ø±',
-                    ),
-                  ),
-                  Tab(
-                    text: context.tr('Back in Stock', 'Ø¹Ø§Ø¯ Ù„Ù„Ù…Ø®Ø²ÙˆÙ†'),
-                  ),
+                  Tab(text: context.tr('Items', 'المنتجات')),
+                  Tab(text: context.tr('Boards', 'القوائم')),
+                  Tab(text: context.tr('Price Drops', 'انخفاض الأسعار')),
+                  Tab(text: context.tr('Back in Stock', 'عاد للمخزون')),
                 ],
               ),
               Expanded(
@@ -72,17 +65,14 @@ class WishlistScreen extends StatelessWidget {
                         ? AppEmptyState(
                             title: context.tr(
                               'Your wishlist is empty',
-                              'Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…ÙØ¶Ù„Ø© ÙØ§Ø±ØºØ©',
+                              'قائمة المفضلة فارغة',
                             ),
                             message: context.tr(
                               'Save styles you love to find them faster later.',
-                              'Ø§Ø­ÙØ¸ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ ØªØ¹Ø¬Ø¨Ùƒ Ù„Ù„ÙˆØµÙˆÙ„ Ø¥Ù„ÙŠÙ‡Ø§ Ø¨Ø³Ø±Ø¹Ø© Ù„Ø§Ø­Ù‚Ø§Ù‹.',
+                              'احفظ المنتجات التي تعجبك للوصول إليها بسرعة لاحقاً.',
                             ),
                             action: AppButton(
-                              text: context.tr(
-                                'Start Shopping',
-                                'Ø§Ø¨Ø¯Ø£ Ø§Ù„ØªØ³ÙˆÙ‚',
-                              ),
+                              text: context.tr('Start Shopping', 'ابدأ التسوق'),
                               onPressed: () =>
                                   Navigator.pushNamed(context, AppRoutes.main),
                               isExpanded: false,
@@ -161,10 +151,10 @@ class WishlistScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SectionHeader(
-                            title: context.tr('Boards', 'Ø§Ù„Ù‚ÙˆØ§Ø¦Ù…'),
+                            title: context.tr('Boards', 'القوائم'),
                             actionLabel: context.tr(
                               'Create Board',
-                              'Ø¥Ù†Ø´Ø§Ø¡ Ù‚Ø§Ø¦Ù…Ø©',
+                              'إنشاء قائمة',
                             ),
                             onActionTap: () => _showCreateBoard(context),
                           ),
@@ -184,10 +174,15 @@ class WishlistScreen extends StatelessWidget {
                                 subtitle: Text(
                                   context.tr(
                                     '${board.productIds.length} items',
-                                    '${board.productIds.length} Ù…Ù†ØªØ¬Ø§Øª',
+                                    '${board.productIds.length} منتجات',
                                   ),
                                 ),
-                                trailing: const Icon(Icons.chevron_right),
+                                trailing: Icon(
+                                  Directionality.of(context) ==
+                                          TextDirection.rtl
+                                      ? Icons.chevron_left
+                                      : Icons.chevron_right,
+                                ),
                                 onTap: () => Navigator.pushNamed(
                                   context,
                                   AppRoutes.wishlistBoard,
@@ -201,21 +196,21 @@ class WishlistScreen extends StatelessWidget {
                     AppEmptyState(
                       title: context.tr(
                         'No price drops yet',
-                        'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø§Ù†Ø®ÙØ§Ø¶Ø§Øª Ø£Ø³Ø¹Ø§Ø± Ø¨Ø¹Ø¯',
+                        'لا توجد انخفاضات أسعار بعد',
                       ),
                       message: context.tr(
                         'We will flag favorites as soon as prices move.',
-                        'Ø³Ù†Ù‚ÙˆÙ… Ø¨ØªÙ†Ø¨ÙŠÙ‡Ùƒ Ø¹Ù†Ø¯ ØªØºÙŠØ± Ø£Ø³Ø¹Ø§Ø± Ø§Ù„Ù…ÙØ¶Ù„Ø©.',
+                        'سنقوم بتنبيهك عند تغير أسعار المفضلة.',
                       ),
                     ),
                     AppEmptyState(
                       title: context.tr(
                         'No restock alerts yet',
-                        'Ù„Ø§ ØªÙˆØ¬Ø¯ ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø¥Ø¹Ø§Ø¯Ø© ØªØ®Ø²ÙŠÙ† Ø¨Ø¹Ø¯',
+                        'لا توجد تنبيهات إعادة تخزين بعد',
                       ),
                       message: context.tr(
                         'Items that return to stock will appear here.',
-                        'Ø³ØªØ¸Ù‡Ø± Ù‡Ù†Ø§ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø¹Ø§Ø¯Øª Ø¥Ù„Ù‰ Ø§Ù„Ù…Ø®Ø²ÙˆÙ†.',
+                        'ستظهر هنا المنتجات التي عادت إلى المخزون.',
                       ),
                     ),
                   ],
@@ -239,24 +234,24 @@ class WishlistScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              context.tr('Create board', 'Ø¥Ù†Ø´Ø§Ø¡ Ù‚Ø§Ø¦Ù…Ø©'),
+              context.tr('Create board', 'إنشاء قائمة'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppSizes.lg),
             TextField(
               controller: controller,
               decoration: InputDecoration(
-                labelText: context.tr('Board name', 'Ø§Ø³Ù… Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©'),
+                labelText: context.tr('Board name', 'اسم القائمة'),
               ),
             ),
             SwitchListTile(
               value: isPrivate,
               contentPadding: EdgeInsets.zero,
-              title: Text(context.tr('Private board', 'Ù‚Ø§Ø¦Ù…Ø© Ø®Ø§ØµØ©')),
+              title: Text(context.tr('Private board', 'قائمة خاصة')),
               onChanged: (value) => setState(() => isPrivate = value),
             ),
             AppButton(
-              text: context.tr('Create', 'Ø¥Ù†Ø´Ø§Ø¡'),
+              text: context.tr('Create', 'إنشاء'),
               onPressed: () {
                 context.read<WishlistController>().createBoard(
                   controller.text.trim(),

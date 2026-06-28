@@ -58,20 +58,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final authController = context.watch<AuthController>();
     if (authController.isGuest) {
       return Scaffold(
-        appBar: AppHeader(
-          title: context.tr('Review & Pay', 'Ù…Ø±Ø§Ø¬Ø¹Ø© ÙˆØ¯ÙØ¹'),
-        ),
+        appBar: AppHeader(title: context.tr('Review & Pay', 'مراجعة ودفع')),
         body: AppEmptyState(
-          title: context.tr(
-            'Sign in required',
-            'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù…Ø·Ù„ÙˆØ¨',
-          ),
+          title: context.tr('Sign in required', 'تسجيل الدخول مطلوب'),
           message: context.tr(
             'Sign in to add delivery details and place your order.',
-            'Ø³Ø¬Ù„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ù„Ø¥Ø¶Ø§ÙØ© Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„ØªÙˆØµÙŠÙ„ ÙˆØ¥ØªÙ…Ø§Ù… Ø§Ù„Ø·Ù„Ø¨.',
+            'سجل الدخول لإضافة بيانات التوصيل وإتمام الطلب.',
           ),
           action: AppButton(
-            text: context.tr('Sign In', 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„'),
+            text: context.tr('Sign In', 'تسجيل الدخول'),
             onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
             isExpanded: false,
           ),
@@ -115,9 +110,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
 
         return Scaffold(
-          appBar: AppHeader(
-            title: context.tr('Review & Pay', 'Ù…Ø±Ø§Ø¬Ø¹Ø© ÙˆØ¯ÙØ¹'),
-          ),
+          appBar: AppHeader(title: context.tr('Review & Pay', 'مراجعة ودفع')),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(
               AppSizes.lg,
@@ -137,11 +130,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 icon: Icons.verified_user_outlined,
                 title: context.tr(
                   'Delivery verification',
-                  'Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„ØªÙˆØµÙŠÙ„',
+                  'التحقق من بيانات التوصيل',
                 ),
                 subtitle: context.tr(
                   'Enter the phone number that will receive the order and the home address for delivery.',
-                  'Ø£Ø¯Ø®Ù„ Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ Ø§Ù„Ø°ÙŠ Ø³ÙŠØ³ØªÙ„Ù… Ø§Ù„Ø·Ù„Ø¨ ÙˆØ¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ù†Ø²Ù„ Ù„Ù„ØªÙˆØµÙŠÙ„.',
+                  'أدخل رقم الهاتف الذي سيستلم الطلب وعنوان المنزل للتوصيل.',
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +175,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       Text(
                                         context.tr(
                                           'Saved address available',
-                                          'Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙÙˆØ¸ Ù…ØªØ§Ø­',
+                                          'العنوان المحفوظ متاح',
                                         ),
                                         style: TextStyle(
                                           color: colors.primaryText,
@@ -193,7 +186,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       Text(
                                         context.tr(
                                           'Use your saved details instantly, or edit the fields below.',
-                                          'Ø§Ø³ØªØ®Ø¯Ù… Ø¨ÙŠØ§Ù†Ø§ØªÙƒ Ø§Ù„Ù…Ø­ÙÙˆØ¸Ø© Ù…Ø¨Ø§Ø´Ø±Ø© Ø£Ùˆ Ø¹Ø¯Ù‘Ù„ Ø§Ù„Ø­Ù‚ÙˆÙ„ Ø¨Ø§Ù„Ø£Ø³ÙÙ„.',
+                                          'استخدم بياناتك المحفوظة مباشرة أو عدّل الحقول بالأسفل.',
                                         ),
                                         style: TextStyle(
                                           color: colors.secondaryText,
@@ -223,7 +216,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 label: Text(
                                   context.tr(
                                     'Use saved address',
-                                    'Ø§Ø³ØªØ®Ø¯Ù… Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ø­ÙÙˆØ¸',
+                                    'استخدم العنوان المحفوظ',
                                   ),
                                 ),
                               ),
@@ -244,10 +237,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               _Section(
                 icon: Icons.payments_outlined,
-                title: context.tr('Payment method', 'Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹'),
+                title: context.tr('Payment method', 'طريقة الدفع'),
                 subtitle: context.tr(
                   'Choose the payment option the customer will use to complete the order.',
-                  'Ø§Ø®ØªØ± ÙˆØ³ÙŠÙ„Ø© Ø§Ù„Ø¯ÙØ¹ Ø§Ù„ØªÙŠ Ø³ÙŠØ³ØªØ®Ø¯Ù…Ù‡Ø§ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù„Ø¥ÙƒÙ…Ø§Ù„ Ø§Ù„Ø·Ù„Ø¨.',
+                  'اختر وسيلة الدفع التي سيستخدمها العميل لإكمال الطلب.',
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +255,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       child: Text(
                         context.tr(
                           'Cash is the fastest option. If you choose Pay Me, we will ask for the payment phone number before placing the order.',
-                          'Ø§Ù„Ø¯ÙØ¹ Ø§Ù„Ù†Ù‚Ø¯ÙŠ Ù‡Ùˆ Ø§Ù„Ø®ÙŠØ§Ø± Ø§Ù„Ø£Ø³Ø±Ø¹. ÙˆØ¥Ø°Ø§ Ø§Ø®ØªØ±Øª Ø§Ø¯ÙØ¹ Ù„ÙŠ ÙØ³Ù†Ø·Ù„Ø¨ Ø±Ù‚Ù… Ù‡Ø§ØªÙ Ø§Ù„Ø¯ÙØ¹ Ù‚Ø¨Ù„ ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨.',
+                          'الدفع النقدي هو الخيار الأسرع. وإذا اخترت ادفع لي فسنطلب رقم هاتف الدفع قبل تنفيذ الطلب.',
                         ),
                         style: TextStyle(
                           color: colors.secondaryText,
@@ -298,16 +291,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       _PaymentInfoNote(
                         title: context.tr(
                           'Pay Me request ready',
-                          'Ø·Ù„Ø¨ Pay Me Ø¬Ø§Ù‡Ø²',
+                          'طلب Pay Me جاهز',
                         ),
                         subtitle: selectedPayment!.maskedNumber.trim().isEmpty
                             ? context.tr(
                                 'Add the payment phone number from the Pay Me dialog.',
-                                'Ø£Ø¶Ù Ø±Ù‚Ù… Ù‡Ø§ØªÙ Ø§Ù„Ø¯ÙØ¹ Ù…Ù† Ù†Ø§ÙØ°Ø© Pay Me.',
+                                'أضف رقم هاتف الدفع من نافذة Pay Me.',
                               )
                             : context.tr(
                                 'Payment request will be sent to ${selectedPayment.maskedNumber}.',
-                                'Ø³ÙŠØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ø·Ù„Ø¨ Ø§Ù„Ø¯ÙØ¹ Ø¥Ù„Ù‰ ${selectedPayment.maskedNumber}.',
+                                'سيتم إرسال طلب الدفع إلى ${selectedPayment.maskedNumber}.',
                               ),
                       ),
                     ],
@@ -316,23 +309,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               _Section(
                 icon: Icons.shopping_bag_outlined,
-                title: context.tr(
-                  'Selected products',
-                  'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ù…Ø®ØªØ§Ø±Ø©',
-                ),
+                title: context.tr('Selected products', 'المنتجات المختارة'),
                 subtitle: context.tr(
                   'Review the exact products the customer selected before confirming the order.',
-                  'Ø±Ø§Ø¬Ø¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø§Ø®ØªØ§Ø±Ù‡Ø§ Ø§Ù„Ø¹Ù…ÙŠÙ„ Ù‚Ø¨Ù„ ØªØ£ÙƒÙŠØ¯ Ø§Ù„Ø·Ù„Ø¨.',
+                  'راجع المنتجات التي اختارها العميل قبل تأكيد الطلب.',
                 ),
                 child: selectedItems.isEmpty
                     ? _EmptyCheckoutHint(
                         title: context.tr(
                           'No selected products',
-                          'Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª Ù…Ø­Ø¯Ø¯Ø©',
+                          'لا توجد منتجات محددة',
                         ),
                         subtitle: context.tr(
                           'Choose products from the bag first to continue.',
-                          'Ø§Ø®ØªØ± Ù…Ù†ØªØ¬Ø§Øª Ù…Ù† Ø§Ù„Ø³Ù„Ø© Ø£ÙˆÙ„Ø§Ù‹ Ù„Ù„Ù…ØªØ§Ø¨Ø¹Ø©.',
+                          'اختر منتجات من السلة أولاً للمتابعة.',
                         ),
                       )
                     : Column(
@@ -366,10 +356,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                context.tr(
-                                  'Final review',
-                                  'Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø© Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠØ©',
-                                ),
+                                context.tr('Final review', 'المراجعة النهائية'),
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
@@ -380,7 +367,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               Text(
                                 context.tr(
                                   'A clean summary of the delivery details and payment before placing the order.',
-                                  'Ù…Ù„Ø®Øµ ÙˆØ§Ø¶Ø­ Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„ØªÙˆØµÙŠÙ„ ÙˆØ§Ù„Ø¯ÙØ¹ Ù‚Ø¨Ù„ ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨.',
+                                  'ملخص واضح لبيانات التوصيل والدفع قبل تنفيذ الطلب.',
                                 ),
                                 style: TextStyle(
                                   color: colors.secondaryText,
@@ -401,7 +388,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            '${selectedItems.length} ${context.tr('products', 'Ù…Ù†ØªØ¬Ø§Øª')}',
+                            '${selectedItems.length} ${context.tr('products', 'منتجات')}',
                             style: TextStyle(
                               color: colors.primaryText,
                               fontWeight: FontWeight.w800,
@@ -428,7 +415,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       child: Column(
                         children: [
                           _SummaryLine(
-                            label: context.tr('Recipient', 'Ø§Ù„Ù…Ø³ØªÙ„Ù…'),
+                            label: context.tr('Recipient', 'المستلم'),
                             value: _recipientController.text.trim().isEmpty
                                 ? user.name
                                 : _recipientController.text.trim(),
@@ -436,26 +423,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             inverted: true,
                           ),
                           _SummaryLine(
-                            label: context.tr('Phone', 'Ø§Ù„Ù‡Ø§ØªÙ'),
+                            label: context.tr('Phone', 'الهاتف'),
                             value: _phoneController.text.trim().isEmpty
-                                ? context.tr('Not entered', 'ØºÙŠØ± Ù…ÙØ¯Ø®Ù„')
+                                ? context.tr('Not entered', 'غير مُدخل')
                                 : _phoneController.text.trim(),
                             inverted: true,
                           ),
                           _SummaryLine(
-                            label: context.tr('Zone', 'Ø§Ù„Ù…Ù†Ø·Ù‚Ø©'),
+                            label: context.tr('Zone', 'المنطقة'),
                             value: _zoneController.text.trim().isEmpty
-                                ? context.tr('Not entered', 'ØºÙŠØ± Ù…ÙØ¯Ø®Ù„')
+                                ? context.tr('Not entered', 'غير مُدخل')
                                 : _zoneController.text.trim(),
                             inverted: true,
                           ),
                           _SummaryLine(
-                            label: context.tr('Payment', 'Ø§Ù„Ø¯ÙØ¹'),
+                            label: context.tr('Payment', 'الدفع'),
                             value:
                                 selectedPayment?.brand ??
                                 context.tr(
                                   'Choose payment method',
-                                  'Ø§Ø®ØªØ± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹',
+                                  'اختر طريقة الدفع',
                                 ),
                             inverted: true,
                           ),
@@ -464,37 +451,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 16),
                     _SummaryLine(
-                      label: context.tr(
-                        'Products total',
-                        'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª',
-                      ),
+                      label: context.tr('Products total', 'إجمالي المنتجات'),
                       value: formatCurrency(cartController.calculateSubtotal()),
                     ),
                     _SummaryLine(
-                      label: context.tr('Delivery', 'Ø§Ù„ØªÙˆØµÙŠÙ„'),
+                      label: context.tr('Delivery', 'التوصيل'),
                       value: context.tr(
                         'Confirmed with entered address',
-                        'Ù…Ø¤ÙƒØ¯ Ø¨Ø§Ù„Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…ÙØ¯Ø®Ù„',
+                        'مؤكد بالعنوان المُدخل',
                       ),
                     ),
                     const Divider(height: 28),
                     _SummaryLine(
-                      label: context.tr(
-                        'Total to pay',
-                        'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¯ÙØ¹',
-                      ),
+                      label: context.tr('Total to pay', 'إجمالي الدفع'),
                       value: formatCurrency(cartController.calculateTotal()),
                       emphasized: true,
                     ),
                     const SizedBox(height: 14),
                     _PaymentInfoNote(
-                      title: context.tr(
-                        'Ready to place',
-                        'Ø¬Ø§Ù‡Ø² Ù„Ù„ØªÙ†ÙÙŠØ°',
-                      ),
+                      title: context.tr('Ready to place', 'جاهز للتنفيذ'),
                       subtitle: context.tr(
                         'Once you confirm, the order will move directly into processing.',
-                        'Ø¨Ù…Ø¬Ø±Ø¯ Ø§Ù„ØªØ£ÙƒÙŠØ¯ØŒ Ø³ÙŠÙ†ØªÙ‚Ù„ Ø§Ù„Ø·Ù„Ø¨ Ù…Ø¨Ø§Ø´Ø±Ø© Ø¥Ù„Ù‰ Ù…Ø±Ø­Ù„Ø© Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©.',
+                        'بمجرد التأكيد، سينتقل الطلب مباشرة إلى مرحلة المعالجة.',
                       ),
                     ),
                     if (checkoutController.errorMessage != null) ...[
@@ -515,9 +493,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       text: checkoutController.isPlacingOrder
                           ? context.tr(
                               'Placing Order...',
-                              'Ø¬Ø§Ø±Ù ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨...',
+                              'جارٍ تنفيذ الطلب...',
                             )
-                          : context.tr('Place Order', 'ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨'),
+                          : context.tr('Place Order', 'تنفيذ الطلب'),
                       onPressed: checkoutController.isPlacingOrder
                           ? null
                           : () => _submitOrder(
@@ -598,7 +576,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       phone: _phoneController.text.trim(),
       country: (baseAddress?.country.isNotEmpty ?? false)
           ? baseAddress!.country
-          : context.tr('Libya', 'Ù„ÙŠØ¨ÙŠØ§'),
+          : context.tr('Libya', 'ليبيا'),
       city: _cityController.text.trim(),
       region: _zoneController.text.trim(),
       streetAddress: _streetController.text.trim(),
@@ -611,25 +589,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (_phoneController.text.trim().isEmpty) {
       return context.tr(
         'Please enter the delivery phone number',
-        'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø±Ù‚Ù… Ù‡Ø§ØªÙ Ø§Ù„ØªÙˆØµÙŠÙ„',
+        'يرجى إدخال رقم هاتف التوصيل',
       );
     }
     if (_cityController.text.trim().isEmpty) {
       return context.tr(
         'Please enter the delivery city',
-        'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ù…Ø¯ÙŠÙ†Ø© Ø§Ù„ØªÙˆØµÙŠÙ„',
+        'يرجى إدخال مدينة التوصيل',
       );
     }
     if (_zoneController.text.trim().isEmpty) {
       return context.tr(
         'Please enter the zone or area',
-        'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø§Ù„Ù…Ù†Ø·Ù‚Ø© Ø£Ùˆ Ø§Ù„Ø­ÙŠ',
+        'يرجى إدخال المنطقة أو الحي',
       );
     }
     if (_streetController.text.trim().isEmpty) {
       return context.tr(
         'Please enter the home address',
-        'ÙŠØ±Ø¬Ù‰ Ø¥Ø¯Ø®Ø§Ù„ Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ù†Ø²Ù„',
+        'يرجى إدخال عنوان المنزل',
       );
     }
     return null;
@@ -667,7 +645,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           content: Text(
             context.tr(
               'Pay Me request prepared successfully',
-              'ØªÙ… ØªØ¬Ù‡ÙŠØ² Ø·Ù„Ø¨ Pay Me Ø¨Ù†Ø¬Ø§Ø­',
+              'تم تجهيز طلب Pay Me بنجاح',
             ),
           ),
         ),
@@ -874,17 +852,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 List<PaymentMethodModel> _checkoutPaymentMethods(BuildContext context) => [
   PaymentMethodModel(
     id: 'cash',
-    brand: context.tr('Cash', 'Ù†Ù‚Ø¯Ø§Ù‹'),
+    brand: context.tr('Cash', 'نقداً'),
     maskedNumber: context.tr(
       'Pay when the order arrives',
-      'Ø§Ø¯ÙØ¹ Ø¹Ù†Ø¯ ÙˆØµÙˆÙ„ Ø§Ù„Ø·Ù„Ø¨',
+      'ادفع عند وصول الطلب',
     ),
     token: 'cash',
     isDefault: true,
   ),
   PaymentMethodModel(
     id: 'pay-me',
-    brand: context.tr('Pay Me', 'Ø§Ø¯ÙØ¹ Ù„ÙŠ'),
+    brand: context.tr('Pay Me', 'ادفع لي'),
     maskedNumber: '',
     token: 'pay-me',
   ),
@@ -939,7 +917,7 @@ class _CheckoutHeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            context.tr('Order Verification', 'Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„Ø·Ù„Ø¨'),
+            context.tr('Order Verification', 'التحقق من الطلب'),
             style: TextStyle(
               color: colors.surface,
               fontSize: 25,
@@ -950,7 +928,7 @@ class _CheckoutHeroCard extends StatelessWidget {
           Text(
             context.tr(
               'Confirm delivery details and choose the right payment method before placing the order.',
-              'Ø£ÙƒØ¯ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„ØªÙˆØµÙŠÙ„ ÙˆØ§Ø®ØªØ± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹ Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø© Ù‚Ø¨Ù„ ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨.',
+              'أكد بيانات التوصيل واختر طريقة الدفع المناسبة قبل تنفيذ الطلب.',
             ),
             style: TextStyle(
               color: colors.surface.withValues(alpha: 0.78),
@@ -962,21 +940,21 @@ class _CheckoutHeroCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroMetric(
-                  label: context.tr('Products', 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª'),
+                  label: context.tr('Products', 'المنتجات'),
                   value: '$itemCount',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroMetric(
-                  label: context.tr('Pieces', 'Ø§Ù„Ù‚Ø·Ø¹'),
+                  label: context.tr('Pieces', 'القطع'),
                   value: '$totalPieces',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroMetric(
-                  label: context.tr('Total', 'Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ'),
+                  label: context.tr('Total', 'الإجمالي'),
                   value: formatCurrency(total),
                 ),
               ),
@@ -994,34 +972,25 @@ class _CheckoutHeroCard extends StatelessWidget {
               children: [
                 _HeroInfoLine(
                   icon: Icons.phone_outlined,
-                  label: context.tr(
-                    'Delivery phone',
-                    'Ù‡Ø§ØªÙ Ø§Ù„ØªÙˆØµÙŠÙ„',
-                  ),
+                  label: context.tr('Delivery phone', 'هاتف التوصيل'),
                   value: address.phone.isEmpty
-                      ? context.tr(
-                          'Not entered yet',
-                          'Ù„Ù… ÙŠØªÙ… Ø¥Ø¯Ø®Ø§Ù„Ù‡ Ø¨Ø¹Ø¯',
-                        )
+                      ? context.tr('Not entered yet', 'لم يتم إدخاله بعد')
                       : address.phone,
                 ),
                 const SizedBox(height: 8),
                 _HeroInfoLine(
                   icon: Icons.location_on_outlined,
-                  label: context.tr('Home address', 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ù†Ø²Ù„'),
+                  label: context.tr('Home address', 'عنوان المنزل'),
                   value:
                       '${address.streetAddress}, ${address.city}, ${address.region}',
                 ),
                 const SizedBox(height: 8),
                 _HeroInfoLine(
                   icon: Icons.payments_outlined,
-                  label: context.tr('Payment', 'Ø§Ù„Ø¯ÙØ¹'),
+                  label: context.tr('Payment', 'الدفع'),
                   value:
                       paymentLabel ??
-                      context.tr(
-                        'Choose payment method',
-                        'Ø§Ø®ØªØ± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹',
-                      ),
+                      context.tr('Choose payment method', 'اختر طريقة الدفع'),
                 ),
               ],
             ),
@@ -1231,7 +1200,7 @@ class _DeliveryFormCard extends StatelessWidget {
             controller: recipientController,
             onChanged: (_) => onChanged(),
             decoration: decoration(
-              context.tr('Recipient name', 'Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªÙ„Ù…'),
+              context.tr('Recipient name', 'اسم المستلم'),
               Icons.badge_outlined,
             ),
           ),
@@ -1241,7 +1210,7 @@ class _DeliveryFormCard extends StatelessWidget {
             keyboardType: TextInputType.phone,
             onChanged: (_) => onChanged(),
             decoration: decoration(
-              context.tr('Phone number', 'Ø±Ù‚Ù… Ø§Ù„Ù‡Ø§ØªÙ'),
+              context.tr('Phone number', 'رقم الهاتف'),
               Icons.phone_outlined,
             ),
           ),
@@ -1250,7 +1219,7 @@ class _DeliveryFormCard extends StatelessWidget {
             controller: cityController,
             onChanged: (_) => onChanged(),
             decoration: decoration(
-              context.tr('City', 'Ø§Ù„Ù…Ø¯ÙŠÙ†Ø©'),
+              context.tr('City', 'المدينة'),
               Icons.location_city_outlined,
             ),
           ),
@@ -1259,7 +1228,7 @@ class _DeliveryFormCard extends StatelessWidget {
             controller: zoneController,
             onChanged: (_) => onChanged(),
             decoration: decoration(
-              context.tr('Zone / Area', 'Ø§Ù„Ù…Ù†Ø·Ù‚Ø© / Ø§Ù„Ø­ÙŠ'),
+              context.tr('Zone / Area', 'المنطقة / الحي'),
               Icons.map_outlined,
             ),
           ),
@@ -1269,7 +1238,7 @@ class _DeliveryFormCard extends StatelessWidget {
             maxLines: 3,
             onChanged: (_) => onChanged(),
             decoration: decoration(
-              context.tr('Home address', 'Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ù…Ù†Ø²Ù„'),
+              context.tr('Home address', 'عنوان المنزل'),
               Icons.home_outlined,
             ),
           ),
@@ -1299,10 +1268,7 @@ class _PaymentMethodSelect extends StatelessWidget {
       onChanged: onChanged,
       icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.icon),
       decoration: InputDecoration(
-        labelText: context.tr(
-          'Select payment method',
-          'Ø§Ø®ØªØ± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹',
-        ),
+        labelText: context.tr('Select payment method', 'اختر طريقة الدفع'),
         prefixIcon: Icon(Icons.tune_rounded, color: colors.icon),
         filled: true,
         fillColor: colors.surfaceSoft,
@@ -1512,15 +1478,14 @@ class _CheckoutItemCard extends StatelessWidget {
                   children: [
                     _ItemMetaPill(
                       label:
-                          '${context.tr('Color', 'Ø§Ù„Ù„ÙˆÙ†')}: ${item.selectedColor}',
+                          '${context.tr('Color', 'اللون')}: ${item.selectedColor}',
                     ),
                     _ItemMetaPill(
                       label:
-                          '${context.tr('Size', 'Ø§Ù„Ù…Ù‚Ø§Ø³')}: ${item.selectedSize}',
+                          '${context.tr('Size', 'المقاس')}: ${item.selectedSize}',
                     ),
                     _ItemMetaPill(
-                      label:
-                          '${context.tr('Qty', 'Ø§Ù„ÙƒÙ…ÙŠØ©')}: ${item.quantity}',
+                      label: '${context.tr('Qty', 'الكمية')}: ${item.quantity}',
                     ),
                   ],
                 ),
@@ -1703,22 +1668,22 @@ String _paymentDescription(BuildContext context, String id) {
     case 'cash':
       return context.tr(
         'No extra step, pay when the order arrives.',
-        'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø®Ø·ÙˆØ© Ø¥Ø¶Ø§ÙÙŠØ©ØŒ Ø§Ø¯ÙØ¹ Ø¹Ù†Ø¯ ÙˆØµÙˆÙ„ Ø§Ù„Ø·Ù„Ø¨.',
+        'لا توجد خطوة إضافية، ادفع عند وصول الطلب.',
       );
     case 'pay-me':
       return context.tr(
         'Open a dialog and send the request to a phone number.',
-        'Ø§ÙØªØ­ Ù†Ø§ÙØ°Ø© ÙˆØ£Ø±Ø³Ù„ Ø§Ù„Ø·Ù„Ø¨ Ø¥Ù„Ù‰ Ø±Ù‚Ù… Ù‡Ø§ØªÙ.',
+        'افتح نافذة وأرسل الطلب إلى رقم هاتف.',
       );
     case 'one-pay':
       return context.tr(
         'Use your One Pay wallet in one step.',
-        'Ø§Ø³ØªØ®Ø¯Ù… Ù…Ø­ÙØ¸Ø© One Pay Ø¨Ø®Ø·ÙˆØ© ÙˆØ§Ø­Ø¯Ø©.',
+        'استخدم محفظة One Pay بخطوة واحدة.',
       );
     case 'ly-pay':
       return context.tr(
         'Digital payment through LY Pay.',
-        'Ø¯ÙØ¹ Ø±Ù‚Ù…ÙŠ Ø¹Ø¨Ø± LY Pay.',
+        'دفع رقمي عبر LY Pay.',
       );
     default:
       return '';
@@ -1730,22 +1695,22 @@ String _localizedCheckoutError(BuildContext context, String value) {
     case 'Only customers can place orders':
       return context.tr(
         'Only customers can place orders',
-        'ÙŠÙ…ÙƒÙ† Ù„Ù„Ø¹Ù…Ù„Ø§Ø¡ ÙÙ‚Ø· ØªÙ†ÙÙŠØ° Ø§Ù„Ø·Ù„Ø¨Ø§Øª',
+        'يمكن للعملاء فقط تنفيذ الطلبات',
       );
     case 'Please add a shipping address':
       return context.tr(
         'Please add a shipping address',
-        'ÙŠØ±Ø¬Ù‰ Ø¥Ø¶Ø§ÙØ© Ø¹Ù†ÙˆØ§Ù† Ù„Ù„Ø´Ø­Ù†',
+        'يرجى إضافة عنوان للشحن',
       );
     case 'Please choose a payment method':
       return context.tr(
         'Please choose a payment method',
-        'ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹',
+        'يرجى اختيار طريقة الدفع',
       );
     case 'Please select at least one item':
       return context.tr(
         'Please select at least one item',
-        'ÙŠØ±Ø¬Ù‰ Ø§Ø®ØªÙŠØ§Ø± Ù…Ù†ØªØ¬ ÙˆØ§Ø­Ø¯ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„',
+        'يرجى اختيار منتج واحد على الأقل',
       );
     default:
       return value;

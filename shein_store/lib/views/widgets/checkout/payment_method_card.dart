@@ -60,7 +60,12 @@ class PaymentMethodCard extends StatelessWidget {
         ),
         trailing: selected
             ? Icon(Icons.check_circle_rounded, color: colors.primaryText)
-            : Icon(Icons.chevron_right_rounded, color: colors.inactiveIcon),
+            : Icon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.chevron_left_rounded
+                    : Icons.chevron_right_rounded,
+                color: colors.inactiveIcon,
+              ),
       ),
     );
   }

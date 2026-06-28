@@ -1132,13 +1132,13 @@ String _validationMessage(BuildContext context, String message) {
       return l10n.validationCategoryRequired;
     case 'This category is not allowed for your store.':
       return Localizations.localeOf(context).languageCode == 'ar'
-          ? 'Ù‡Ø°Ø§ Ø§Ù„ØªØµÙ†ÙŠÙ ØºÙŠØ± Ù…Ø³Ù…ÙˆØ­ Ù„Ù‡Ø°Ø§ Ø§Ù„Ù…ØªØ¬Ø±.'
+          ? 'هذا التصنيف غير مسموح لهذا المتجر.'
           : 'This category is not allowed for your store.';
     case 'Please select a subcategory':
       return l10n.validationSubcategoryRequired;
     case 'Add at least a title, SKU, image, or category.':
       return Localizations.localeOf(context).languageCode == 'ar'
-          ? 'Ø£Ø¶Ù Ø¹Ù†ÙˆØ§Ù†Ø§ Ø£Ùˆ SKU Ø£Ùˆ ØµÙˆØ±Ø© Ø£Ùˆ ØªØµÙ†ÙŠÙØ§ Ø¹Ù„Ù‰ Ø§Ù„Ø£Ù‚Ù„.'
+          ? 'أضف عنوانا أو SKU أو صورة أو تصنيفا على الأقل.'
           : 'Add at least a title, SKU, image, or category.';
     case 'Select at least one color':
       return l10n.validationColorRequired;

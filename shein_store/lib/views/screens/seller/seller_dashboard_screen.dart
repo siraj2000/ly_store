@@ -6,9 +6,12 @@ import '../../../controllers/seller_dashboard_controller.dart';
 import '../../../controllers/seller_order_controller.dart';
 import '../../../controllers/seller_product_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_motion.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/business_activity_helper.dart';
+import '../../../core/widgets/animated_page_wrapper.dart';
+import '../../../core/widgets/app_animated_switcher.dart';
 import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../models/product_model.dart';
 import '../../../models/seller_order_model.dart';
@@ -511,8 +514,11 @@ class _MetricsGrid extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: items.length,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
-        itemBuilder: (context, index) =>
-            SizedBox(width: 176, child: _MetricCard(item: items[index])),
+        itemBuilder: (context, index) => AnimatedPageWrapper(
+          delay: AppMotion.stagger(context, index),
+          beginOffset: const Offset(0.04, 0),
+          child: SizedBox(width: 176, child: _MetricCard(item: items[index])),
+        ),
       ),
     );
   }
@@ -562,12 +568,19 @@ class _MetricCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 if (item.urgent)
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: colors.warning,
-                      shape: BoxShape.circle,
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.82, end: 1),
+                    duration: AppMotion.duration(context, AppMotion.normal),
+                    curve: AppMotion.bounceSoft,
+                    builder: (context, scale, child) =>
+                        Transform.scale(scale: scale, child: child),
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: colors.warning,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
               ],
@@ -584,12 +597,16 @@ class _MetricCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              item.value,
-              style: TextStyle(
-                color: colors.primaryText,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
+            AppAnimatedSwitcher(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                item.value,
+                key: ValueKey('${item.label}-${item.value}'),
+                style: TextStyle(
+                  color: colors.primaryText,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
@@ -619,7 +636,7 @@ class _ActionCard extends StatelessWidget {
     final colors = context.appColors;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsetsDirectional.only(end: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
@@ -1187,7 +1204,14 @@ class _TodaysActions extends StatelessWidget {
 
     return Column(
       children: activeActions
-          .map((action) => _TodayActionTile(action: action))
+          .asMap()
+          .entries
+          .map(
+            (entry) => AnimatedPageWrapper(
+              delay: AppMotion.stagger(context, entry.key),
+              child: _TodayActionTile(action: entry.value),
+            ),
+          )
           .toList(),
     );
   }

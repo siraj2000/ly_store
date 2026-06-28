@@ -28,6 +28,16 @@ class MockDataService extends ChangeNotifier {
   MockDataService._(this._localStorageService);
 
   static const String _appStateKey = 'stylehub_app_state';
+  static const String _seedVersionKey = 'ly_store_seed_version';
+  static const int _seedDataVersion = 3;
+  static final List<String> _mojibakeMarkers = [
+    '\u00C3',
+    '\u00D8',
+    '\u00D9',
+    '\u00EF\u00BF\u00BD',
+    '\uFFFD',
+    String.fromCharCodes([0x3F, 0x3F, 0x3F, 0x3F]),
+  ];
   static const List<String> _womenClothingSubcategories = [
     'Blouses',
     'T-Shirts',
@@ -163,8 +173,19 @@ class MockDataService extends ChangeNotifier {
 
   Future<void> _initialize() async {
     final snapshot = _localStorageService.getJson(_appStateKey);
+    final storedSeedVersion =
+        _localStorageService.getInt(_seedVersionKey) ??
+        (snapshot?['seedVersion'] as int? ?? 0);
     if (snapshot == null) {
       _seedDefaults();
+      await _persistState();
+    } else if (storedSeedVersion < _seedDataVersion ||
+        _containsMojibake(snapshot)) {
+      final preservedPreferences = _preferencesFromSnapshot(snapshot);
+      _seedDefaults();
+      if (preservedPreferences != null) {
+        _preferences = preservedPreferences;
+      }
       await _persistState();
     } else {
       _restoreSnapshot(snapshot);
@@ -2149,6 +2170,7 @@ class MockDataService extends ChangeNotifier {
   }
 
   Map<String, dynamic> _snapshot() => {
+    'seedVersion': _seedDataVersion,
     'preferences': _preferences.toJson(),
     'products': _allProducts.map((item) => item.toJson()).toList(),
     'stores': _stores.map((item) => item.toJson()).toList(),
@@ -2166,6 +2188,27 @@ class MockDataService extends ChangeNotifier {
     'guestRecentSearches': _guestRecentSearches,
     'guestRecentlyViewedProductIds': _guestRecentlyViewedProductIds,
   };
+
+  AppPreferencesModel? _preferencesFromSnapshot(Map<String, dynamic> json) {
+    final preferencesJson = json['preferences'];
+    if (preferencesJson is! Map<String, dynamic>) {
+      return null;
+    }
+    return AppPreferencesModel.fromJson(preferencesJson);
+  }
+
+  bool _containsMojibake(Object? value) {
+    if (value is String) {
+      return _mojibakeMarkers.any(value.contains);
+    }
+    if (value is Map) {
+      return value.values.any(_containsMojibake);
+    }
+    if (value is Iterable) {
+      return value.any(_containsMojibake);
+    }
+    return false;
+  }
 
   void _restoreSnapshot(Map<String, dynamic> json) {
     _preferences = AppPreferencesModel.fromJson(
@@ -2315,6 +2358,7 @@ class MockDataService extends ChangeNotifier {
 
   Future<void> _persistState() async {
     await _localStorageService.saveJson(_appStateKey, _snapshot());
+    await _localStorageService.saveInt(_seedVersionKey, _seedDataVersion);
     await _localStorageService.saveUsers(_mockUsersByEmail.values.toList());
     await _localStorageService.saveAppPreferences(_preferences);
   }
@@ -2400,6 +2444,105 @@ class MockDataService extends ChangeNotifier {
     switch (categoryId) {
       case 'women':
         return _womenClothingSubcategories;
+      case 'dresses':
+        return const [
+          'Casual Dress',
+          'Party Dress',
+          'Maxi Dress',
+          'Mini Dress',
+          'Midi Dress',
+          'Work Dresses',
+        ];
+      case 'tops':
+        return const [
+          'Blouses',
+          'T-Shirts',
+          'Shirts',
+          'Crop Tops',
+          'Knit Tops',
+          'Lightweight Cardigan',
+        ];
+      case 'sleepwear':
+        return const [
+          'Underwear',
+          'Pajama Set',
+          'Nightdress',
+          'Lounge Set',
+          'Robe',
+          'Sports Bra',
+        ];
+      case 'men':
+      case 'men-trends':
+        return const [
+          'Formal Shirt',
+          'Linen Shirt',
+          'Basic Tee',
+          'Graphic Tee',
+          'Chinos',
+          'Joggers',
+          'Cargo Pants',
+        ];
+      case 'kids':
+        return const [
+          'Kids Sets',
+          'Toys',
+          'Back To School',
+          'Soft Toys',
+          'Outdoor Toys',
+          'Games',
+        ];
+      case 'shoes':
+        return const [
+          'Running Sneakers',
+          'Lifestyle Sneakers',
+          'Sandals',
+          'Block Heels',
+          'Ankle Boots',
+          'Loafers',
+        ];
+      case 'jewelry':
+        return const [
+          'Necklaces',
+          'Rings',
+          'Bracelets',
+          'Earrings',
+          'Watches',
+          'Sunglasses',
+        ];
+      case 'bags':
+        return const [
+          'Handbags',
+          'Crossbody Bags',
+          'Backpacks',
+          'Wallets',
+          'Travel Bags',
+        ];
+      case 'beauty':
+        return const [
+          'Lipstick',
+          'Foundation',
+          'Palette',
+          'Mascara',
+          'Skincare',
+          'Brushes',
+        ];
+      case 'home':
+        return const ['Bedding', 'Decor', 'Storage', 'Lighting', 'Throws'];
+      case 'electronics':
+        return const [
+          'Phone Cases',
+          'Audio',
+          'Smart Devices',
+          'Gaming',
+          'Tablets',
+        ];
+      case 'sale':
+        return const [
+          'Flash Sale',
+          'Clearance',
+          'Bundle Deals',
+          'Seasonal Offers',
+        ];
       default:
         return fallback;
     }

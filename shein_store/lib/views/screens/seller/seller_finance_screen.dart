@@ -625,7 +625,9 @@ class _TransactionCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Icon(
-                          Icons.chevron_right_rounded,
+                          Directionality.of(context) == TextDirection.rtl
+                              ? Icons.chevron_left_rounded
+                              : Icons.chevron_right_rounded,
                           color: colors.secondaryText,
                         ),
                       ],

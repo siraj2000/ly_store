@@ -287,6 +287,13 @@ class StyleHubBootstrap extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             onGenerateRoute: AppRoutes.onGenerateRoute,
             initialRoute: AppRoutes.splash,
+            builder: (context, child) {
+              final activeLocale = Localizations.localeOf(context);
+              return Directionality(
+                textDirection: languageController.directionFor(activeLocale),
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
           );
         },
       ),

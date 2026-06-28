@@ -12,7 +12,10 @@ class LanguageController extends ChangeNotifier {
     required LocalStorageService localStorageService,
     required MockDataService mockDataService,
   }) : _localStorageService = localStorageService,
-       _mockDataService = mockDataService;
+       _mockDataService = mockDataService {
+    _applyLanguage(_restoreStoredLanguageSync(), persist: false);
+    _isInitialized = true;
+  }
 
   static const String _localeStorageKey = 'app_locale';
   static const String _legacyLocaleStorageKey = 'app_language';
@@ -29,6 +32,8 @@ class LanguageController extends ChangeNotifier {
   bool get isArabic => _locale?.languageCode == 'ar';
   bool get isEnglish => _locale?.languageCode == 'en';
   bool get isInitialized => _isInitialized;
+  TextDirection directionFor(Locale locale) =>
+      locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
 
   Future<void> initializeLanguage() async {
     final stored = await _restoreStoredLanguage();
@@ -67,6 +72,20 @@ class LanguageController extends ChangeNotifier {
 
     final preferenceLanguage = _mockDataService.preferences.language;
     return _languageFromStoredValue(preferenceLanguage);
+  }
+
+  AppLanguage _restoreStoredLanguageSync() {
+    final directValue = _localStorageService.getString(_localeStorageKey);
+    if (directValue != null && directValue.isNotEmpty) {
+      return _languageFromStoredValue(directValue);
+    }
+
+    final legacyValue = _localStorageService.getString(_legacyLocaleStorageKey);
+    if (legacyValue != null && legacyValue.isNotEmpty) {
+      return _languageFromStoredValue(legacyValue);
+    }
+
+    return _languageFromStoredValue(_mockDataService.preferences.language);
   }
 
   void _applyLanguage(AppLanguage language, {required bool persist}) {
