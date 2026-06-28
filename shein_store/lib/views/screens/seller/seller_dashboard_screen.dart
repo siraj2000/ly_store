@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/auth_controller.dart';
 import '../../../controllers/seller_dashboard_controller.dart';
 import '../../../controllers/seller_order_controller.dart';
 import '../../../controllers/seller_product_controller.dart';
@@ -8,6 +9,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/business_activity_helper.dart';
+import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../models/product_model.dart';
 import '../../../models/seller_order_model.dart';
 import '../../widgets/common/app_header.dart';
@@ -38,6 +40,11 @@ class SellerDashboardScreen extends StatelessWidget {
                 onPressed: () =>
                     Navigator.pushNamed(context, AppRoutes.sellerStore),
                 icon: const Icon(Icons.storefront_outlined),
+              ),
+              IconButton(
+                tooltip: context.tr('Log Out', 'تسجيل الخروج'),
+                onPressed: () => _confirmSellerDashboardLogout(context),
+                icon: const Icon(Icons.logout_rounded),
               ),
             ],
           ),
@@ -497,22 +504,16 @@ class _MetricsGrid extends StatelessWidget {
       ),
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = constraints.maxWidth >= 620 ? 3 : 2;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: constraints.maxWidth >= 620 ? 1.38 : 1.1,
-          ),
-          itemBuilder: (context, index) => _MetricCard(item: items[index]),
-        );
-      },
+    return SizedBox(
+      height: 154,
+      child: ListView.separated(
+        clipBehavior: Clip.none,
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) =>
+            SizedBox(width: 176, child: _MetricCard(item: items[index])),
+      ),
     );
   }
 }
@@ -574,6 +575,8 @@ class _MetricCard extends StatelessWidget {
             const Spacer(),
             Text(
               item.label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: colors.secondaryText,
                 fontSize: 13,
@@ -1345,6 +1348,33 @@ String _maskCustomerName(String name) {
     return name;
   }
   return '${name.substring(0, 2)}***';
+}
+
+Future<void> _confirmSellerDashboardLogout(BuildContext context) async {
+  final authController = context.read<AuthController>();
+  if (!authController.isLoggedIn) {
+    return;
+  }
+
+  final confirmed = await AppConfirmationDialog.show(
+    context,
+    title: context.tr('Log out?', 'تسجيل الخروج؟'),
+    message: context.tr(
+      'Are you sure you want to log out? Your saved account data and cart will not be deleted.',
+      'هل أنت متأكد من تسجيل الخروج من حسابك؟ لن يتم حذف السلة أو بيانات الحساب المحفوظة.',
+    ),
+    cancelLabel: context.tr('Stay', 'البقاء'),
+    confirmLabel: context.tr('Log Out', 'تسجيل الخروج'),
+    icon: Icons.logout_rounded,
+    tone: AppConfirmationTone.warning,
+  );
+
+  if (!context.mounted || !confirmed) {
+    return;
+  }
+
+  authController.logout();
+  Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (_) => false);
 }
 
 void _openSellerOrders(BuildContext context, String status) {
