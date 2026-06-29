@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/profile_controller.dart';
+import '../../../core/config/loyalty_policy.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../widgets/common/app_header.dart';
@@ -11,7 +12,9 @@ class PointsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final points = context.watch<ProfileController>().user?.points ?? 0;
+    final user = context.watch<ProfileController>().user;
+    final points = user?.points ?? 0;
+    final transactions = user?.pointsTransactions ?? const [];
     return Scaffold(
       appBar: AppHeader(title: context.tr('Points', 'النقاط')),
       body: ListView(
@@ -24,19 +27,30 @@ class PointsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _InfoCard(
-            title: context.tr('Earning history', 'سجل الكسب'),
-            subtitle: context.tr(
-              'Complete orders to earn mock reward points.',
-              'أكمل الطلبات للحصول على نقاط المكافآت التجريبية.',
-            ),
-          ),
-          _InfoCard(
             title: context.tr('Redeem rules', 'قواعد الاستبدال'),
             subtitle: context.tr(
-              'Each 100 points can offset a small part of checkout.',
-              'كل 100 نقطة يمكن أن تخصم جزءاً بسيطاً من قيمة الطلب.',
+              'Every ${LoyaltyPolicy.pointsPerDiscountUnit} points = 1.00 LYD discount. You can redeem up to 20% of the product subtotal.',
+              'كل ${LoyaltyPolicy.pointsPerDiscountUnit} نقطة = خصم 1.00 د.ل. يمكنك استخدام حتى 20% من إجمالي المنتجات.',
             ),
           ),
+          if (transactions.isEmpty)
+            _InfoCard(
+              title: context.tr('Earning history', 'سجل الكسب'),
+              subtitle: context.tr(
+                'Complete a paid order to earn reward points.',
+                'أكمل طلباً مدفوعاً لكسب نقاط المكافآت.',
+              ),
+            )
+          else
+            ...transactions.map(
+              (transaction) => _InfoCard(
+                title: transaction.type == 'earn'
+                    ? context.tr('Points earned', 'نقاط مكتسبة')
+                    : context.tr('Points redeemed', 'نقاط مستخدمة'),
+                subtitle:
+                    '${transaction.points > 0 ? '+' : ''}${transaction.points} • ${transaction.description}',
+              ),
+            ),
         ],
       ),
     );

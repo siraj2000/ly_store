@@ -5,6 +5,7 @@ import '../../../controllers/seller_order_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/app_action_feedback.dart';
+import '../../../core/helpers/app_copy_helper.dart';
 import '../../../core/helpers/localized_status_helper.dart';
 import '../../../core/helpers/locale_formatters.dart';
 import '../../../core/widgets/app_confirmation_dialog.dart';
@@ -23,6 +24,7 @@ class SellerOrderDetailsScreen extends StatelessWidget {
     final controller = context.watch<SellerOrderController>();
     final matches = controller.orders.where((order) => order.id == orderId);
     final order = matches.isEmpty ? null : matches.first;
+    final sellerOrder = controller.sellerOrderById(orderId);
     if (order == null) {
       return Scaffold(
         appBar: AppHeader(title: context.l10n.sellerOrderDetailsTitle),
@@ -120,12 +122,25 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 10),
                           Directionality(
                             textDirection: TextDirection.ltr,
-                            child: Text(
-                              order.id,
-                              style: TextStyle(
-                                color: colors.secondaryText,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    order.id,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: colors.secondaryText,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                AppCopyIconButton(
+                                  text: order.id,
+                                  feedback: context.l10n.copiedOrderNumber,
+                                  tooltip: context.l10n.copy,
+                                  iconSize: 18,
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -200,7 +215,14 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _SummaryRow(
                   label: context.l10n.sellerOrdersCustomer,
-                  value: '${order.customerName.substring(0, 2)}***',
+                  value: order.address.fullName.isNotEmpty
+                      ? order.address.fullName
+                      : order.customerName,
+                ),
+                _SummaryRow(
+                  label: context.tr('Phone', 'الهاتف'),
+                  value: order.address.phone,
+                  copyFeedback: context.l10n.copiedPhoneNumber,
                 ),
                 _SummaryRow(
                   label: context.l10n.sellerOrdersOrderDate,
@@ -212,7 +234,9 @@ class SellerOrderDetailsScreen extends StatelessWidget {
                 ),
                 _SummaryRow(
                   label: context.l10n.sellerOrdersAddress,
-                  value: '${order.address.city}, ${order.address.region}',
+                  value:
+                      '${order.address.streetAddress}, ${order.address.region}, ${order.address.city}, ${order.address.country}',
+                  copyFeedback: context.l10n.copiedAddress,
                 ),
                 _SummaryRow(
                   label: context.l10n.sellerOrdersItems,
@@ -222,6 +246,71 @@ class SellerOrderDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          if (sellerOrder != null &&
+              (sellerOrder.trackingNumber.isNotEmpty ||
+                  sellerOrder.cancellationReason.isNotEmpty))
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colors.card,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: colors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    sellerOrder.cancellationReason.isNotEmpty
+                        ? context.tr('Cancellation details', 'تفاصيل الإلغاء')
+                        : context.tr('Shipping tracking', 'تتبع الشحن'),
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (sellerOrder.cancellationReason.isNotEmpty) ...[
+                    _SummaryRow(
+                      label: context.tr('Cancellation Reason', 'سبب الإلغاء'),
+                      value: sellerOrder.cancellationReason,
+                    ),
+                    if (sellerOrder.cancelledAt != null)
+                      _SummaryRow(
+                        label: context.tr('Cancelled at', 'وقت الإلغاء'),
+                        value: formatShortDate(
+                          context,
+                          sellerOrder.cancelledAt!,
+                        ),
+                      ),
+                  ] else ...[
+                    _SummaryRow(
+                      label: context.tr('Carrier', 'شركة الشحن'),
+                      value: sellerOrder.carrierName,
+                    ),
+                    _SummaryRow(
+                      label: context.tr('Tracking Number', 'رقم التتبع'),
+                      value: sellerOrder.trackingNumber,
+                      copyFeedback: context.l10n.copiedTrackingNumber,
+                    ),
+                    if (sellerOrder.shippedAt != null)
+                      _SummaryRow(
+                        label: context.tr('Shipped at', 'وقت الشحن'),
+                        value: formatShortDate(context, sellerOrder.shippedAt!),
+                      ),
+                    if (sellerOrder.shippingNotes.isNotEmpty)
+                      _SummaryRow(
+                        label: context.tr('Notes', 'ملاحظات'),
+                        value: sellerOrder.shippingNotes,
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          if (sellerOrder != null &&
+              (sellerOrder.trackingNumber.isNotEmpty ||
+                  sellerOrder.cancellationReason.isNotEmpty))
+            const SizedBox(height: 16),
           if (primaryAction != null && nextStatus != null)
             FilledButton.icon(
               onPressed: () => _confirmSellerOrderTransition(
@@ -234,6 +323,15 @@ class SellerOrderDetailsScreen extends StatelessWidget {
               icon: Icon(_statusIcon(nextStatus)),
               label: Text(_localizedPrimaryAction(context, primaryAction)),
             ),
+          if (controller.canCancel(order)) ...[
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  _showCancelOrderDialog(context, controller, order.id),
+              icon: const Icon(Icons.cancel_outlined),
+              label: Text(context.tr('Cancel Order', 'إلغاء الطلب')),
+            ),
+          ],
         ],
       ),
     );
@@ -247,6 +345,10 @@ Future<void> _confirmSellerOrderTransition(
   String currentStatus,
   String nextStatus,
 ) async {
+  if (nextStatus == 'Shipped') {
+    await _showShippingDialog(context, controller, order.id);
+    return;
+  }
   final confirmed = await AppConfirmationDialog.show(
     context,
     title: context.tr('Update order status?', 'تحديث حالة الطلب؟'),
@@ -286,12 +388,165 @@ Future<void> _confirmSellerOrderTransition(
   if (!confirmed) {
     return;
   }
-  controller.updateOrderStatus(order.id, nextStatus);
+  final updated = await controller.updateOrderStatus(order.id, nextStatus);
   if (context.mounted) {
-    AppActionFeedback.success(
-      context,
-      context.tr('Order status updated', 'تم تحديث حالة الطلب'),
+    if (updated) {
+      AppActionFeedback.success(
+        context,
+        context.tr('Order status updated', 'تم تحديث حالة الطلب'),
+      );
+    } else {
+      AppActionFeedback.error(
+        context,
+        context.tr('Unable to update order', 'تعذر تحديث الطلب'),
+      );
+    }
+  }
+}
+
+Future<void> _showShippingDialog(
+  BuildContext context,
+  SellerOrderController controller,
+  String orderId,
+) async {
+  final carrierController = TextEditingController();
+  final trackingController = TextEditingController();
+  final notesController = TextEditingController();
+  try {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(context.tr('Confirm Shipment', 'تأكيد الشحن')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: carrierController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: context.tr('Carrier', 'شركة الشحن'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: trackingController,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: context.tr('Tracking Number', 'رقم التتبع'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: notesController,
+                  minLines: 2,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: context.tr('Shipping notes', 'ملاحظات الشحن'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(context.tr('Cancel', 'إلغاء')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(context.tr('Confirm Shipment', 'تأكيد الشحن')),
+            ),
+          ],
+        );
+      },
     );
+    if (confirmed != true || !context.mounted) return;
+    final updated = await controller.markOrderShipped(
+      orderId: orderId,
+      carrierName: carrierController.text,
+      trackingNumber: trackingController.text,
+      shippingNotes: notesController.text,
+    );
+    if (!context.mounted) return;
+    if (updated) {
+      AppActionFeedback.success(
+        context,
+        context.tr('Shipment confirmed', 'تم تأكيد الشحن'),
+      );
+    } else {
+      AppActionFeedback.error(
+        context,
+        context.tr(
+          'Carrier and tracking number are required',
+          'شركة الشحن ورقم التتبع مطلوبان',
+        ),
+      );
+    }
+  } finally {
+    carrierController.dispose();
+    trackingController.dispose();
+    notesController.dispose();
+  }
+}
+
+Future<void> _showCancelOrderDialog(
+  BuildContext context,
+  SellerOrderController controller,
+  String orderId,
+) async {
+  final reasonController = TextEditingController();
+  try {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(context.tr('Cancel Order', 'إلغاء الطلب')),
+          content: TextField(
+            controller: reasonController,
+            minLines: 3,
+            maxLines: 5,
+            decoration: InputDecoration(
+              labelText: context.tr('Cancellation Reason', 'سبب الإلغاء'),
+              helperText: context.tr(
+                'The customer will be notified of the cancellation reason',
+                'سيتم إشعار العميل بسبب الإلغاء',
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(context.tr('Keep Order', 'إبقاء الطلب')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(context.tr('Cancel Order', 'إلغاء الطلب')),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) return;
+    final cancelled = await controller.cancelOrder(
+      orderId: orderId,
+      reason: reasonController.text,
+    );
+    if (!context.mounted) return;
+    if (cancelled) {
+      AppActionFeedback.success(
+        context,
+        context.tr('Order cancelled', 'تم إلغاء الطلب'),
+      );
+    } else {
+      AppActionFeedback.error(
+        context,
+        context.tr('Cancellation reason is required', 'سبب الإلغاء مطلوب'),
+      );
+    }
+  } finally {
+    reasonController.dispose();
   }
 }
 
@@ -370,10 +625,15 @@ class _InfoTile extends StatelessWidget {
 }
 
 class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.copyFeedback,
+  });
 
   final String label;
   final String value;
+  final String? copyFeedback;
 
   @override
   Widget build(BuildContext context) {
@@ -403,6 +663,13 @@ class _SummaryRow extends StatelessWidget {
               ),
             ),
           ),
+          if (copyFeedback != null)
+            AppCopyIconButton(
+              text: value,
+              feedback: copyFeedback,
+              tooltip: context.l10n.copy,
+              iconSize: 18,
+            ),
         ],
       ),
     );

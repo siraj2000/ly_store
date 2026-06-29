@@ -2557,6 +2557,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close menu'**
   String get categoryCloseMenu;
+
+  /// No description provided for @reviewProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Review'**
+  String get reviewProduct;
+
+  /// No description provided for @reviewWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a Review'**
+  String get reviewWrite;
+
+  /// No description provided for @reviewEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Review'**
+  String get reviewEdit;
+
+  /// No description provided for @reviewSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Review'**
+  String get reviewSubmit;
+
+  /// No description provided for @reviewCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get reviewCancel;
+
+  /// No description provided for @reviewNoReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'No reviews yet'**
+  String get reviewNoReviews;
+
+  /// No description provided for @reviewVerifiedPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Purchase'**
+  String get reviewVerifiedPurchase;
+
+  /// No description provided for @reviewSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Review submitted successfully'**
+  String get reviewSuccess;
+
+  /// No description provided for @reviewLoginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in and purchase this product before writing a review.'**
+  String get reviewLoginRequired;
+
+  /// No description provided for @reviewNotPurchased.
+  ///
+  /// In en, this message translates to:
+  /// **'You can review this product after purchasing it.'**
+  String get reviewNotPurchased;
+
+  /// No description provided for @reviewNotDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'You can review this product after the order is delivered.'**
+  String get reviewNotDelivered;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copied;
+
+  /// No description provided for @copiedOrderNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Order number copied'**
+  String get copiedOrderNumber;
+
+  /// No description provided for @copiedTrackingNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracking number copied'**
+  String get copiedTrackingNumber;
+
+  /// No description provided for @copiedSku.
+  ///
+  /// In en, this message translates to:
+  /// **'SKU copied'**
+  String get copiedSku;
+
+  /// No description provided for @copiedCouponCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Coupon code copied'**
+  String get copiedCouponCode;
+
+  /// No description provided for @copiedPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number copied'**
+  String get copiedPhoneNumber;
+
+  /// No description provided for @copiedEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email copied'**
+  String get copiedEmail;
+
+  /// No description provided for @copiedAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied'**
+  String get copiedAddress;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
 }
 
 class _AppLocalizationsDelegate

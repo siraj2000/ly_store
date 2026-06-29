@@ -56,12 +56,45 @@ class OrderController extends ChangeNotifier {
 
   void buyAgain(String orderId) {}
 
+  void markOrderPaid(String orderId) {
+    _replaceOrder(
+      orderId,
+      (order) => order.copyWith(
+        status: 'Processing',
+        paymentStatus: 'Paid',
+        shippingStatus: 'Preparing',
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  void requestReturn(String orderId) {
+    _replaceOrder(
+      orderId,
+      (order) => order.copyWith(
+        status: 'Returns',
+        shippingStatus: 'Return Requested',
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
   void _replaceStatus(String orderId, String status) {
+    _replaceOrder(
+      orderId,
+      (order) => order.copyWith(status: status, updatedAt: DateTime.now()),
+    );
+  }
+
+  void _replaceOrder(
+    String orderId,
+    OrderModel Function(OrderModel order) update,
+  ) {
     final index = orders.indexWhere((order) => order.id == orderId);
     if (index == -1) {
       return;
     }
-    final updatedOrder = orders[index].copyWith(status: status);
+    final updatedOrder = update(orders[index]);
     _orderService.updateOrder(updatedOrder);
     reload();
   }

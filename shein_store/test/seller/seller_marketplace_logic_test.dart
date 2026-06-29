@@ -28,7 +28,7 @@ void main() {
         );
         final controller = context.productController;
         final original = context.mockData.productsForSeller('seller_1').first;
-        context.mockData.addOrUpdateProduct(
+        await context.mockData.addOrUpdateProduct(
           original.copyWith(
             status: ProductStatus.inactive,
             isActive: false,
@@ -36,8 +36,7 @@ void main() {
           ),
         );
 
-        controller.toggleActive(original.id);
-        await _settleAsync();
+        await controller.toggleActive(original.id);
 
         final updated = context.mockData
             .productsForSeller('seller_1')
@@ -65,6 +64,7 @@ void main() {
         descriptionAr: existing.descriptionText.ar,
         categoryId: existing.categoryId,
         categoryName: existing.categoryName,
+        subcategoryId: existing.subcategoryId,
         subcategoryName: existing.subcategoryName,
         department: existing.department,
         price: existing.price,
@@ -94,12 +94,14 @@ void main() {
         requiresProductApproval: true,
       );
       final original = context.mockData.productsForSeller('seller_1').first;
-      context.mockData.addOrUpdateProduct(
+      await context.mockData.addOrUpdateProduct(
         original.copyWith(status: ProductStatus.active, isActive: true),
       );
 
-      context.productController.changePrice(original.id, original.price + 5);
-      await _settleAsync();
+      await context.productController.changePrice(
+        original.id,
+        original.price + 5,
+      );
 
       final updated = context.mockData
           .productsForSeller('seller_1')
@@ -195,6 +197,96 @@ void main() {
       },
     );
 
+    test('seller product save persists stable category identifiers', () async {
+      final context = await _SellerTestContext.create();
+      final controller = context.productController;
+      final existing = context.mockData.productsForSeller('seller_1').first;
+
+      final product = controller.buildProduct(
+        id: 'seller_test_stable_ids',
+        titleEn: 'Stable IDs Dress',
+        titleAr: 'فستان بمعرفات ثابتة',
+        descriptionEn: 'Uses stable category identifiers.',
+        descriptionAr: 'يستخدم معرفات تصنيف ثابتة.',
+        categoryId: existing.categoryId,
+        categoryName: existing.categoryName,
+        subcategoryId: existing.subcategoryId,
+        subcategoryName: existing.subcategoryName,
+        department: existing.departmentId.isNotEmpty
+            ? existing.departmentId
+            : existing.department,
+        price: 25,
+        oldPrice: 30,
+        stock: 6,
+        sku: 'STABLE-ID-DRESS',
+        colors: const ['Black'],
+        sizes: const ['M'],
+        materialEn: 'Cotton',
+        materialAr: 'قطن',
+        compositionEn: '100% cotton',
+        compositionAr: 'قطن 100%',
+        careInstructionsEn: 'Machine wash cold',
+        careInstructionsAr: 'غسل بارد',
+        saveAsDraft: false,
+        isReturnable: true,
+        selectedImagePaths: existing.imageUrls,
+      );
+
+      await controller.saveProduct(product);
+
+      final saved = context.mockData.allProducts.firstWhere(
+        (item) => item.id == product.id,
+      );
+      expect(saved.departmentId, product.departmentId);
+      expect(saved.categoryId, product.categoryId);
+      expect(saved.subcategoryId, product.subcategoryId);
+      expect(saved.subcategoryName, product.subcategoryName);
+    });
+
+    test('active variant stock controls total seller product stock', () async {
+      final context = await _SellerTestContext.create();
+      final controller = context.productController;
+      final existing = context.mockData.productsForSeller('seller_1').first;
+
+      final product = controller.buildProduct(
+        id: 'seller_test_variant_stock',
+        titleEn: 'Variant Stock Shirt',
+        titleAr: 'قميص بمخزون متغيرات',
+        descriptionEn: 'Stock is split across variants.',
+        descriptionAr: 'المخزون موزع على المتغيرات.',
+        categoryId: existing.categoryId,
+        categoryName: existing.categoryName,
+        subcategoryId: existing.subcategoryId,
+        subcategoryName: existing.subcategoryName,
+        department: existing.departmentId.isNotEmpty
+            ? existing.departmentId
+            : existing.department,
+        price: 35,
+        oldPrice: 40,
+        stock: 9,
+        sku: 'VARIANT-STOCK-SHIRT',
+        colors: const ['Black', 'White'],
+        sizes: const ['S', 'M'],
+        materialEn: 'Cotton',
+        materialAr: 'قطن',
+        compositionEn: 'Cotton blend',
+        compositionAr: 'مزيج قطن',
+        careInstructionsEn: 'Wash gently',
+        careInstructionsAr: 'غسل بلطف',
+        saveAsDraft: false,
+        isReturnable: true,
+        selectedImagePaths: existing.imageUrls,
+      );
+
+      expect(product.variants, hasLength(4));
+      expect(
+        product.stock,
+        product.variants
+            .where((variant) => variant.isActive)
+            .fold<int>(0, (total, variant) => total + variant.stock),
+      );
+    });
+
     test(
       'seller order update recomputes master status and notifies customer',
       () async {
@@ -208,7 +300,7 @@ void main() {
           sellerOrders: fixture.sellerOrders,
         );
 
-        controller.updateOrderStatus(
+        await controller.updateOrderStatus(
           fixture.sellerOrders.first.id,
           'Delivered',
         );
@@ -232,6 +324,87 @@ void main() {
         );
       },
     );
+
+    test('mark shipped saves carrier and tracking data', () async {
+      final context = await _SellerTestContext.create();
+      final orderService = OrderService(context.mockData);
+      final controller = SellerOrderController(orderService: orderService)
+        ..bind(authController: context.authController);
+      final fixture = _createSplitOrder(context.mockData);
+      context.mockData.createOrder(
+        fixture.masterOrder,
+        sellerOrders: fixture.sellerOrders,
+      );
+
+      final updated = await controller.markOrderShipped(
+        orderId: fixture.sellerOrders.first.id,
+        carrierName: 'LY Express',
+        trackingNumber: 'TRK-100',
+        shippingNotes: 'Handed to carrier',
+      );
+
+      expect(updated, isTrue);
+      final sellerOrder = context.mockData.sellerOrders.firstWhere(
+        (order) => order.id == fixture.sellerOrders.first.id,
+      );
+      expect(sellerOrder.status, 'Shipped');
+      expect(sellerOrder.carrierName, 'LY Express');
+      expect(sellerOrder.trackingNumber, 'TRK-100');
+      expect(sellerOrder.shippedAt, isNotNull);
+      expect(
+        context.mockData
+            .notificationsForUser('customer_1')
+            .any(
+              (notification) =>
+                  notification.data['sellerOrderId'] == sellerOrder.id &&
+                  notification.data['newStatus'] == 'Shipped',
+            ),
+        isTrue,
+      );
+    });
+
+    test('seller cancel order requires and saves a reason', () async {
+      final context = await _SellerTestContext.create();
+      final orderService = OrderService(context.mockData);
+      final controller = SellerOrderController(orderService: orderService)
+        ..bind(authController: context.authController);
+      final fixture = _createSplitOrder(context.mockData);
+      context.mockData.createOrder(
+        fixture.masterOrder,
+        sellerOrders: fixture.sellerOrders,
+      );
+
+      expect(
+        await controller.cancelOrder(
+          orderId: fixture.sellerOrders.first.id,
+          reason: '',
+        ),
+        isFalse,
+      );
+
+      final cancelled = await controller.cancelOrder(
+        orderId: fixture.sellerOrders.first.id,
+        reason: 'Out of stock',
+      );
+
+      expect(cancelled, isTrue);
+      final sellerOrder = context.mockData.sellerOrders.firstWhere(
+        (order) => order.id == fixture.sellerOrders.first.id,
+      );
+      expect(sellerOrder.status, 'Cancelled');
+      expect(sellerOrder.cancellationReason, 'Out of stock');
+      expect(sellerOrder.cancelledAt, isNotNull);
+      expect(
+        context.mockData
+            .notificationsForUser('customer_1')
+            .any(
+              (notification) =>
+                  notification.data['sellerOrderId'] == sellerOrder.id &&
+                  notification.data['newStatus'] == 'Cancelled',
+            ),
+        isTrue,
+      );
+    });
 
     test(
       'seller finance excludes pending and refunded returned orders',

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,27 @@ void main() {
     );
 
     expect(find.text('LY STORE'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('wraps app content in a SelectionArea', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final localStorageService = await LocalStorageService.create();
+    final mockDataService = await MockDataService.create(
+      localStorageService: localStorageService,
+    );
+
+    await tester.pumpWidget(
+      StyleHubBootstrap(
+        localStorageService: localStorageService,
+        mockDataService: mockDataService,
+      ),
+    );
+
+    expect(find.byType(SelectionArea), findsOneWidget);
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
   });

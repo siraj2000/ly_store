@@ -19,6 +19,10 @@ class OrderModel {
     this.shippingStatus = 'Preparing',
     this.platformCommission = 0,
     this.sellerOrderIds = const [],
+    this.loyaltyPointsEarned = 0,
+    this.loyaltyPointsRedeemed = 0,
+    this.loyaltyPointsDiscount = 0,
+    this.walletAmountUsed = 0,
   }) : updatedAt = updatedAt ?? createdAt;
 
   final String id;
@@ -36,6 +40,10 @@ class OrderModel {
   final String shippingStatus;
   final double platformCommission;
   final List<String> sellerOrderIds;
+  final int loyaltyPointsEarned;
+  final int loyaltyPointsRedeemed;
+  final double loyaltyPointsDiscount;
+  final double walletAmountUsed;
 
   OrderModel copyWith({
     String? status,
@@ -43,6 +51,10 @@ class OrderModel {
     String? shippingStatus,
     DateTime? updatedAt,
     List<String>? sellerOrderIds,
+    int? loyaltyPointsEarned,
+    int? loyaltyPointsRedeemed,
+    double? loyaltyPointsDiscount,
+    double? walletAmountUsed,
   }) {
     return OrderModel(
       id: id,
@@ -60,6 +72,12 @@ class OrderModel {
       shippingStatus: shippingStatus ?? this.shippingStatus,
       platformCommission: platformCommission,
       sellerOrderIds: sellerOrderIds ?? this.sellerOrderIds,
+      loyaltyPointsEarned: loyaltyPointsEarned ?? this.loyaltyPointsEarned,
+      loyaltyPointsRedeemed:
+          loyaltyPointsRedeemed ?? this.loyaltyPointsRedeemed,
+      loyaltyPointsDiscount:
+          loyaltyPointsDiscount ?? this.loyaltyPointsDiscount,
+      walletAmountUsed: walletAmountUsed ?? this.walletAmountUsed,
     );
   }
 
@@ -95,6 +113,12 @@ class OrderModel {
       sellerOrderIds: (json['sellerOrderIds'] as List<dynamic>? ?? [])
           .map((item) => item as String)
           .toList(),
+      loyaltyPointsEarned: (json['loyaltyPointsEarned'] as num?)?.toInt() ?? 0,
+      loyaltyPointsRedeemed:
+          (json['loyaltyPointsRedeemed'] as num?)?.toInt() ?? 0,
+      loyaltyPointsDiscount:
+          (json['loyaltyPointsDiscount'] as num?)?.toDouble() ?? 0,
+      walletAmountUsed: (json['walletAmountUsed'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -114,5 +138,9 @@ class OrderModel {
     'shippingStatus': shippingStatus,
     'platformCommission': platformCommission,
     'sellerOrderIds': sellerOrderIds,
+    'loyaltyPointsEarned': loyaltyPointsEarned,
+    'loyaltyPointsRedeemed': loyaltyPointsRedeemed,
+    'loyaltyPointsDiscount': loyaltyPointsDiscount,
+    'walletAmountUsed': walletAmountUsed,
   };
 }

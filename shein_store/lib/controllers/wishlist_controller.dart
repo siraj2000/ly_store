@@ -85,18 +85,97 @@ class WishlistController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void createBoard(String name) {
+  WishlistBoardModel? boardById(String? boardId) {
+    if (boardId == null || boardId.isEmpty) {
+      return _boards.isEmpty ? null : _boards.first;
+    }
+    final matches = _boards.where((board) => board.id == boardId);
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  List<ProductModel> productsForBoard(String? boardId) {
+    final board = boardById(boardId);
+    if (board == null) {
+      return const [];
+    }
+    return (_productController?.marketplaceProducts ?? [])
+        .where((product) => board.productIds.contains(product.id))
+        .toList();
+  }
+
+  bool createBoard(String name, {bool isPrivate = false}) {
     if (_authController?.currentRole != UserRole.customer) {
-      return;
+      return false;
+    }
+    final cleanedName = name.trim();
+    if (cleanedName.isEmpty ||
+        _boards.any(
+          (board) => board.name.toLowerCase() == cleanedName.toLowerCase(),
+        )) {
+      return false;
     }
     _boards = [
       ..._boards,
       WishlistBoardModel(
         id: 'board_${DateTime.now().millisecondsSinceEpoch}',
-        name: name,
+        name: cleanedName,
         productIds: const [],
+        isPrivate: isPrivate,
       ),
     ];
+    _persistWishlist();
+    notifyListeners();
+    return true;
+  }
+
+  bool renameBoard(String boardId, String name) {
+    final cleanedName = name.trim();
+    if (cleanedName.isEmpty ||
+        _boards.any(
+          (board) =>
+              board.id != boardId &&
+              board.name.toLowerCase() == cleanedName.toLowerCase(),
+        )) {
+      return false;
+    }
+    _boards = _boards
+        .map(
+          (board) => board.id == boardId
+              ? WishlistBoardModel(
+                  id: board.id,
+                  name: cleanedName,
+                  productIds: board.productIds,
+                  isPrivate: board.isPrivate,
+                )
+              : board,
+        )
+        .toList();
+    _persistWishlist();
+    notifyListeners();
+    return true;
+  }
+
+  void deleteBoard(String boardId) {
+    _boards = _boards.where((board) => board.id != boardId).toList();
+    _persistWishlist();
+    notifyListeners();
+  }
+
+  void removeFromBoard(String boardId, String productId) {
+    _boards = _boards
+        .map(
+          (board) => board.id == boardId
+              ? WishlistBoardModel(
+                  id: board.id,
+                  name: board.name,
+                  productIds: board.productIds
+                      .where((id) => id != productId)
+                      .toList(),
+                  isPrivate: board.isPrivate,
+                )
+              : board,
+        )
+        .toList();
     _persistWishlist();
     notifyListeners();
   }

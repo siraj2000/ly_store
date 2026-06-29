@@ -23,6 +23,14 @@ class SellerOrderModel {
     required this.address,
     required this.paymentMethod,
     required this.estimatedDelivery,
+    this.carrierName = '',
+    this.trackingNumber = '',
+    this.shippedAt,
+    this.deliveredAt,
+    this.trackingUrl = '',
+    this.shippingNotes = '',
+    this.cancellationReason = '',
+    this.cancelledAt,
   });
 
   final String id;
@@ -43,6 +51,14 @@ class SellerOrderModel {
   final AddressModel address;
   final PaymentMethodModel paymentMethod;
   final DateTime estimatedDelivery;
+  final String carrierName;
+  final String trackingNumber;
+  final DateTime? shippedAt;
+  final DateTime? deliveredAt;
+  final String trackingUrl;
+  final String shippingNotes;
+  final String cancellationReason;
+  final DateTime? cancelledAt;
 
   SellerOrderModel copyWith({
     String? id,
@@ -63,6 +79,14 @@ class SellerOrderModel {
     AddressModel? address,
     PaymentMethodModel? paymentMethod,
     DateTime? estimatedDelivery,
+    String? carrierName,
+    String? trackingNumber,
+    DateTime? shippedAt,
+    DateTime? deliveredAt,
+    String? trackingUrl,
+    String? shippingNotes,
+    String? cancellationReason,
+    DateTime? cancelledAt,
   }) {
     return SellerOrderModel(
       id: id ?? this.id,
@@ -83,6 +107,14 @@ class SellerOrderModel {
       address: address ?? this.address,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       estimatedDelivery: estimatedDelivery ?? this.estimatedDelivery,
+      carrierName: carrierName ?? this.carrierName,
+      trackingNumber: trackingNumber ?? this.trackingNumber,
+      shippedAt: shippedAt ?? this.shippedAt,
+      deliveredAt: deliveredAt ?? this.deliveredAt,
+      trackingUrl: trackingUrl ?? this.trackingUrl,
+      shippingNotes: shippingNotes ?? this.shippingNotes,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
     );
   }
 
@@ -138,6 +170,14 @@ class SellerOrderModel {
       estimatedDelivery:
           DateTime.tryParse(json['estimatedDelivery'] as String? ?? '') ??
           DateTime.now(),
+      carrierName: json['carrierName'] as String? ?? '',
+      trackingNumber: json['trackingNumber'] as String? ?? '',
+      shippedAt: DateTime.tryParse(json['shippedAt'] as String? ?? ''),
+      deliveredAt: DateTime.tryParse(json['deliveredAt'] as String? ?? ''),
+      trackingUrl: json['trackingUrl'] as String? ?? '',
+      shippingNotes: json['shippingNotes'] as String? ?? '',
+      cancellationReason: json['cancellationReason'] as String? ?? '',
+      cancelledAt: DateTime.tryParse(json['cancelledAt'] as String? ?? ''),
     );
   }
 
@@ -160,5 +200,13 @@ class SellerOrderModel {
     'address': address.toJson(),
     'paymentMethod': paymentMethod.toJson(),
     'estimatedDelivery': estimatedDelivery.toIso8601String(),
+    'carrierName': carrierName,
+    'trackingNumber': trackingNumber,
+    'shippedAt': shippedAt?.toIso8601String(),
+    'deliveredAt': deliveredAt?.toIso8601String(),
+    'trackingUrl': trackingUrl,
+    'shippingNotes': shippingNotes,
+    'cancellationReason': cancellationReason,
+    'cancelledAt': cancelledAt?.toIso8601String(),
   };
 }

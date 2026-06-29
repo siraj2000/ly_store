@@ -57,10 +57,10 @@ class SellerDashboardScreen extends StatelessWidget {
               _OverviewHero(controller: controller),
               const SizedBox(height: 18),
               _SectionHeader(
-                title: context.tr('Seller command center', 'مركز تحكم البائع'),
+                title: context.tr('What needs attention', 'ما يحتاج انتباهك'),
                 subtitle: context.tr(
-                  'Tap a card to open the exact orders or products that need attention.',
-                  'اضغط على البطاقة لفتح الطلبات أو المنتجات المطلوبة مباشرة.',
+                  'Start with the cards that have alerts, then open the matching screen.',
+                  'ابدأ بالبطاقات التي عليها تنبيه ثم افتح الشاشة المناسبة.',
                 ),
               ),
               const SizedBox(height: 12),
@@ -85,7 +85,7 @@ class SellerDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 110,
+                height: 124,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
@@ -215,142 +215,119 @@ class _OverviewHero extends StatelessWidget {
       context.appColors,
       controller.storeStatusId,
     );
+    final statusLabel = _localizedStoreStatus(
+      context,
+      controller.storeStatusId,
+    );
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(30),
         gradient: LinearGradient(
           colors: context.isDarkMode
               ? const [Color(0xFF17202D), Color(0xFF25354A), Color(0xFF3A253C)]
-              : const [Color(0xFF171717), Color(0xFF5A3B31), Color(0xFFA45A48)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+              : const [Color(0xFF101827), Color(0xFF2C4A5F), Color(0xFFB5664F)],
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 54,
+                height: 54,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: const Icon(
                   Icons.storefront_rounded,
                   color: Colors.white,
+                  size: 28,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.tr(
-                        'Hi, ${controller.sellerName}',
-                        'مرحبًا، ${controller.sellerName}',
-                      ),
+                      context.tr('Welcome back', 'مرحبًا بعودتك'),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
+                        color: Colors.white70,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    Text(
+                      controller.sellerName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       controller.storeAddress.isNotEmpty
                           ? controller.storeAddress
                           : context.tr(
-                              'A clear overview for sales, stock, and orders.',
-                              'نظرة واضحة على المبيعات والمخزون والطلبات.',
+                              'Manage orders, products, and payouts from one screen.',
+                              'أدر الطلبات والمنتجات والمدفوعات من شاشة واحدة.',
                             ),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.78),
-                        fontSize: 13,
-                        height: 1.3,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              _StoreStatusBadge(label: statusLabel, color: statusColor),
             ],
           ),
           const SizedBox(height: 18),
           if (controller.storePhone.isNotEmpty ||
               controller.businessActivityType.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-              ),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  if (controller.storePhone.isNotEmpty)
-                    _HeroChip(
-                      icon: Icons.phone_outlined,
-                      text: controller.storePhone,
-                    ),
-                  if (controller.businessActivityType.isNotEmpty)
-                    _HeroChip(
-                      icon: Icons.category_outlined,
-                      text: localizedBusinessActivity(
-                        context,
-                        controller.businessActivityType,
-                      ),
-                    ),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                if (controller.storePhone.isNotEmpty)
                   _HeroChip(
-                    icon: controller.storeIsActive
-                        ? Icons.verified_outlined
-                        : Icons.pause_circle_outline,
-                    text: _localizedStoreStatus(
+                    icon: Icons.phone_outlined,
+                    text: controller.storePhone,
+                  ),
+                if (controller.businessActivityType.isNotEmpty)
+                  _HeroChip(
+                    icon: Icons.category_outlined,
+                    text: localizedBusinessActivity(
                       context,
-                      controller.storeStatusId,
+                      controller.businessActivityType,
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
           if (controller.storePhone.isNotEmpty ||
               controller.businessActivityType.isNotEmpty)
             const SizedBox(height: 14),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final statusBadge = _StoreStatusBadge(
-                label: _localizedStoreStatus(context, controller.storeStatusId),
-                color: statusColor,
-              );
-              final addButton = _AddProductHeroButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, AppRoutes.sellerAddProduct),
-              );
-              if (constraints.maxWidth < 350) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    statusBadge,
-                    const SizedBox(height: 10),
-                    addButton,
-                  ],
-                );
-              }
-              return Row(
-                children: [
-                  Expanded(child: statusBadge),
-                  const SizedBox(width: 12),
-                  Flexible(child: addButton),
-                ],
-              );
-            },
+          _DashboardPrimaryActions(
+            onAddProduct: () =>
+                Navigator.pushNamed(context, AppRoutes.sellerAddProduct),
+            onOpenOrders: () =>
+                Navigator.pushNamed(context, AppRoutes.sellerOrders),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -369,60 +346,73 @@ class _OverviewHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _HeroChip(
-                icon: Icons.local_shipping_outlined,
-                text: context.tr(
-                  '${controller.shippedOrders} shipped',
-                  '${controller.shippedOrders} مشحون',
-                ),
-              ),
-              _HeroChip(
-                icon: Icons.pending_actions_outlined,
-                text: context.tr(
-                  '${controller.pendingApprovalProducts} pending approval',
-                  '${controller.pendingApprovalProducts} بانتظار الموافقة',
-                ),
-              ),
-              _HeroChip(
-                icon: Icons.warning_amber_rounded,
-                text: context.tr(
-                  '${controller.lowStockProducts} low stock',
-                  '${controller.lowStockProducts} مخزون منخفض',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: _MiniSnapshot(
-                    label: context.tr('Active', 'نشط'),
-                    value: '${controller.activeProducts}',
+                Text(
+                  context.tr('Today at a glance', 'لمحة اليوم'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                Expanded(
-                  child: _MiniSnapshot(
-                    label: context.tr('Drafts', 'مسودات'),
-                    value: '${controller.draftProducts}',
-                  ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MiniSnapshot(
+                        label: context.tr('Active', 'نشط'),
+                        value: '${controller.activeProducts}',
+                      ),
+                    ),
+                    Expanded(
+                      child: _MiniSnapshot(
+                        label: context.tr('Drafts', 'مسودات'),
+                        value: '${controller.draftProducts}',
+                      ),
+                    ),
+                    Expanded(
+                      child: _MiniSnapshot(
+                        label: context.tr('Views', 'مشاهدات'),
+                        value: _compactNumber(controller.totalProductViews),
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: _MiniSnapshot(
-                    label: context.tr('Views', 'مشاهدات'),
-                    value: _compactNumber(controller.totalProductViews),
-                  ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _HeroChip(
+                      icon: Icons.local_shipping_outlined,
+                      text: context.tr(
+                        '${controller.shippedOrders} shipped',
+                        '${controller.shippedOrders} مشحون',
+                      ),
+                    ),
+                    _HeroChip(
+                      icon: Icons.pending_actions_outlined,
+                      text: context.tr(
+                        '${controller.pendingApprovalProducts} pending approval',
+                        '${controller.pendingApprovalProducts} بانتظار الموافقة',
+                      ),
+                    ),
+                    _HeroChip(
+                      icon: Icons.warning_amber_rounded,
+                      text: context.tr(
+                        '${controller.lowStockProducts} low stock',
+                        '${controller.lowStockProducts} مخزون منخفض',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -449,7 +439,7 @@ class _MetricsGrid extends StatelessWidget {
         onTap: () => _openSellerOrders(context, 'New'),
       ),
       _MetricItem(
-        label: context.tr('Processing Orders', 'طلبات قيد التجهيز'),
+        label: context.tr('Need Processing', 'تحتاج تجهيز'),
         value: '${controller.processingOrders}',
         icon: Icons.autorenew_rounded,
         onTap: () => _openSellerOrders(context, 'Processing'),
@@ -462,34 +452,11 @@ class _MetricsGrid extends StatelessWidget {
         onTap: () => _openSellerOrders(context, 'Ready to Ship'),
       ),
       _MetricItem(
-        label: context.tr('Shipped', 'تم الشحن'),
-        value: '${controller.shippedOrders}',
-        icon: Icons.local_shipping_outlined,
-        onTap: () => _openSellerOrders(context, 'Shipped'),
-      ),
-      _MetricItem(
-        label: context.tr('Delivered', 'تم التسليم'),
-        value: '${controller.deliveredOrders}',
-        icon: Icons.check_circle_outline,
-        onTap: () => _openSellerOrders(context, 'Delivered'),
-      ),
-      _MetricItem(
         label: context.tr('Returns / Refunds', 'الإرجاع / الاسترداد'),
         value: '${controller.returnOrRefundOrders}',
         icon: Icons.assignment_return_outlined,
+        urgent: controller.returnOrRefundOrders > 0,
         onTap: () => _openSellerOrders(context, 'Returned'),
-      ),
-      _MetricItem(
-        label: context.tr('Active Products', 'منتجات نشطة'),
-        value: '${controller.activeProducts}',
-        icon: Icons.storefront_outlined,
-        onTap: () => _openSellerProducts(context, 'Active'),
-      ),
-      _MetricItem(
-        label: context.tr('Draft Products', 'مسودات المنتجات'),
-        value: '${controller.draftProducts}',
-        icon: Icons.edit_note_outlined,
-        onTap: () => _openSellerProducts(context, 'Draft'),
       ),
       _MetricItem(
         label: context.tr('Pending Approval', 'بانتظار الموافقة'),
@@ -497,6 +464,12 @@ class _MetricsGrid extends StatelessWidget {
         icon: Icons.hourglass_top_outlined,
         urgent: controller.pendingApprovalProducts > 0,
         onTap: () => _openSellerProducts(context, 'Pending Approval'),
+      ),
+      _MetricItem(
+        label: context.tr('Draft Products', 'مسودات المنتجات'),
+        value: '${controller.draftProducts}',
+        icon: Icons.edit_note_outlined,
+        onTap: () => _openSellerProducts(context, 'Draft'),
       ),
       _MetricItem(
         label: context.tr('Out of Stock', 'نفد المخزون'),
@@ -508,7 +481,7 @@ class _MetricsGrid extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 154,
+      height: 142,
       child: ListView.separated(
         clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
@@ -517,7 +490,7 @@ class _MetricsGrid extends StatelessWidget {
         itemBuilder: (context, index) => AnimatedPageWrapper(
           delay: AppMotion.stagger(context, index),
           beginOffset: const Offset(0.04, 0),
-          child: SizedBox(width: 176, child: _MetricCard(item: items[index])),
+          child: SizedBox(width: 164, child: _MetricCard(item: items[index])),
         ),
       ),
     );
@@ -537,7 +510,7 @@ class _MetricCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       onTap: item.onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: colors.card,
           borderRadius: BorderRadius.circular(20),
@@ -585,18 +558,7 @@ class _MetricCard extends StatelessWidget {
                   ),
               ],
             ),
-            const Spacer(),
-            Text(
-              item.label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: colors.secondaryText,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 14),
             AppAnimatedSwitcher(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
@@ -607,6 +569,18 @@ class _MetricCard extends StatelessWidget {
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
                 ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              item.label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: colors.secondaryText,
+                fontSize: 13,
+                height: 1.15,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -642,7 +616,7 @@ class _ActionCard extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: 172,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: colors.card,
             borderRadius: BorderRadius.circular(20),
@@ -652,17 +626,19 @@ class _ActionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: tint.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: tint),
               ),
-              const Spacer(),
+              const SizedBox(height: 8),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: colors.primaryText,
                   fontWeight: FontWeight.w800,
@@ -951,6 +927,84 @@ class _SectionHeader extends StatelessWidget {
         if (trailingLabel != null)
           TextButton(onPressed: onTrailingTap, child: Text(trailingLabel!)),
       ],
+    );
+  }
+}
+
+class _DashboardPrimaryActions extends StatelessWidget {
+  const _DashboardPrimaryActions({
+    required this.onAddProduct,
+    required this.onOpenOrders,
+  });
+
+  final VoidCallback onAddProduct;
+  final VoidCallback onOpenOrders;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final addProduct = _HeroActionButton(
+          label: context.tr('Add Product', 'إضافة منتج'),
+          icon: Icons.add_box_outlined,
+          isPrimary: true,
+          onPressed: onAddProduct,
+        );
+        final orders = _HeroActionButton(
+          label: context.tr('Open Orders', 'فتح الطلبات'),
+          icon: Icons.receipt_long_outlined,
+          onPressed: onOpenOrders,
+        );
+        if (constraints.maxWidth < 360) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [addProduct, const SizedBox(height: 10), orders],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(child: addProduct),
+            const SizedBox(width: 10),
+            Expanded(child: orders),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _HeroActionButton extends StatelessWidget {
+  const _HeroActionButton({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    this.isPrimary = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+  final bool isPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.icon(
+      style: FilledButton.styleFrom(
+        backgroundColor: isPrimary
+            ? Colors.white
+            : Colors.white.withValues(alpha: 0.14),
+        foregroundColor: isPrimary ? const Color(0xFF101827) : Colors.white,
+        minimumSize: const Size.fromHeight(54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      onPressed: onPressed,
+      icon: Icon(icon),
+      label: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w900),
+      ),
     );
   }
 }
@@ -1320,48 +1374,21 @@ class _StoreStatusBadge extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.28)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.verified_outlined, color: color, size: 18),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AddProductHeroButton extends StatelessWidget {
-  const _AddProductHeroButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: AppColors.ink,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      icon: const Icon(Icons.add_box_outlined, size: 18),
-      label: Text(
-        context.tr('Add Product', 'إضافة منتج'),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w900),
       ),
     );
   }

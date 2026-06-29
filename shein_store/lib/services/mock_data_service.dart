@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../core/helpers/public_product_visibility_helper.dart';
+import '../core/config/loyalty_policy.dart';
 import '../models/address_model.dart';
 import '../models/app_preferences_model.dart';
 import '../models/category_model.dart';
 import '../models/coupon_model.dart';
+import '../models/customer_points_transaction_model.dart';
+import '../models/gift_card_model.dart';
 import '../models/localized_text_model.dart';
 import '../models/notification_model.dart';
 import '../models/order_item_model.dart';
@@ -68,6 +71,7 @@ class MockDataService extends ChangeNotifier {
   late List<String> _promoBannerPool;
   late List<CategoryModel> _categories;
   late List<CouponModel> _coupons;
+  late List<GiftCardModel> _giftCards;
   late List<NotificationModel> _genericNotifications;
   late List<ReviewModel> _reviews;
   late List<StoreReviewModel> _storeReviews;
@@ -217,8 +221,9 @@ class MockDataService extends ChangeNotifier {
     ];
     _categories = _buildInitialCategories();
     _coupons = _buildInitialCoupons();
+    _giftCards = _buildInitialGiftCards();
     _genericNotifications = _buildInitialNotifications();
-    _reviews = _buildInitialReviews();
+    _reviews = const [];
     _storeReviews = _buildInitialStoreReviews();
     _guestRecentSearches = const ['dress', 'sandals', 'home decor'];
     _guestRecentlyViewedProductIds = const [];
@@ -227,6 +232,7 @@ class MockDataService extends ChangeNotifier {
     _seedUsers();
     _platformOrders = List<OrderModel>.from(demoOrders);
     _sellerOrders = _buildSellerOrdersFromOrders(_platformOrders);
+    _reviews = _buildInitialReviews();
     _recalculateAllStoreRatings();
     _currentSessionUser = null;
   }
@@ -253,6 +259,196 @@ class MockDataService extends ChangeNotifier {
   List<String> get guestRecentlyViewedProductIds =>
       List.unmodifiable(_guestRecentlyViewedProductIds);
   UserModel? get currentSessionUser => _currentSessionUser;
+
+  List<ReviewModel> reviewsForProduct(String productId) {
+    return _reviews.where((review) => review.productId == productId).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  List<ReviewModel> approvedReviewsForProduct(String productId) {
+    return reviewsForProduct(
+      productId,
+    ).where((review) => review.status == ReviewStatus.approved).toList();
+  }
+
+  List<ReviewModel> reviewsByCustomerId(String customerId) {
+    return _reviews.where((review) => review.customerId == customerId).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  ReviewModel? findCustomerReviewForProduct({
+    required String customerId,
+    required String productId,
+    String? orderId,
+  }) {
+    final matches = _reviews.where(
+      (review) =>
+          review.customerId == customerId &&
+          review.productId == productId &&
+          (orderId == null || review.orderId == orderId),
+    );
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  ProductRatingSummary ratingSummaryForProduct(String productId) {
+    final productReviews = approvedReviewsForProduct(
+      productId,
+    ).where((review) => review.rating >= 1 && review.rating <= 5).toList();
+    if (productReviews.isEmpty) {
+      return ProductRatingSummary.empty;
+    }
+    final breakdown = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+    var total = 0.0;
+    for (final review in productReviews) {
+      total += review.rating;
+      final star = review.rating.round().clamp(1, 5);
+      breakdown[star] = (breakdown[star] ?? 0) + 1;
+    }
+    final average = double.parse(
+      (total / productReviews.length).toStringAsFixed(1),
+    );
+    return ProductRatingSummary(
+      averageRating: average,
+      reviewCount: productReviews.length,
+      ratingBreakdown: breakdown,
+    );
+  }
+
+  OrderModel? eligiblePurchasedOrderForReview({
+    required String customerId,
+    required String productId,
+  }) {
+    final orders = ordersForCustomer(customerId);
+    for (final order in orders) {
+      if (_isValidReviewPurchase(order, productId)) {
+        return order;
+      }
+    }
+    return null;
+  }
+
+  OrderModel? eligibleDeliveredOrderForReview({
+    required String customerId,
+    required String productId,
+  }) {
+    return eligiblePurchasedOrderForReview(
+      customerId: customerId,
+      productId: productId,
+    );
+  }
+
+  bool hasPurchasedProduct({
+    required String customerId,
+    required String productId,
+  }) {
+    return ordersForCustomer(
+      customerId,
+    ).any((order) => order.items.any((item) => item.product.id == productId));
+  }
+
+  bool hasValidPurchasedProduct({
+    required String customerId,
+    required String productId,
+  }) {
+    return ordersForCustomer(
+      customerId,
+    ).any((order) => _isValidReviewPurchase(order, productId));
+  }
+
+  bool hasPaymentIncompletePurchase({
+    required String customerId,
+    required String productId,
+  }) {
+    return ordersForCustomer(customerId).any((order) {
+      final containsProduct = order.items.any(
+        (item) => item.product.id == productId && item.quantity > 0,
+      );
+      return containsProduct &&
+          !_isCancelledOrFailedOrder(order) &&
+          !_isPaymentCompleteOrActive(order);
+    });
+  }
+
+  bool hasCancelledOnlyPurchase({
+    required String customerId,
+    required String productId,
+  }) {
+    return ordersForCustomer(customerId).any((order) {
+      final containsProduct = order.items.any(
+        (item) => item.product.id == productId && item.quantity > 0,
+      );
+      return containsProduct && _isCancelledOrFailedOrder(order);
+    });
+  }
+
+  bool _isValidReviewPurchase(OrderModel order, String productId) {
+    final containsProduct = order.items.any(
+      (item) => item.product.id == productId && item.quantity > 0,
+    );
+    return containsProduct &&
+        !_isCancelledOrFailedOrder(order) &&
+        _isPaymentCompleteOrActive(order);
+  }
+
+  bool _isCancelledOrFailedOrder(OrderModel order) {
+    final blockedStatuses = {
+      'cancelled',
+      'failed',
+      'refunded',
+      'returned',
+      'returns',
+      'return requested',
+    };
+    final status = order.status.trim().toLowerCase();
+    final shippingStatus = order.shippingStatus.trim().toLowerCase();
+    return blockedStatuses.contains(status) ||
+        blockedStatuses.contains(shippingStatus);
+  }
+
+  bool _isPaymentCompleteOrActive(OrderModel order) {
+    final paidPaymentStatuses = {'paid', 'completed', 'captured'};
+    final activeOrderStatuses = {
+      'paid',
+      'processing',
+      'readytoship',
+      'ready to ship',
+      'shipped',
+      'delivered',
+      'completed',
+      'confirmedreceived',
+      'confirmed received',
+      'review',
+    };
+    final status = order.status.trim().toLowerCase();
+    final paymentStatus = order.paymentStatus.trim().toLowerCase();
+    final shippingStatus = order.shippingStatus.trim().toLowerCase();
+    return paidPaymentStatuses.contains(paymentStatus) ||
+        activeOrderStatuses.contains(status) ||
+        activeOrderStatuses.contains(shippingStatus);
+  }
+
+  void saveProductReview(ReviewModel review) {
+    final existingIndex = _reviews.indexWhere((item) => item.id == review.id);
+    final duplicateIndex = _reviews.indexWhere(
+      (item) =>
+          item.customerId == review.customerId &&
+          item.productId == review.productId,
+    );
+    final nextReview = review.copyWith(
+      updatedAt: existingIndex == -1 && duplicateIndex == -1
+          ? review.updatedAt
+          : DateTime.now(),
+    );
+    if (existingIndex != -1) {
+      _reviews[existingIndex] = nextReview;
+    } else if (duplicateIndex != -1) {
+      _reviews[duplicateIndex] = nextReview;
+    } else {
+      _reviews = [nextReview, ..._reviews];
+    }
+    unawaited(_persistState());
+    notifyListeners();
+  }
 
   void setGuestRecentSearches(List<String> values) {
     _guestRecentSearches = List<String>.from(values);
@@ -1005,6 +1201,11 @@ class MockDataService extends ChangeNotifier {
       title: 'Welcome Credit',
       amount: 8,
       type: 'credit',
+      direction: 'credit',
+      status: 'completed',
+      description: 'Welcome Credit',
+      currency: LoyaltyPolicy.currency,
+      balanceAfter: 8,
       createdAt: DateTime.now().subtract(const Duration(days: 8)),
     ),
     WalletTransactionModel(
@@ -1012,9 +1213,107 @@ class MockDataService extends ChangeNotifier {
       title: 'Order Discount Applied',
       amount: -4,
       type: 'debit',
+      direction: 'debit',
+      status: 'completed',
+      description: 'Order Discount Applied',
+      currency: LoyaltyPolicy.currency,
+      balanceAfter: 4,
       createdAt: DateTime.now().subtract(const Duration(days: 3)),
     ),
   ];
+
+  List<GiftCardModel> get giftCards => List.unmodifiable(_giftCards);
+
+  int redeemedGiftCardCount(String customerId) {
+    return _giftCards
+        .where((card) => card.isRedeemed && card.redeemedBy == customerId)
+        .length;
+  }
+
+  GiftCardRedeemResult redeemGiftCard({
+    required String customerId,
+    required String code,
+  }) {
+    final normalizedCode = code.trim().toUpperCase();
+    final customer = userById(customerId);
+    if (customer == null) {
+      return const GiftCardRedeemResult.failure('customer_not_found');
+    }
+    if (normalizedCode.isEmpty) {
+      return const GiftCardRedeemResult.failure('empty_code');
+    }
+    final index = _giftCards.indexWhere(
+      (card) => card.code.toUpperCase() == normalizedCode,
+    );
+    if (index == -1) {
+      return const GiftCardRedeemResult.failure('invalid_code');
+    }
+    final card = _giftCards[index];
+    if (card.isRedeemed) {
+      return const GiftCardRedeemResult.failure('already_redeemed');
+    }
+    if (!card.isActive || card.status != 'active') {
+      return const GiftCardRedeemResult.failure('inactive');
+    }
+    if (card.isExpired) {
+      return const GiftCardRedeemResult.failure('expired');
+    }
+
+    final now = DateTime.now();
+    final nextBalance = customer.walletBalance + card.amount;
+    final transaction = WalletTransactionModel(
+      id: 'wallet_gift_${card.id}_${now.microsecondsSinceEpoch}',
+      title: 'Gift card ${card.code}',
+      amount: card.amount,
+      type: 'gift_card',
+      customerId: customer.id,
+      giftCardId: card.id,
+      direction: 'credit',
+      status: 'completed',
+      description: 'Gift card ${card.code} redeemed',
+      currency: card.currency,
+      balanceAfter: nextBalance,
+      createdAt: now,
+    );
+    final updatedCustomer = customer.copyWith(
+      walletBalance: nextBalance,
+      walletTransactions: [transaction, ...customer.walletTransactions],
+      updatedAt: now,
+    );
+    _giftCards[index] = card.copyWith(
+      isRedeemed: true,
+      redeemedBy: customer.id,
+      redeemedAt: now,
+      status: 'redeemed',
+    );
+    updateUser(updatedCustomer);
+    createNotification(
+      NotificationModel(
+        id: 'notif_gift_${card.id}_${now.microsecondsSinceEpoch}',
+        recipientUserId: customer.id,
+        recipientRole: UserRole.customer,
+        type: NotificationType.generic,
+        entityType: 'giftCard',
+        entityId: card.id,
+        route: '/wallet',
+        data: {
+          'amount': card.amount,
+          'currency': card.currency,
+          'code': card.code,
+        },
+        createdAt: now,
+        legacyTitle: 'Gift card redeemed',
+        legacyMessage:
+            '${card.amount.toStringAsFixed(2)} ${card.currency} added to your wallet.',
+      ),
+    );
+    notifyListeners();
+    return GiftCardRedeemResult.success(
+      card: _giftCards[index],
+      user: userById(customer.id) ?? updatedCustomer,
+      transaction: transaction,
+    );
+  }
 
   WishlistBoardModel get _defaultWishlistBoard => const WishlistBoardModel(
     id: 'board_saved',
@@ -1626,6 +1925,119 @@ class MockDataService extends ChangeNotifier {
     notifyListeners();
   }
 
+  UserModel? applyCheckoutRewards(OrderModel order) {
+    final customer = userById(order.customerId);
+    if (customer == null) {
+      return null;
+    }
+    final now = DateTime.now();
+    var nextPoints = customer.points;
+    var nextWallet = customer.walletBalance;
+    final nextPointTransactions = List<CustomerPointsTransactionModel>.from(
+      customer.pointsTransactions,
+    );
+    final nextWalletTransactions = List<WalletTransactionModel>.from(
+      customer.walletTransactions,
+    );
+
+    if (order.loyaltyPointsRedeemed > 0) {
+      if (nextPoints < order.loyaltyPointsRedeemed) {
+        return customer;
+      }
+      nextPoints -= order.loyaltyPointsRedeemed;
+      nextPointTransactions.insert(
+        0,
+        CustomerPointsTransactionModel(
+          id: 'points_redeem_${order.id}_${now.microsecondsSinceEpoch}',
+          customerId: customer.id,
+          orderId: order.id,
+          type: 'redeem',
+          points: -order.loyaltyPointsRedeemed,
+          description:
+              'Redeemed ${order.loyaltyPointsRedeemed} points for order ${order.id}',
+          createdAt: now,
+          status: 'completed',
+        ),
+      );
+    }
+
+    if (order.walletAmountUsed > 0) {
+      if (nextWallet + 0.001 < order.walletAmountUsed) {
+        return customer;
+      }
+      nextWallet -= order.walletAmountUsed;
+      nextWalletTransactions.insert(
+        0,
+        WalletTransactionModel(
+          id: 'wallet_debit_${order.id}_${now.microsecondsSinceEpoch}',
+          title: 'Wallet used for order',
+          amount: -order.walletAmountUsed,
+          type: 'order_payment',
+          customerId: customer.id,
+          orderId: order.id,
+          direction: 'debit',
+          status: 'completed',
+          description: 'Wallet payment for order ${order.id}',
+          currency: LoyaltyPolicy.currency,
+          balanceAfter: nextWallet,
+          createdAt: now,
+        ),
+      );
+    }
+
+    final alreadyAwarded = nextPointTransactions.any(
+      (transaction) =>
+          transaction.orderId == order.id && transaction.type == 'earn',
+    );
+    if (!alreadyAwarded && order.loyaltyPointsEarned > 0) {
+      nextPoints += order.loyaltyPointsEarned;
+      nextPointTransactions.insert(
+        0,
+        CustomerPointsTransactionModel(
+          id: 'points_earn_${order.id}_${now.microsecondsSinceEpoch}',
+          customerId: customer.id,
+          orderId: order.id,
+          type: 'earn',
+          points: order.loyaltyPointsEarned,
+          description:
+              'Earned ${order.loyaltyPointsEarned} points from order ${order.id}',
+          createdAt: now,
+          expiresAt: now.add(const Duration(days: 365)),
+          status: 'completed',
+        ),
+      );
+    }
+
+    final updated = customer.copyWith(
+      points: nextPoints,
+      walletBalance: nextWallet,
+      pointsTransactions: nextPointTransactions,
+      walletTransactions: nextWalletTransactions,
+      updatedAt: now,
+    );
+    updateUser(updated);
+    if (!alreadyAwarded && order.loyaltyPointsEarned > 0) {
+      createNotification(
+        NotificationModel(
+          id: 'notif_points_${order.id}_${now.microsecondsSinceEpoch}',
+          recipientUserId: customer.id,
+          recipientRole: UserRole.customer,
+          type: NotificationType.generic,
+          entityType: 'points',
+          entityId: order.id,
+          route: '/points',
+          data: {'orderId': order.id, 'points': order.loyaltyPointsEarned},
+          createdAt: now,
+          legacyTitle: 'Points earned',
+          legacyMessage:
+              'You earned ${order.loyaltyPointsEarned} points from your order.',
+        ),
+      );
+      return userById(customer.id) ?? updated;
+    }
+    return updated;
+  }
+
   void updateOrder(OrderModel order) {
     final index = _platformOrders.indexWhere((item) => item.id == order.id);
     if (index == -1) {
@@ -1638,7 +2050,7 @@ class MockDataService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSellerOrder(SellerOrderModel order) {
+  Future<void> updateSellerOrder(SellerOrderModel order) async {
     final index = _sellerOrders.indexWhere((item) => item.id == order.id);
     if (index == -1) {
       _sellerOrders = [order, ..._sellerOrders];
@@ -1646,7 +2058,7 @@ class MockDataService extends ChangeNotifier {
       _sellerOrders[index] = order.copyWith(updatedAt: DateTime.now());
     }
     recomputeMasterOrderStatus(order.masterOrderId);
-    unawaited(_persistState());
+    await _persistState();
     notifyListeners();
   }
 
@@ -1783,7 +2195,7 @@ class MockDataService extends ChangeNotifier {
         .toList();
   }
 
-  void addOrUpdateProduct(ProductModel product) {
+  Future<void> addOrUpdateProduct(ProductModel product) async {
     final index = _allProducts.indexWhere((item) => item.id == product.id);
     final persistedProduct = product.copyWith(
       updatedAt: DateTime.now(),
@@ -1797,17 +2209,17 @@ class MockDataService extends ChangeNotifier {
     } else {
       _allProducts = [persistedProduct, ..._allProducts];
     }
-    unawaited(_persistState());
+    await _persistState();
     notifyListeners();
   }
 
-  void saveProducts(List<ProductModel> products) {
+  Future<void> saveProducts(List<ProductModel> products) async {
     _allProducts = List<ProductModel>.from(products);
-    unawaited(_persistState());
+    await _persistState();
     notifyListeners();
   }
 
-  void deleteProduct(String productId) {
+  Future<void> deleteProduct(String productId) async {
     final index = _allProducts.indexWhere((product) => product.id == productId);
     if (index == -1) return;
     _allProducts[index] = _allProducts[index].copyWith(
@@ -1816,7 +2228,7 @@ class MockDataService extends ChangeNotifier {
       deletedAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
-    unawaited(_persistState());
+    await _persistState();
     notifyListeners();
   }
 
@@ -2180,6 +2592,7 @@ class MockDataService extends ChangeNotifier {
     'promoBanners': _promoBannerPool,
     'categories': _categories.map((item) => item.toJson()).toList(),
     'coupons': _coupons.map((item) => item.toJson()).toList(),
+    'giftCards': _giftCards.map((item) => item.toJson()).toList(),
     'genericNotifications': _genericNotifications
         .map((item) => item.toJson())
         .toList(),
@@ -2241,6 +2654,9 @@ class MockDataService extends ChangeNotifier {
     _coupons = (json['coupons'] as List<dynamic>? ?? [])
         .map((item) => CouponModel.fromJson(item as Map<String, dynamic>))
         .toList();
+    _giftCards = (json['giftCards'] as List<dynamic>? ?? [])
+        .map((item) => GiftCardModel.fromJson(item as Map<String, dynamic>))
+        .toList();
     _genericNotifications =
         (json['genericNotifications'] as List<dynamic>? ?? [])
             .map(
@@ -2250,6 +2666,9 @@ class MockDataService extends ChangeNotifier {
             .toList();
     _reviews = (json['reviews'] as List<dynamic>? ?? [])
         .map((item) => ReviewModel.fromJson(item as Map<String, dynamic>))
+        .toList();
+    _reviews = _reviews
+        .where((review) => review.productId.trim().isNotEmpty)
         .toList();
     _storeReviews = (json['storeReviews'] as List<dynamic>? ?? [])
         .map((item) => StoreReviewModel.fromJson(item as Map<String, dynamic>))
@@ -2271,8 +2690,14 @@ class MockDataService extends ChangeNotifier {
     if (_storeReviews.isEmpty) {
       _storeReviews = _buildInitialStoreReviews();
     }
+    if (_giftCards.isEmpty) {
+      _giftCards = _buildInitialGiftCards();
+    }
     if (_sellerOrders.isEmpty) {
       _sellerOrders = _buildSellerOrdersFromOrders(_platformOrders);
+    }
+    if (_reviews.isEmpty && _platformOrders.isNotEmpty) {
+      _reviews = _buildInitialReviews();
     }
     _recalculateAllStoreRatings();
     _currentSessionUser = null;
@@ -2728,6 +3153,36 @@ class MockDataService extends ChangeNotifier {
     ),
   ];
 
+  List<GiftCardModel> _buildInitialGiftCards() {
+    final now = DateTime.now();
+    return [
+      GiftCardModel(
+        id: 'gift_ly25',
+        code: 'LY25',
+        amount: 25,
+        currency: LoyaltyPolicy.currency,
+        createdAt: now.subtract(const Duration(days: 7)),
+        expiresAt: now.add(const Duration(days: 180)),
+      ),
+      GiftCardModel(
+        id: 'gift_ly50',
+        code: 'LY50',
+        amount: 50,
+        currency: LoyaltyPolicy.currency,
+        createdAt: now.subtract(const Duration(days: 5)),
+        expiresAt: now.add(const Duration(days: 180)),
+      ),
+      GiftCardModel(
+        id: 'gift_ly100',
+        code: 'LY100',
+        amount: 100,
+        currency: LoyaltyPolicy.currency,
+        createdAt: now.subtract(const Duration(days: 3)),
+        expiresAt: now.add(const Duration(days: 180)),
+      ),
+    ];
+  }
+
   List<NotificationModel> _buildInitialNotifications() => [
     NotificationModel(
       id: 'n1',
@@ -2893,16 +3348,65 @@ class MockDataService extends ChangeNotifier {
     }).toList();
   }
 
-  List<ReviewModel> _buildInitialReviews() => List.generate(
-    8,
-    (index) => ReviewModel(
-      id: 'review_$index',
-      author: 'Style Shopper ${index + 1}',
-      rating: 4 + (index % 2) * 0.5,
-      comment:
-          'Comfortable fit, nice details, and easy to style for different plans.',
-      createdAt: DateTime.now().subtract(Duration(days: index * 4)),
-      hasPhoto: index.isEven,
-    ),
-  );
+  List<ReviewModel> _buildInitialReviews() {
+    final deliveredOrders = _platformOrders
+        .where(
+          (order) =>
+              order.customerId == 'customer_1' &&
+              (order.status == 'Delivered' ||
+                  order.status == 'Review' ||
+                  order.shippingStatus == 'Delivered'),
+        )
+        .toList();
+    return deliveredOrders.take(2).map((order) {
+      final item = order.items.first;
+      final index = deliveredOrders.indexOf(order);
+      return ReviewModel(
+        id: 'review_${order.id}_${item.product.id}',
+        productId: item.product.id,
+        orderId: order.id,
+        customerId: order.customerId,
+        customerName: order.customerName,
+        rating: index.isEven ? 4.5 : 4,
+        comment: index.isEven
+            ? 'Verified purchase: comfortable quality and the item arrived as expected.'
+            : 'Good value after delivery. The details match the product photos.',
+        createdAt: order.updatedAt.add(const Duration(hours: 4)),
+        updatedAt: order.updatedAt.add(const Duration(hours: 4)),
+        status: ReviewStatus.approved,
+        isVerifiedPurchase: true,
+      );
+    }).toList();
+  }
+}
+
+class GiftCardRedeemResult {
+  const GiftCardRedeemResult._({
+    required this.isSuccess,
+    required this.messageKey,
+    this.card,
+    this.user,
+    this.transaction,
+  });
+
+  const GiftCardRedeemResult.failure(String messageKey)
+    : this._(isSuccess: false, messageKey: messageKey);
+
+  const GiftCardRedeemResult.success({
+    required GiftCardModel card,
+    required UserModel user,
+    required WalletTransactionModel transaction,
+  }) : this._(
+         isSuccess: true,
+         messageKey: 'success',
+         card: card,
+         user: user,
+         transaction: transaction,
+       );
+
+  final bool isSuccess;
+  final String messageKey;
+  final GiftCardModel? card;
+  final UserModel? user;
+  final WalletTransactionModel? transaction;
 }

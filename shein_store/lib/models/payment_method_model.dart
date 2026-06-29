@@ -13,12 +13,18 @@ class PaymentMethodModel {
   final String token;
   final bool isDefault;
 
-  PaymentMethodModel copyWith({bool? isDefault}) {
+  PaymentMethodModel copyWith({
+    String? id,
+    String? brand,
+    String? maskedNumber,
+    String? token,
+    bool? isDefault,
+  }) {
     return PaymentMethodModel(
-      id: id,
-      brand: brand,
-      maskedNumber: maskedNumber,
-      token: token,
+      id: id ?? this.id,
+      brand: brand ?? this.brand,
+      maskedNumber: maskedNumber ?? this.maskedNumber,
+      token: token ?? this.token,
       isDefault: isDefault ?? this.isDefault,
     );
   }

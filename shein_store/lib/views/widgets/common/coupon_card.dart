@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_copy_helper.dart';
 import '../../../models/coupon_model.dart';
 
 class CouponCard extends StatelessWidget {
@@ -91,21 +92,32 @@ class CouponCard extends StatelessWidget {
                       runSpacing: 6,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                          padding: const EdgeInsetsDirectional.only(
+                            start: 8,
+                            end: 2,
                           ),
                           decoration: BoxDecoration(
                             color: colors.surfaceSoft,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: Text(
-                            coupon.code,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: colors.primaryText,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                coupon.code,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: colors.primaryText,
+                                ),
+                              ),
+                              AppCopyIconButton(
+                                text: coupon.code,
+                                feedback: context.l10n.copiedCouponCode,
+                                tooltip: context.l10n.copy,
+                                iconSize: 16,
+                              ),
+                            ],
                           ),
                         ),
                         Text(

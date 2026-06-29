@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../controllers/wallet_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../widgets/common/app_header.dart';
 
 class WalletScreen extends StatelessWidget {
@@ -19,7 +20,7 @@ class WalletScreen extends StatelessWidget {
         children: [
           _BalanceCard(
             title: context.tr('Wallet Balance', 'رصيد المحفظة'),
-            value: '\$${walletController.balance.toStringAsFixed(2)}',
+            value: formatCurrency(walletController.balance),
             icon: Icons.account_balance_wallet_outlined,
           ),
           const SizedBox(height: 12),
@@ -33,15 +34,17 @@ class WalletScreen extends StatelessWidget {
               ),
               child: ListTile(
                 title: Text(
-                  transaction.title,
+                  transaction.displayTitle,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text(transaction.type),
+                subtitle: Text('${transaction.type} • ${transaction.status}'),
                 trailing: Text(
-                  '\$${transaction.amount.toStringAsFixed(2)}',
+                  formatCurrency(transaction.amount),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: context.appColors.primaryText,
+                    color: transaction.amount < 0
+                        ? context.appColors.discount
+                        : context.appColors.success,
                   ),
                 ),
               ),

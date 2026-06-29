@@ -1,6 +1,7 @@
 import 'address_model.dart';
 import 'cart_item_model.dart';
 import 'coupon_model.dart';
+import 'customer_points_transaction_model.dart';
 import 'localized_text_model.dart';
 import 'notification_model.dart';
 import 'order_model.dart';
@@ -28,6 +29,7 @@ class UserModel {
     required this.paymentMethods,
     required this.wishlistProductIds,
     required this.walletTransactions,
+    this.pointsTransactions = const [],
     this.cart = const [],
     this.wishlistBoards = const [],
     this.notifications = const [],
@@ -72,6 +74,7 @@ class UserModel {
   final List<PaymentMethodModel> paymentMethods;
   final List<String> wishlistProductIds;
   final List<WalletTransactionModel> walletTransactions;
+  final List<CustomerPointsTransactionModel> pointsTransactions;
   final List<CartItemModel> cart;
   final List<WishlistBoardModel> wishlistBoards;
   final List<NotificationModel> notifications;
@@ -114,6 +117,7 @@ class UserModel {
     List<PaymentMethodModel>? paymentMethods,
     List<String>? wishlistProductIds,
     List<WalletTransactionModel>? walletTransactions,
+    List<CustomerPointsTransactionModel>? pointsTransactions,
     List<CartItemModel>? cart,
     List<WishlistBoardModel>? wishlistBoards,
     List<NotificationModel>? notifications,
@@ -152,6 +156,7 @@ class UserModel {
       paymentMethods: paymentMethods ?? this.paymentMethods,
       wishlistProductIds: wishlistProductIds ?? this.wishlistProductIds,
       walletTransactions: walletTransactions ?? this.walletTransactions,
+      pointsTransactions: pointsTransactions ?? this.pointsTransactions,
       cart: cart ?? this.cart,
       wishlistBoards: wishlistBoards ?? this.wishlistBoards,
       notifications: notifications ?? this.notifications,
@@ -217,6 +222,13 @@ class UserModel {
           .map(
             (item) =>
                 WalletTransactionModel.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+      pointsTransactions: (json['pointsTransactions'] as List<dynamic>? ?? [])
+          .map(
+            (item) => CustomerPointsTransactionModel.fromJson(
+              item as Map<String, dynamic>,
+            ),
           )
           .toList(),
       cart: (json['cart'] as List<dynamic>? ?? [])
@@ -294,6 +306,9 @@ class UserModel {
     'paymentMethods': paymentMethods.map((item) => item.toJson()).toList(),
     'wishlistProductIds': wishlistProductIds,
     'walletTransactions': walletTransactions
+        .map((item) => item.toJson())
+        .toList(),
+    'pointsTransactions': pointsTransactions
         .map((item) => item.toJson())
         .toList(),
     'cart': cart.map((item) => item.toJson()).toList(),

@@ -251,6 +251,7 @@ class SearchController extends ChangeNotifier {
       }
       if (subcategory != null &&
           subcategory.isNotEmpty &&
+          product.subcategoryId != subcategory &&
           product.subcategoryName != subcategory &&
           !product.tags.contains(subcategory)) {
         return false;
@@ -272,7 +273,12 @@ class SearchController extends ChangeNotifier {
       if (maxPrice != null && product.price > maxPrice) {
         return false;
       }
-      if (minRating != null && product.rating < minRating) {
+      final realRating =
+          _productController
+              ?.ratingSummaryForProduct(product.id)
+              .averageRating ??
+          product.rating;
+      if (minRating != null && realRating < minRating) {
         return false;
       }
       if (minStoreRating != null && (store?.rating ?? 0) < minStoreRating) {

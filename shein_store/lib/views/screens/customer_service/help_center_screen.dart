@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../widgets/common/app_header.dart';
 
+import '../../../core/constants/app_routes.dart';
+
 class HelpCenterScreen extends StatelessWidget {
-  const HelpCenterScreen({super.key});
+  const HelpCenterScreen({super.key, this.orderId});
+
+  final String? orderId;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +26,18 @@ class HelpCenterScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (orderId != null && orderId!.isNotEmpty)
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.receipt_long_outlined),
+                title: Text(
+                  context.tr(
+                    'Related order: #$orderId',
+                    'الطلب المرتبط: #$orderId',
+                  ),
+                ),
+              ),
+            ),
           ...topics.map(
             (topic) => Card(
               child: ListTile(
@@ -32,6 +48,8 @@ class HelpCenterScreen extends StatelessWidget {
                     'اضغط لعرض الأسئلة الشائعة وإرشادات الدعم.',
                   ),
                 ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _showTopic(context, topic),
               ),
             ),
           ),
@@ -43,8 +61,57 @@ class HelpCenterScreen extends StatelessWidget {
                 'تواصل مع فريق الدعم التجريبي للأسئلة العامة.',
               ),
             ),
+            trailing: const Icon(Icons.support_agent_outlined),
+            onTap: () => Navigator.pushNamed(
+              context,
+              AppRoutes.liveChat,
+              arguments: orderId,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showTopic(BuildContext context, String topic) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                topic,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                context.tr(
+                  'This demo help topic explains the next steps locally. For real accounts, this can connect to an FAQ API or ticket system.',
+                  'يوضح هذا الموضوع التجريبي الخطوات محلياً. في الحسابات الحقيقية يمكن ربطه بواجهة أسئلة شائعة أو نظام تذاكر.',
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.liveChat,
+                    arguments: orderId,
+                  );
+                },
+                child: Text(context.tr('Contact support', 'التواصل مع الدعم')),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

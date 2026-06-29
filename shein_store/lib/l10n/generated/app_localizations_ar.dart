@@ -1380,4 +1380,65 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get categoryCloseMenu => 'إغلاق القائمة';
+
+  @override
+  String get reviewProduct => 'تقييم المنتج';
+
+  @override
+  String get reviewWrite => 'اكتب تقييمًا';
+
+  @override
+  String get reviewEdit => 'تعديل التقييم';
+
+  @override
+  String get reviewSubmit => 'إرسال التقييم';
+
+  @override
+  String get reviewCancel => 'إلغاء';
+
+  @override
+  String get reviewNoReviews => 'لا توجد تقييمات بعد';
+
+  @override
+  String get reviewVerifiedPurchase => 'شراء موثق';
+
+  @override
+  String get reviewSuccess => 'تم إرسال التقييم بنجاح';
+
+  @override
+  String get reviewLoginRequired =>
+      'يرجى تسجيل الدخول وشراء هذا المنتج قبل كتابة تقييم.';
+
+  @override
+  String get reviewNotPurchased => 'يمكنك تقييم هذا المنتج بعد شرائه.';
+
+  @override
+  String get reviewNotDelivered => 'يمكنك تقييم هذا المنتج بعد استلام الطلب.';
+
+  @override
+  String get copied => 'تم النسخ';
+
+  @override
+  String get copiedOrderNumber => 'تم نسخ رقم الطلب';
+
+  @override
+  String get copiedTrackingNumber => 'تم نسخ رقم التتبع';
+
+  @override
+  String get copiedSku => 'تم نسخ رمز المنتج';
+
+  @override
+  String get copiedCouponCode => 'تم نسخ كود الخصم';
+
+  @override
+  String get copiedPhoneNumber => 'تم نسخ رقم الهاتف';
+
+  @override
+  String get copiedEmail => 'تم نسخ البريد الإلكتروني';
+
+  @override
+  String get copiedAddress => 'تم نسخ العنوان';
+
+  @override
+  String get copy => 'نسخ';
 }

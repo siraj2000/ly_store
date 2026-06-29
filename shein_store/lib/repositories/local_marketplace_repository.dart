@@ -96,7 +96,7 @@ class LocalMarketplaceRepository implements MarketplaceRepository {
 
   @override
   Future<void> saveSellerOrder(SellerOrderModel order) async {
-    _mockDataService.updateSellerOrder(order);
+    await _mockDataService.updateSellerOrder(order);
   }
 
   @override
@@ -106,12 +106,12 @@ class LocalMarketplaceRepository implements MarketplaceRepository {
 
   @override
   Future<void> saveProduct(ProductModel product) async {
-    _mockDataService.addOrUpdateProduct(product);
+    await _mockDataService.addOrUpdateProduct(product);
   }
 
   @override
   Future<void> saveProducts(List<ProductModel> products) async {
-    _mockDataService.saveProducts(products);
+    await _mockDataService.saveProducts(products);
   }
 
   @override

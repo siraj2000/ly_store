@@ -186,6 +186,7 @@ class WishlistScreen extends StatelessWidget {
                                 onTap: () => Navigator.pushNamed(
                                   context,
                                   AppRoutes.wishlistBoard,
+                                  arguments: board.id,
                                 ),
                               ),
                             ),
@@ -253,10 +254,31 @@ class WishlistScreen extends StatelessWidget {
             AppButton(
               text: context.tr('Create', 'إنشاء'),
               onPressed: () {
-                context.read<WishlistController>().createBoard(
+                final created = context.read<WishlistController>().createBoard(
                   controller.text.trim(),
+                  isPrivate: isPrivate,
                 );
+                if (!created) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        context.tr(
+                          'Enter a unique board name',
+                          'أدخل اسم قائمة غير مكرر',
+                        ),
+                      ),
+                    ),
+                  );
+                  return;
+                }
                 Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      context.tr('Board created', 'تم إنشاء القائمة'),
+                    ),
+                  ),
+                );
               },
             ),
           ],

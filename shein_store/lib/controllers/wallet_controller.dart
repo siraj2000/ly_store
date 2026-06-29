@@ -21,4 +21,25 @@ class WalletController extends ChangeNotifier {
   List<WalletTransactionModel> get transactions =>
       _authController?.currentUser?.walletTransactions ??
       _mockDataService.walletTransactions;
+
+  int get redeemedGiftCardCount {
+    final userId = _authController?.currentUser?.id ?? '';
+    if (userId.isEmpty) {
+      return 0;
+    }
+    return _mockDataService.redeemedGiftCardCount(userId);
+  }
+
+  GiftCardRedeemResult redeemGiftCard(String code) {
+    final userId = _authController?.currentUser?.id ?? '';
+    final result = _mockDataService.redeemGiftCard(
+      customerId: userId,
+      code: code,
+    );
+    if (result.user != null) {
+      _authController?.replaceUser(result.user!);
+    }
+    notifyListeners();
+    return result;
+  }
 }

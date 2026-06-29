@@ -184,12 +184,6 @@ class CartController extends ChangeNotifier {
           ? subtotal * (appliedCoupon!.amount / 100)
           : appliedCoupon!.amount;
     }
-    if (usePoints && _authController?.currentUser != null) {
-      discount += (_authController!.currentUser!.points / 100).clamp(0, 12);
-    }
-    if (useWallet && _authController?.currentUser != null) {
-      discount += _authController!.currentUser!.walletBalance.clamp(0, 18);
-    }
     return discount > subtotal ? subtotal : discount;
   }
 

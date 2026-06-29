@@ -11,7 +11,9 @@ import '../../../models/address_model.dart';
 import '../../widgets/common/app_header.dart';
 
 class AddressFormScreen extends StatefulWidget {
-  const AddressFormScreen({super.key});
+  const AddressFormScreen({super.key, this.addressId});
+
+  final String? addressId;
 
   @override
   State<AddressFormScreen> createState() => _AddressFormScreenState();
@@ -27,6 +29,8 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   final _street = TextEditingController();
   final _postal = TextEditingController();
   bool _isDefault = false;
+  bool _didLoadAddress = false;
+  AddressModel? _editingAddress;
 
   @override
   void dispose() {
@@ -43,9 +47,15 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    _loadAddressIfNeeded(context);
+    final isEditing = _editingAddress != null;
 
     return Scaffold(
-      appBar: AppHeader(title: context.tr('Address Form', 'نموذج العنوان')),
+      appBar: AppHeader(
+        title: isEditing
+            ? context.tr('Edit Address', 'تعديل العنوان')
+            : context.tr('Add Address', 'إضافة عنوان'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSizes.lg),
         child: Container(
@@ -62,21 +72,26 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                 AppTextField(
                   controller: _fullName,
                   label: context.tr('Full name', 'الاسم الكامل'),
+                  validator: _requiredValidator(context),
                 ),
                 const SizedBox(height: AppSizes.md),
                 AppTextField(
                   controller: _phone,
                   label: context.tr('Phone', 'الهاتف'),
+                  keyboardType: TextInputType.phone,
+                  validator: _requiredValidator(context),
                 ),
                 const SizedBox(height: AppSizes.md),
                 AppTextField(
                   controller: _country,
                   label: context.tr('Country', 'الدولة'),
+                  validator: _requiredValidator(context),
                 ),
                 const SizedBox(height: AppSizes.md),
                 AppTextField(
                   controller: _city,
                   label: context.tr('City', 'المدينة'),
+                  validator: _requiredValidator(context),
                 ),
                 const SizedBox(height: AppSizes.md),
                 AppTextField(
@@ -87,6 +102,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                 AppTextField(
                   controller: _street,
                   label: context.tr('Street address', 'عنوان الشارع'),
+                  validator: _requiredValidator(context),
                 ),
                 const SizedBox(height: AppSizes.md),
                 AppTextField(
@@ -110,17 +126,38 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
                 AppButton(
                   text: context.tr('Save Address', 'حفظ العنوان'),
                   onPressed: () {
-                    context.read<ProfileController>().addAddress(
-                      AddressModel(
-                        id: 'address_${DateTime.now().millisecondsSinceEpoch}',
-                        fullName: _fullName.text.trim(),
-                        phone: _phone.text.trim(),
-                        country: _country.text.trim(),
-                        city: _city.text.trim(),
-                        region: _region.text.trim(),
-                        streetAddress: _street.text.trim(),
-                        postalCode: _postal.text.trim(),
-                        isDefault: _isDefault,
+                    if (!(_formKey.currentState?.validate() ?? false)) {
+                      return;
+                    }
+                    final address = AddressModel(
+                      id:
+                          _editingAddress?.id ??
+                          'address_${DateTime.now().millisecondsSinceEpoch}',
+                      fullName: _fullName.text.trim(),
+                      phone: _phone.text.trim(),
+                      country: _country.text.trim(),
+                      city: _city.text.trim(),
+                      region: _region.text.trim(),
+                      streetAddress: _street.text.trim(),
+                      postalCode: _postal.text.trim(),
+                      isDefault: _isDefault,
+                    );
+                    final profile = context.read<ProfileController>();
+                    if (isEditing) {
+                      profile.updateAddress(address);
+                    } else {
+                      profile.addAddress(address);
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isEditing
+                              ? context.tr(
+                                  'Address updated',
+                                  'تم تحديث العنوان',
+                                )
+                              : context.tr('Address added', 'تم إضافة العنوان'),
+                        ),
                       ),
                     );
                     Navigator.pop(context);
@@ -132,5 +169,40 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         ),
       ),
     );
+  }
+
+  String? Function(String?) _requiredValidator(BuildContext context) {
+    return (value) {
+      if (value == null || value.trim().isEmpty) {
+        return context.tr('Required field', 'حقل مطلوب');
+      }
+      return null;
+    };
+  }
+
+  void _loadAddressIfNeeded(BuildContext context) {
+    if (_didLoadAddress) {
+      return;
+    }
+    _didLoadAddress = true;
+    final addressId = widget.addressId;
+    if (addressId == null || addressId.isEmpty) {
+      return;
+    }
+    final user = context.read<ProfileController>().user;
+    final matches = user?.addresses.where((item) => item.id == addressId);
+    if (matches == null || matches.isEmpty) {
+      return;
+    }
+    final address = matches.first;
+    _editingAddress = address;
+    _fullName.text = address.fullName;
+    _phone.text = address.phone;
+    _country.text = address.country;
+    _city.text = address.city;
+    _region.text = address.region;
+    _street.text = address.streetAddress;
+    _postal.text = address.postalCode;
+    _isDefault = address.isDefault;
   }
 }

@@ -33,8 +33,8 @@ class OrderService {
     _mockDataService.updateOrder(order);
   }
 
-  void updateSellerOrder(SellerOrderModel order) {
-    _mockDataService.updateSellerOrder(order);
+  Future<void> updateSellerOrder(SellerOrderModel order) async {
+    await _mockDataService.updateSellerOrder(order);
   }
 
   void recomputeMasterOrderStatus(String masterOrderId) {

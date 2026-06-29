@@ -15,6 +15,8 @@ class ProductModel {
     required this.categoryId,
     required this.categoryName,
     required this.department,
+    this.departmentId = '',
+    this.subcategoryId = '',
     this.subcategoryName = '',
     required this.price,
     required this.oldPrice,
@@ -84,6 +86,8 @@ class ProductModel {
   final String categoryId;
   final String categoryName;
   final String department;
+  final String departmentId;
+  final String subcategoryId;
   final String subcategoryName;
   final double price;
   final double oldPrice;
@@ -158,6 +162,8 @@ class ProductModel {
     String? categoryId,
     String? categoryName,
     String? department,
+    String? departmentId,
+    String? subcategoryId,
     String? subcategoryName,
     double? price,
     double? oldPrice,
@@ -214,6 +220,8 @@ class ProductModel {
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,
       department: department ?? this.department,
+      departmentId: departmentId ?? this.departmentId,
+      subcategoryId: subcategoryId ?? this.subcategoryId,
       subcategoryName: subcategoryName ?? this.subcategoryName,
       price: price ?? this.price,
       oldPrice: oldPrice ?? this.oldPrice,
@@ -283,6 +291,14 @@ class ProductModel {
       categoryId: json['categoryId'] as String? ?? '',
       categoryName: json['categoryName'] as String? ?? '',
       department: json['department'] as String? ?? '',
+      departmentId:
+          json['departmentId'] as String? ??
+          json['department'] as String? ??
+          '',
+      subcategoryId:
+          json['subcategoryId'] as String? ??
+          json['subcategoryName'] as String? ??
+          '',
       subcategoryName: json['subcategoryName'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       oldPrice: (json['oldPrice'] as num?)?.toDouble() ?? 0,
@@ -383,6 +399,8 @@ class ProductModel {
     'categoryId': categoryId,
     'categoryName': categoryName,
     'department': department,
+    'departmentId': departmentId,
+    'subcategoryId': subcategoryId,
     'subcategoryName': subcategoryName,
     'price': price,
     'oldPrice': oldPrice,

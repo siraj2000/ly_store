@@ -51,6 +51,13 @@ class AppTheme {
     );
 
     return base.copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: colors.accent.withValues(
+          alpha: brightness == Brightness.dark ? 0.32 : 0.22,
+        ),
+        cursorColor: colors.accent,
+        selectionHandleColor: colors.accent,
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,
         foregroundColor: colors.primaryText,

@@ -214,7 +214,9 @@ class SellerProductController extends ChangeNotifier {
         : _resolveCategoryForProduct(product);
     selectedDepartment = category?.departmentId ?? product?.department ?? '';
     selectedCategory = category?.id ?? product?.categoryId ?? '';
-    selectedSubcategory = product?.subcategoryName ?? '';
+    selectedSubcategory = product?.subcategoryId.isNotEmpty == true
+        ? product!.subcategoryId
+        : product?.subcategoryName ?? '';
     selectedColors = List<String>.from(product?.colors ?? const []);
     selectedSizes = List<String>.from(product?.sizes ?? const []);
     selectedImages = List<String>.from(
@@ -587,7 +589,7 @@ class SellerProductController extends ChangeNotifier {
     required String careInstructionsAr,
     required bool saveAsDraftOverride,
   }) async {
-    if (!_isSeller) {
+    if (!_isSeller || isSubmitting) {
       return null;
     }
 
@@ -620,6 +622,7 @@ class SellerProductController extends ChangeNotifier {
       descriptionAr: descriptionAr.trim(),
       categoryId: _resolvedSelectedCategoryId,
       categoryName: _resolvedSelectedCategoryName,
+      subcategoryId: selectedSubcategory,
       subcategoryName: selectedSubcategory,
       department: selectedDepartment,
       price: double.tryParse(price.trim()) ?? 0,
@@ -641,16 +644,18 @@ class SellerProductController extends ChangeNotifier {
       selectedImagePaths: List<String>.from(selectedImages),
       existingProduct: existingProduct,
     );
-    saveProduct(product);
-
-    isSubmitting = false;
-    notifyListeners();
-    return product;
+    try {
+      await saveProduct(product);
+      return product;
+    } finally {
+      isSubmitting = false;
+      notifyListeners();
+    }
   }
 
-  void saveProduct(ProductModel product) {
+  Future<void> saveProduct(ProductModel product) async {
     if (!_isSeller) return;
-    unawaited(_marketplaceRepository.saveProduct(product));
+    await _marketplaceRepository.saveProduct(product);
     notifyListeners();
   }
 
@@ -662,6 +667,7 @@ class SellerProductController extends ChangeNotifier {
     required String descriptionAr,
     required String categoryId,
     required String categoryName,
+    required String subcategoryId,
     required String subcategoryName,
     required String department,
     required double price,
@@ -715,6 +721,8 @@ class SellerProductController extends ChangeNotifier {
       categoryId: categoryId,
       categoryName: categoryName,
       department: department,
+      departmentId: department,
+      subcategoryId: subcategoryId,
       subcategoryName: subcategoryName,
       price: price,
       oldPrice: normalizedOldPrice,
@@ -765,37 +773,38 @@ class SellerProductController extends ChangeNotifier {
     );
   }
 
-  void deleteProduct(String productId) {
-    if (!_isSeller) return;
+  Future<ProductModel?> deleteProduct(String productId) async {
+    if (!_isSeller) return null;
     final matches = catalogProducts.where((item) => item.id == productId);
     final product = matches.isEmpty ? null : matches.first;
-    if (product == null) return;
-    saveProduct(
-      product.copyWith(
-        status: ProductStatus.deleted,
-        isActive: false,
-        deletedAt: DateTime.now(),
-      ),
+    if (product == null) return null;
+    final nextProduct = product.copyWith(
+      status: ProductStatus.deleted,
+      isActive: false,
+      deletedAt: DateTime.now(),
     );
+    await saveProduct(nextProduct);
+    return nextProduct;
   }
 
-  void duplicateProduct(ProductModel product) {
-    if (!_isSeller) return;
-    saveProduct(
-      product.copyWith(
-        id: 'seller_product_${DateTime.now().millisecondsSinceEpoch}',
-        status: ProductStatus.draft,
-        isActive: false,
-        clearPublishedAt: true,
-      ),
+  Future<ProductModel?> duplicateProduct(ProductModel product) async {
+    if (!_isSeller) return null;
+    final nextProduct = product.copyWith(
+      id: 'seller_product_${DateTime.now().millisecondsSinceEpoch}',
+      status: ProductStatus.draft,
+      isActive: false,
+      clearPublishedAt: true,
     );
+    await saveProduct(nextProduct);
+    return nextProduct;
   }
 
-  void changeStock(String productId, int stock) {
-    if (!_isSeller) return;
+  Future<ProductModel?> changeStock(String productId, int stock) async {
+    if (!_isSeller) return null;
     final matches = products.where((item) => item.id == productId);
     final product = matches.isEmpty ? null : matches.first;
-    if (product == null) return;
+    if (product == null) return null;
+    if (stock < 0) return product;
     final wasOutOfStock = product.status == ProductStatus.outOfStock;
     final nextStatus = stock == 0
         ? ProductStatus.outOfStock
@@ -804,21 +813,22 @@ class SellerProductController extends ChangeNotifier {
                     ? ProductStatus.pendingApproval
                     : ProductStatus.active)
               : product.status);
-    saveProduct(
-      product.copyWith(
-        stock: stock,
-        status: nextStatus,
-        isActive: nextStatus == ProductStatus.active,
-        clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
-      ),
+    final nextProduct = product.copyWith(
+      stock: stock,
+      status: nextStatus,
+      isActive: nextStatus == ProductStatus.active,
+      clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
     );
+    await saveProduct(nextProduct);
+    return nextProduct;
   }
 
-  void changePrice(String productId, double price) {
-    if (!_isSeller) return;
+  Future<ProductModel?> changePrice(String productId, double price) async {
+    if (!_isSeller) return null;
     final matches = products.where((item) => item.id == productId);
     final product = matches.isEmpty ? null : matches.first;
-    if (product == null) return;
+    if (product == null) return null;
+    if (price <= 0) return product;
     final nextStatus =
         requiresProductApproval && product.status == ProductStatus.active
         ? ProductStatus.pendingApproval
@@ -827,39 +837,39 @@ class SellerProductController extends ChangeNotifier {
     final discount = nextOldPrice > price
         ? ((1 - (price / nextOldPrice)) * 100).round()
         : 0;
-    saveProduct(
-      product.copyWith(
-        price: price,
-        oldPrice: nextOldPrice,
-        discount: discount,
-        status: nextStatus,
-        isActive: nextStatus == ProductStatus.active,
-        clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
-      ),
+    final nextProduct = product.copyWith(
+      price: price,
+      oldPrice: nextOldPrice,
+      discount: discount,
+      status: nextStatus,
+      isActive: nextStatus == ProductStatus.active,
+      clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
     );
+    await saveProduct(nextProduct);
+    return nextProduct;
   }
 
-  void toggleActive(String productId) {
-    if (!_isSeller) return;
+  Future<ProductModel?> toggleActive(String productId) async {
+    if (!_isSeller) return null;
     final matches = products.where((item) => item.id == productId);
     final product = matches.isEmpty ? null : matches.first;
-    if (product == null) return;
+    if (product == null) return null;
     final nextActive = !product.isActive;
     final nextStatus = !nextActive
         ? ProductStatus.inactive
         : (requiresProductApproval
               ? ProductStatus.pendingApproval
               : ProductStatus.active);
-    saveProduct(
-      product.copyWith(
-        isActive: nextStatus == ProductStatus.active,
-        status: nextStatus,
-        publishedAt: nextStatus == ProductStatus.active
-            ? (product.publishedAt ?? DateTime.now())
-            : product.publishedAt,
-        clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
-      ),
+    final nextProduct = product.copyWith(
+      isActive: nextStatus == ProductStatus.active,
+      status: nextStatus,
+      publishedAt: nextStatus == ProductStatus.active
+          ? (product.publishedAt ?? DateTime.now())
+          : product.publishedAt,
+      clearPublishedAt: nextStatus == ProductStatus.pendingApproval,
     );
+    await saveProduct(nextProduct);
+    return nextProduct;
   }
 
   bool isPublicListing(ProductModel product) {

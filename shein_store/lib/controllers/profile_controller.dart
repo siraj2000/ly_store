@@ -55,7 +55,35 @@ class ProfileController extends ChangeNotifier {
 
   void addAddress(AddressModel address) {
     if (user == null) return;
-    final addresses = [...user!.addresses, address];
+    final addresses = [
+      ...user!.addresses.map(
+        (item) => address.isDefault ? item.copyWith(isDefault: false) : item,
+      ),
+      address,
+    ];
+    _authController!.replaceUser(user!.copyWith(addresses: addresses));
+    _mockDataService?.updateUser(_authController!.currentUser!);
+    notifyListeners();
+  }
+
+  void updateAddress(AddressModel address) {
+    if (user == null) return;
+    final addresses = user!.addresses.map((item) {
+      if (item.id == address.id) {
+        return address;
+      }
+      return address.isDefault ? item.copyWith(isDefault: false) : item;
+    }).toList();
+    _authController!.replaceUser(user!.copyWith(addresses: addresses));
+    _mockDataService?.updateUser(_authController!.currentUser!);
+    notifyListeners();
+  }
+
+  void setDefaultAddress(String addressId) {
+    if (user == null) return;
+    final addresses = user!.addresses
+        .map((item) => item.copyWith(isDefault: item.id == addressId))
+        .toList();
     _authController!.replaceUser(user!.copyWith(addresses: addresses));
     _mockDataService?.updateUser(_authController!.currentUser!);
     notifyListeners();
@@ -73,7 +101,35 @@ class ProfileController extends ChangeNotifier {
 
   void addPaymentMethod(PaymentMethodModel method) {
     if (user == null) return;
-    final methods = [...user!.paymentMethods, method];
+    final methods = [
+      ...user!.paymentMethods.map(
+        (item) => method.isDefault ? item.copyWith(isDefault: false) : item,
+      ),
+      method,
+    ];
+    _authController!.replaceUser(user!.copyWith(paymentMethods: methods));
+    _mockDataService?.updateUser(_authController!.currentUser!);
+    notifyListeners();
+  }
+
+  void updatePaymentMethod(PaymentMethodModel method) {
+    if (user == null) return;
+    final methods = user!.paymentMethods.map((item) {
+      if (item.id == method.id) {
+        return method;
+      }
+      return method.isDefault ? item.copyWith(isDefault: false) : item;
+    }).toList();
+    _authController!.replaceUser(user!.copyWith(paymentMethods: methods));
+    _mockDataService?.updateUser(_authController!.currentUser!);
+    notifyListeners();
+  }
+
+  void setDefaultPaymentMethod(String paymentMethodId) {
+    if (user == null) return;
+    final methods = user!.paymentMethods
+        .map((item) => item.copyWith(isDefault: item.id == paymentMethodId))
+        .toList();
     _authController!.replaceUser(user!.copyWith(paymentMethods: methods));
     _mockDataService?.updateUser(_authController!.currentUser!);
     notifyListeners();

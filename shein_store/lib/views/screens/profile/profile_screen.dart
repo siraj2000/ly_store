@@ -5,11 +5,13 @@ import '../../../controllers/auth_controller.dart';
 import '../../../controllers/language_controller.dart';
 import '../../../controllers/profile_controller.dart';
 import '../../../controllers/theme_controller.dart';
+import '../../../controllers/wallet_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/utils/auth_required_helper.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../widgets/common/app_header.dart';
 import '../../widgets/common/profile_menu_item.dart';
 import '../../widgets/profile/order_status_card.dart';
@@ -225,7 +227,7 @@ class _GuestProfileView extends StatelessWidget {
           (
             Icons.history,
             context.l10n.profileRecentlyViewed,
-            AppRoutes.wishlistBoard,
+            AppRoutes.recentlyViewed,
           ),
           (
             Icons.location_on_outlined,
@@ -271,6 +273,7 @@ class _SignedInProfileView extends StatelessWidget {
     return Consumer<ProfileController>(
       builder: (context, profileController, _) {
         final user = profileController.user!;
+        final walletController = context.watch<WalletController>();
 
         return ListView(
           padding: EdgeInsets.fromLTRB(
@@ -302,13 +305,13 @@ class _SignedInProfileView extends StatelessWidget {
                 ),
                 _AssetItem(
                   label: context.l10n.profileWallet,
-                  value: '\$${user.walletBalance.toStringAsFixed(0)}',
+                  value: formatCurrency(user.walletBalance),
                   icon: Icons.account_balance_wallet_outlined,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.wallet),
                 ),
                 _AssetItem(
                   label: context.l10n.profileGiftCard,
-                  value: '0',
+                  value: '${walletController.redeemedGiftCardCount}',
                   icon: Icons.card_giftcard_outlined,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.giftCard),
                 ),
@@ -322,27 +325,27 @@ class _SignedInProfileView extends StatelessWidget {
                 OrderStatusCard(
                   label: context.l10n.profileOrderUnpaid,
                   icon: Icons.payment_outlined,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.orders),
+                  onTap: () => _openOrders(context, 'Unpaid'),
                 ),
                 OrderStatusCard(
                   label: context.l10n.statusProcessing,
                   icon: Icons.inventory_2_outlined,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.orders),
+                  onTap: () => _openOrders(context, 'Processing'),
                 ),
                 OrderStatusCard(
                   label: context.l10n.statusShipped,
                   icon: Icons.local_shipping_outlined,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.orders),
+                  onTap: () => _openOrders(context, 'Shipped'),
                 ),
                 OrderStatusCard(
                   label: context.l10n.profileOrderReview,
                   icon: Icons.rate_review_outlined,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.orders),
+                  onTap: () => _openOrders(context, 'Review'),
                 ),
                 OrderStatusCard(
                   label: context.l10n.profileOrderReturns,
                   icon: Icons.assignment_return_outlined,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.orders),
+                  onTap: () => _openOrders(context, 'Returns'),
                 ),
               ],
             ),
@@ -356,7 +359,7 @@ class _SignedInProfileView extends StatelessWidget {
               (
                 Icons.history,
                 context.l10n.profileRecentlyViewed,
-                AppRoutes.wishlistBoard,
+                AppRoutes.recentlyViewed,
               ),
               (
                 Icons.location_on_outlined,
@@ -388,6 +391,14 @@ class _SignedInProfileView extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _openOrders(BuildContext context, String status) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.orders,
+      arguments: {'status': status},
     );
   }
 }

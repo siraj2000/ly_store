@@ -36,9 +36,9 @@ class AdminProductApprovalController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeProduct(String productId) {
+  Future<void> removeProduct(String productId) async {
     if (!_isAdmin) return;
-    _mockDataService.deleteProduct(productId);
+    await _mockDataService.deleteProduct(productId);
     notifyListeners();
   }
 }

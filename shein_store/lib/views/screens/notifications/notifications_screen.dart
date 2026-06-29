@@ -47,36 +47,7 @@ class NotificationsScreen extends StatelessWidget {
                         notification: notification,
                         onTap: () {
                           notificationController.markAsRead(notification.id);
-                          if (notification.route == AppRoutes.orderDetails) {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.orderDetails,
-                              arguments:
-                                  notification.data['masterOrderId'] ??
-                                  notification.entityId,
-                            );
-                            return;
-                          }
-                          if (notification.route ==
-                              AppRoutes.sellerOrderDetails) {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.sellerOrderDetails,
-                              arguments:
-                                  notification.data['sellerOrderId'] ??
-                                  notification.entityId,
-                            );
-                            return;
-                          }
-                          if (notification.route == AppRoutes.storefront) {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.storefront,
-                              arguments:
-                                  notification.data['storeId'] ??
-                                  notification.entityId,
-                            );
-                          }
+                          _handleNotificationTap(context, notification);
                         },
                         onDelete: () =>
                             notificationController.delete(notification.id),
@@ -84,6 +55,64 @@ class NotificationsScreen extends StatelessWidget {
                     )
                     .toList(),
               ),
+      ),
+    );
+  }
+
+  void _handleNotificationTap(BuildContext context, dynamic notification) {
+    final route = notification.route as String?;
+    switch (route) {
+      case AppRoutes.orders:
+        Navigator.pushNamed(context, AppRoutes.orders);
+        return;
+      case AppRoutes.orderDetails:
+        Navigator.pushNamed(
+          context,
+          AppRoutes.orderDetails,
+          arguments:
+              notification.data['masterOrderId'] ?? notification.entityId,
+        );
+        return;
+      case AppRoutes.sellerOrders:
+        Navigator.pushNamed(context, AppRoutes.sellerOrders);
+        return;
+      case AppRoutes.sellerOrderDetails:
+        Navigator.pushNamed(
+          context,
+          AppRoutes.sellerOrderDetails,
+          arguments:
+              notification.data['sellerOrderId'] ?? notification.entityId,
+        );
+        return;
+      case AppRoutes.productDetails:
+        Navigator.pushNamed(
+          context,
+          AppRoutes.productDetails,
+          arguments: notification.data['productId'] ?? notification.entityId,
+        );
+        return;
+      case AppRoutes.storefront:
+        Navigator.pushNamed(
+          context,
+          AppRoutes.storefront,
+          arguments: notification.data['storeId'] ?? notification.entityId,
+        );
+        return;
+      case AppRoutes.wishlist:
+        Navigator.pushNamed(context, AppRoutes.wishlist);
+        return;
+      case AppRoutes.cart:
+        Navigator.pushNamed(context, AppRoutes.cart);
+        return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          context.tr(
+            'This notification does not have a destination.',
+            'لا توجد وجهة مرتبطة بهذا الإشعار.',
+          ),
+        ),
       ),
     );
   }

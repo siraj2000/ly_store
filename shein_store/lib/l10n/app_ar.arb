@@ -495,7 +495,27 @@
   "categoryNoSubcategories": "لا توجد فئات فرعية",
   "categorySearchHint": "ابحث عن أحذية وحقائب ومكياج...",
   "categoryOpenMenu": "فتح القائمة",
-  "categoryCloseMenu": "إغلاق القائمة"
+  "categoryCloseMenu": "إغلاق القائمة",
+  "reviewProduct": "تقييم المنتج",
+  "reviewWrite": "اكتب تقييمًا",
+  "reviewEdit": "تعديل التقييم",
+  "reviewSubmit": "إرسال التقييم",
+  "reviewCancel": "إلغاء",
+  "reviewNoReviews": "لا توجد تقييمات بعد",
+  "reviewVerifiedPurchase": "شراء موثق",
+  "reviewSuccess": "تم إرسال التقييم بنجاح",
+  "reviewLoginRequired": "يرجى تسجيل الدخول وشراء هذا المنتج قبل كتابة تقييم.",
+  "reviewNotPurchased": "يمكنك تقييم هذا المنتج بعد شرائه.",
+  "reviewNotDelivered": "يمكنك تقييم هذا المنتج بعد استلام الطلب.",
+  "copied": "تم النسخ",
+  "copiedOrderNumber": "تم نسخ رقم الطلب",
+  "copiedTrackingNumber": "تم نسخ رقم التتبع",
+  "copiedSku": "تم نسخ رمز المنتج",
+  "copiedCouponCode": "تم نسخ كود الخصم",
+  "copiedPhoneNumber": "تم نسخ رقم الهاتف",
+  "copiedEmail": "تم نسخ البريد الإلكتروني",
+  "copiedAddress": "تم نسخ العنوان",
+  "copy": "نسخ"
 }
 
 

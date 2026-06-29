@@ -30,6 +30,7 @@ import '../../views/screens/payment/payment_options_screen.dart';
 import '../../views/screens/product/product_details_screen.dart';
 import '../../views/screens/product/product_listing_screen.dart';
 import '../../views/screens/profile/edit_profile_screen.dart';
+import '../../views/screens/profile/recently_viewed_screen.dart';
 import '../../views/screens/store/all_stores_screen.dart';
 import '../../views/screens/store/storefront_screen.dart';
 import '../../views/screens/search/search_screen.dart';
@@ -63,6 +64,7 @@ class AppRoutes {
   static const String storefront = '/storefront';
   static const String wishlist = '/wishlist';
   static const String wishlistBoard = '/wishlist-board';
+  static const String recentlyViewed = '/recently-viewed';
   static const String cart = '/cart';
   static const String checkout = '/checkout';
   static const String orderSuccess = '/order-success';
@@ -180,9 +182,15 @@ class AppRoutes {
           child: const WishlistScreen(),
         );
       case wishlistBoard:
+        final boardId = routeSettings.arguments as String?;
         return _guardedRoute(
           allowedRoles: const {UserRole.customer},
-          child: const WishlistBoardScreen(),
+          child: WishlistBoardScreen(boardId: boardId),
+        );
+      case recentlyViewed:
+        return _guardedRoute(
+          allowedRoles: const {UserRole.guest, UserRole.customer},
+          child: const RecentlyViewedScreen(),
         );
       case cart:
         return _guardedRoute(
@@ -201,9 +209,12 @@ class AppRoutes {
           child: OrderSuccessScreen(orderId: orderId),
         );
       case orders:
+        final args = routeSettings.arguments as Map<String, dynamic>? ?? {};
         return _guardedRoute(
           allowedRoles: const {UserRole.customer},
-          child: const OrdersScreen(),
+          child: OrdersScreen(
+            initialStatus: args['status'] as String? ?? 'All',
+          ),
         );
       case orderDetails:
         final orderId = routeSettings.arguments as String? ?? '';
@@ -222,9 +233,10 @@ class AppRoutes {
           child: const AddressBookScreen(),
         );
       case addressForm:
+        final addressId = routeSettings.arguments as String?;
         return _guardedRoute(
           allowedRoles: const {UserRole.customer},
-          child: const AddressFormScreen(),
+          child: AddressFormScreen(addressId: addressId),
         );
       case paymentOptions:
         return _guardedRoute(
@@ -232,9 +244,10 @@ class AppRoutes {
           child: const PaymentOptionsScreen(),
         );
       case paymentForm:
+        final paymentMethodId = routeSettings.arguments as String?;
         return _guardedRoute(
           allowedRoles: const {UserRole.customer},
-          child: const PaymentFormScreen(),
+          child: PaymentFormScreen(paymentMethodId: paymentMethodId),
         );
       case measurements:
         return _guardedRoute(
@@ -271,14 +284,16 @@ class AppRoutes {
           child: const NotificationsScreen(),
         );
       case helpCenter:
+        final orderId = routeSettings.arguments as String?;
         return _guardedRoute(
           allowedRoles: const {UserRole.guest, UserRole.customer},
-          child: const HelpCenterScreen(),
+          child: HelpCenterScreen(orderId: orderId),
         );
       case liveChat:
+        final orderId = routeSettings.arguments as String?;
         return _guardedRoute(
           allowedRoles: const {UserRole.customer},
-          child: const LiveChatScreen(),
+          child: LiveChatScreen(orderId: orderId),
         );
       case AppRoutes.settings:
         return _guardedRoute(

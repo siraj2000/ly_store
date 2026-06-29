@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/config/loyalty_policy.dart';
 import '../models/address_model.dart';
 import '../models/coupon_model.dart';
 import '../models/notification_model.dart';
@@ -32,6 +33,8 @@ class CheckoutController extends ChangeNotifier {
   CouponModel? coupon;
   bool pointsEnabled = false;
   bool walletEnabled = false;
+  int pointsToRedeem = 0;
+  double walletAmountToUse = 0;
   String giftCardCode = '';
   String? errorMessage;
   bool isPlacingOrder = false;
@@ -74,14 +77,56 @@ class CheckoutController extends ChangeNotifier {
 
   void usePoints(bool enabled) {
     pointsEnabled = enabled;
+    pointsToRedeem = enabled ? maxRedeemablePoints : 0;
     _cartController?.setUsePoints(enabled);
+    if (walletEnabled) {
+      walletAmountToUse = maxWalletAmount;
+    }
     notifyListeners();
   }
 
   void useWallet(bool enabled) {
     walletEnabled = enabled;
+    walletAmountToUse = enabled ? maxWalletAmount : 0;
     _cartController?.setUseWallet(enabled);
     notifyListeners();
+  }
+
+  int get availablePoints => _authController?.currentUser?.points ?? 0;
+
+  double get availableWalletBalance =>
+      _authController?.currentUser?.walletBalance ?? 0;
+
+  double get subtotal => _cartController?.calculateSubtotal() ?? 0;
+
+  double get couponDiscount => _cartController?.calculateDiscount() ?? 0;
+
+  double get shipping => _cartController?.calculateShipping() ?? 0;
+
+  int get maxRedeemablePoints => LoyaltyPolicy.maxRedeemablePoints(
+    availablePoints: availablePoints,
+    eligibleSubtotal: subtotal,
+  );
+
+  double get pointsDiscount =>
+      pointsEnabled ? LoyaltyPolicy.discountForPoints(pointsToRedeem) : 0;
+
+  double get payableBeforeWallet {
+    final total = subtotal - couponDiscount - pointsDiscount + shipping;
+    return total < 0 ? 0 : total;
+  }
+
+  double get maxWalletAmount {
+    final balance = availableWalletBalance;
+    final payable = payableBeforeWallet;
+    return balance < payable ? balance : payable;
+  }
+
+  double get walletUsed => walletEnabled ? walletAmountToUse : 0;
+
+  double get finalTotal {
+    final total = payableBeforeWallet - walletUsed;
+    return total < 0 ? 0 : total;
   }
 
   Future<OrderModel?> placeOrder() async {
@@ -126,6 +171,17 @@ class CheckoutController extends ChangeNotifier {
     isPlacingOrder = true;
     notifyListeners();
     await Future<void>.delayed(const Duration(milliseconds: 900));
+    pointsToRedeem = pointsEnabled ? maxRedeemablePoints : 0;
+    walletAmountToUse = walletEnabled ? maxWalletAmount : 0;
+    final selectedSubtotal = _cartController!.calculateSubtotal();
+    final selectedQuantity = selectedItems.fold<int>(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
+    final pointsEarned = LoyaltyPolicy.pointsEarned(
+      eligibleSubtotal: selectedSubtotal,
+      totalQuantity: selectedQuantity,
+    );
     final baseOrder = OrderModel(
       id: 'order_${DateTime.now().millisecondsSinceEpoch}',
       customerId: _authController!.currentUser!.id,
@@ -144,13 +200,17 @@ class CheckoutController extends ChangeNotifier {
           .toList(),
       status: 'Processing',
       createdAt: DateTime.now(),
-      total: _cartController!.calculateTotal(),
+      total: finalTotal,
       address: selectedAddress!,
       paymentMethod: paymentMethod!,
       estimatedDelivery: DateTime.now().add(const Duration(days: 5)),
       paymentStatus: 'Paid',
       shippingStatus: 'Processing',
       platformCommission: _cartController!.calculateSubtotal() * 0.12,
+      loyaltyPointsEarned: pointsEarned,
+      loyaltyPointsRedeemed: pointsToRedeem,
+      loyaltyPointsDiscount: pointsDiscount,
+      walletAmountUsed: walletUsed,
     );
     final sellerOrders = _buildSellerOrders(baseOrder);
     final order = baseOrder.copyWith(
@@ -158,6 +218,10 @@ class CheckoutController extends ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     _orderService.createOrder(order, sellerOrders: sellerOrders);
+    final updatedUser = _mockDataService.applyCheckoutRewards(order);
+    if (updatedUser != null) {
+      _authController?.replaceUser(updatedUser);
+    }
     _orderController?.reload();
     _createOrderNotifications(order, sellerOrders);
     _cartController?.clearPurchasedItems();

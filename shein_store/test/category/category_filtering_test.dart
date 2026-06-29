@@ -25,17 +25,23 @@ void main() {
     'subcategory id filters products inside the selected category',
     () async {
       final controller = await buildProductController();
-      final source = controller.marketplaceProducts.firstWhere(
-        (product) =>
-            product.categoryId == 'women' &&
-            product.subcategoryName.trim().isNotEmpty,
+      final baseProduct = controller.marketplaceProducts.firstWhere(
+        (product) => product.categoryId.trim().isNotEmpty,
       );
+      final source = baseProduct.copyWith(
+        subcategoryId: 'stable-test-subcategory',
+        subcategoryName: 'Stable Test Subcategory',
+      );
+      controller.products = [
+        source,
+        ...controller.products.where((product) => product.id != source.id),
+      ];
 
       final categoryProducts = controller.productsForCategoryIds([
         source.categoryId,
       ]);
       final subcategoryProducts = controller.bySubcategory(
-        source.subcategoryName,
+        source.subcategoryId,
       );
       final filteredIds = categoryProducts.map((product) => product.id).toSet()
         ..retainAll(subcategoryProducts.map((product) => product.id).toSet());
@@ -51,6 +57,10 @@ void main() {
         ),
         isTrue,
       );
+
+      final roundTrip = source.toJson();
+      expect(roundTrip['subcategoryId'], source.subcategoryId);
+      expect(roundTrip['departmentId'], source.departmentId);
     },
   );
 }

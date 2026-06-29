@@ -1371,4 +1371,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryCloseMenu => 'Close menu';
+
+  @override
+  String get reviewProduct => 'Product Review';
+
+  @override
+  String get reviewWrite => 'Write a Review';
+
+  @override
+  String get reviewEdit => 'Edit Review';
+
+  @override
+  String get reviewSubmit => 'Submit Review';
+
+  @override
+  String get reviewCancel => 'Cancel';
+
+  @override
+  String get reviewNoReviews => 'No reviews yet';
+
+  @override
+  String get reviewVerifiedPurchase => 'Verified Purchase';
+
+  @override
+  String get reviewSuccess => 'Review submitted successfully';
+
+  @override
+  String get reviewLoginRequired =>
+      'Please log in and purchase this product before writing a review.';
+
+  @override
+  String get reviewNotPurchased =>
+      'You can review this product after purchasing it.';
+
+  @override
+  String get reviewNotDelivered =>
+      'You can review this product after the order is delivered.';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get copiedOrderNumber => 'Order number copied';
+
+  @override
+  String get copiedTrackingNumber => 'Tracking number copied';
+
+  @override
+  String get copiedSku => 'SKU copied';
+
+  @override
+  String get copiedCouponCode => 'Coupon code copied';
+
+  @override
+  String get copiedPhoneNumber => 'Phone number copied';
+
+  @override
+  String get copiedEmail => 'Email copied';
+
+  @override
+  String get copiedAddress => 'Address copied';
+
+  @override
+  String get copy => 'Copy';
 }

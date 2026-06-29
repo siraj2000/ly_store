@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/order_model.dart';
+import '../models/seller_order_model.dart';
 import '../models/user_role.dart';
 import '../services/order_service.dart';
 import 'auth_controller.dart';
@@ -96,6 +97,14 @@ class SellerOrderController extends ChangeNotifier {
     return ordersByStatus(status).length;
   }
 
+  SellerOrderModel? sellerOrderById(String orderId) {
+    if (!_isSeller) return null;
+    final matches = _orderService
+        .sellerOrdersForSeller(sellerId)
+        .where((order) => order.id == orderId);
+    return matches.isEmpty ? null : matches.first;
+  }
+
   String? nextStatusFor(OrderModel order) {
     switch (displayStatus(order)) {
       case 'New':
@@ -136,22 +145,85 @@ class SellerOrderController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOrderStatus(String orderId, String status) {
-    if (!_isSeller) return;
-    final matches = _orderService
-        .sellerOrdersForSeller(sellerId)
-        .where((order) => order.id == orderId);
-    final existing = matches.isEmpty ? null : matches.first;
-    if (existing == null) return;
+  Future<bool> updateOrderStatus(String orderId, String status) async {
+    if (!_isSeller) return false;
+    final existing = sellerOrderById(orderId);
+    if (existing == null) return false;
+    final now = DateTime.now();
     final updated = existing.copyWith(
       status: status,
       shippingStatus: _shippingStatusFor(status),
-      updatedAt: DateTime.now(),
+      deliveredAt: status == 'Delivered' ? now : existing.deliveredAt,
+      updatedAt: now,
     );
-    _orderService.updateSellerOrder(updated);
+    await _orderService.updateSellerOrder(updated);
     _orderService.recomputeMasterOrderStatus(updated.masterOrderId);
     _orderService.notifyCustomerSellerOrderStatusChanged(updated);
     notifyListeners();
+    return true;
+  }
+
+  Future<bool> markOrderShipped({
+    required String orderId,
+    required String carrierName,
+    required String trackingNumber,
+    String trackingUrl = '',
+    String shippingNotes = '',
+  }) async {
+    if (!_isSeller) return false;
+    final existing = sellerOrderById(orderId);
+    if (existing == null) return false;
+    final cleanCarrier = carrierName.trim();
+    final cleanTracking = trackingNumber.trim();
+    if (cleanCarrier.isEmpty || cleanTracking.isEmpty) return false;
+    final now = DateTime.now();
+    final updated = existing.copyWith(
+      status: 'Shipped',
+      shippingStatus: 'Shipped',
+      carrierName: cleanCarrier,
+      trackingNumber: cleanTracking,
+      trackingUrl: trackingUrl.trim(),
+      shippingNotes: shippingNotes.trim(),
+      shippedAt: now,
+      updatedAt: now,
+    );
+    await _orderService.updateSellerOrder(updated);
+    _orderService.recomputeMasterOrderStatus(updated.masterOrderId);
+    _orderService.notifyCustomerSellerOrderStatusChanged(updated);
+    notifyListeners();
+    return true;
+  }
+
+  bool canCancel(OrderModel order) {
+    return const {
+      'New',
+      'Processing',
+      'Ready to Ship',
+    }.contains(displayStatus(order));
+  }
+
+  Future<bool> cancelOrder({
+    required String orderId,
+    required String reason,
+  }) async {
+    if (!_isSeller) return false;
+    final existing = sellerOrderById(orderId);
+    if (existing == null) return false;
+    final cleanReason = reason.trim();
+    if (cleanReason.isEmpty) return false;
+    final now = DateTime.now();
+    final updated = existing.copyWith(
+      status: 'Cancelled',
+      shippingStatus: 'Cancelled',
+      cancellationReason: cleanReason,
+      cancelledAt: now,
+      updatedAt: now,
+    );
+    await _orderService.updateSellerOrder(updated);
+    _orderService.recomputeMasterOrderStatus(updated.masterOrderId);
+    _orderService.notifyCustomerSellerOrderStatusChanged(updated);
+    notifyListeners();
+    return true;
   }
 
   String _shippingStatusFor(String status) {

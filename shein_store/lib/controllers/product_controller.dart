@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../models/review_model.dart';
 import '../models/store_model.dart';
+import '../models/user_role.dart';
 import '../core/helpers/public_product_visibility_helper.dart';
 import '../services/mock_data_service.dart';
 import '../services/product_service.dart';
@@ -45,6 +46,9 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> get marketplaceProducts =>
       List.unmodifiable(products.where(isProductPublic));
+
+  List<String> get guestRecentlyViewedProductIds =>
+      _mockDataService.guestRecentlyViewedProductIds;
 
   List<StoreModel> get publicStores =>
       _mockDataService.stores
@@ -117,11 +121,14 @@ class ProductController extends ChangeNotifier {
     }
     final normalized = subcategoryId.trim().toLowerCase();
     return marketplaceProducts.where((item) {
+      final productSubcategoryId = item.subcategoryId.trim().toLowerCase();
       final productSubcategory = item.subcategoryName.trim().toLowerCase();
       final tagMatch = item.tags.any(
         (tag) => tag.trim().toLowerCase() == normalized,
       );
-      return productSubcategory == normalized || tagMatch;
+      return productSubcategoryId == normalized ||
+          productSubcategory == normalized ||
+          tagMatch;
     }).toList();
   }
 
@@ -205,7 +212,183 @@ class ProductController extends ChangeNotifier {
   }
 
   List<ReviewModel> reviewsForProduct(String productId) =>
-      _mockDataService.reviews;
+      _mockDataService.approvedReviewsForProduct(productId);
+
+  List<ReviewModel> customerReviews(String customerId) =>
+      _mockDataService.reviewsByCustomerId(customerId);
+
+  ProductRatingSummary ratingSummaryForProduct(String productId) =>
+      _mockDataService.ratingSummaryForProduct(productId);
+
+  bool currentCustomerPurchasedProduct(String productId) {
+    final user = _authController?.currentUser;
+    if (user == null || user.role != UserRole.customer) {
+      return false;
+    }
+    return _mockDataService.hasValidPurchasedProduct(
+      customerId: user.id,
+      productId: productId,
+    );
+  }
+
+  ReviewModel? currentCustomerReviewForProduct(String productId) {
+    final user = _authController?.currentUser;
+    if (user == null) {
+      return null;
+    }
+    return _mockDataService.findCustomerReviewForProduct(
+      customerId: user.id,
+      productId: productId,
+    );
+  }
+
+  ReviewEligibilityResult reviewEligibilityForProduct(String productId) {
+    final product = productById(productId);
+    if (product == null) {
+      return const ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.productNotFound,
+      );
+    }
+    final user = _authController?.currentUser;
+    if (user == null || _authController?.isLoggedIn != true) {
+      return const ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.notLoggedIn,
+      );
+    }
+    if (user.role != UserRole.customer) {
+      return const ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.notCustomer,
+      );
+    }
+    final existing = _mockDataService.findCustomerReviewForProduct(
+      customerId: user.id,
+      productId: productId,
+    );
+    if (existing != null) {
+      return ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.alreadyReviewed,
+        eligibleOrderId: existing.orderId,
+        existingReview: existing,
+      );
+    }
+    final purchased = _mockDataService.hasValidPurchasedProduct(
+      customerId: user.id,
+      productId: productId,
+    );
+    if (!purchased) {
+      if (_mockDataService.hasCancelledOnlyPurchase(
+        customerId: user.id,
+        productId: productId,
+      )) {
+        return const ReviewEligibilityResult(
+          canReview: false,
+          reason: ReviewEligibilityReason.orderCancelled,
+        );
+      }
+      if (_mockDataService.hasPaymentIncompletePurchase(
+        customerId: user.id,
+        productId: productId,
+      )) {
+        return const ReviewEligibilityResult(
+          canReview: false,
+          reason: ReviewEligibilityReason.paymentNotCompleted,
+        );
+      }
+      return const ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.notPurchased,
+      );
+    }
+    final order = _mockDataService.eligiblePurchasedOrderForReview(
+      customerId: user.id,
+      productId: productId,
+    );
+    if (order == null) {
+      return const ReviewEligibilityResult(
+        canReview: false,
+        reason: ReviewEligibilityReason.notPurchased,
+      );
+    }
+    return ReviewEligibilityResult(
+      canReview: true,
+      reason: ReviewEligibilityReason.success,
+      eligibleOrderId: order.id,
+    );
+  }
+
+  Future<ReviewActionResult> saveProductReview({
+    required String productId,
+    required int rating,
+    required String comment,
+    ReviewModel? existingReview,
+    List<String> imagePaths = const [],
+  }) async {
+    final trimmedComment = comment.trim();
+    if (rating < 1 || rating > 5) {
+      return const ReviewActionResult(
+        success: false,
+        message: 'Rating is required.',
+      );
+    }
+    if (trimmedComment.length < 5 || trimmedComment.length > 1000) {
+      return const ReviewActionResult(
+        success: false,
+        message: 'Comment must be between 5 and 1000 characters.',
+      );
+    }
+    final user = _authController?.currentUser;
+    if (user == null || user.role != UserRole.customer) {
+      return const ReviewActionResult(
+        success: false,
+        message: 'Only customers can review products.',
+      );
+    }
+    final eligibility = reviewEligibilityForProduct(productId);
+    final editing = existingReview != null;
+    if (!editing && !eligibility.canReview) {
+      return ReviewActionResult(
+        success: false,
+        message: eligibility.reason.name,
+      );
+    }
+    if (editing && existingReview.customerId != user.id) {
+      return const ReviewActionResult(
+        success: false,
+        message: 'You can edit only your own review.',
+      );
+    }
+    final now = DateTime.now();
+    final orderId =
+        existingReview?.orderId ?? eligibility.eligibleOrderId ?? '';
+    final review = ReviewModel(
+      id:
+          existingReview?.id ??
+          'review_${productId}_${user.id}_${now.microsecondsSinceEpoch}',
+      productId: productId,
+      orderId: orderId,
+      customerId: user.id,
+      customerName: user.name,
+      customerAvatarUrl: user.avatar.isEmpty ? null : user.avatar,
+      rating: rating.toDouble(),
+      comment: trimmedComment,
+      imagePaths: imagePaths,
+      createdAt: existingReview?.createdAt ?? now,
+      updatedAt: now,
+      status: ReviewStatus.approved,
+      isVerifiedPurchase: true,
+    );
+    _mockDataService.saveProductReview(review);
+    notifyListeners();
+    return ReviewActionResult(
+      success: true,
+      message: 'Review saved.',
+      review: review,
+    );
+  }
 
   void trackProductView(String? productId) {
     if (productId == null || productId.isEmpty) {

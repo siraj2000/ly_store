@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -736,26 +738,32 @@ void _showActionsSheet(
               const SizedBox(height: 14),
               _ActionSheetTile(
                 icon: Icons.copy_outlined,
-                label: sheetContext.l10n.sellerProductsDuplicate,
-                onTap: () {
+                label: sheetContext.tr('Duplicate as Draft', 'نسخ كمسودة'),
+                onTap: () async {
                   Navigator.pop(sheetContext);
-                  controller.duplicateProduct(product);
+                  final draft = await controller.duplicateProduct(product);
+                  if (context.mounted && draft != null) {
+                    AppActionFeedback.success(
+                      context,
+                      context.tr('Draft created', 'تم إنشاء مسودة'),
+                    );
+                  }
                 },
               ),
               _ActionSheetTile(
                 icon: Icons.inventory_2_outlined,
-                label: sheetContext.l10n.sellerProductsAddFiveStock,
-                onTap: () {
+                label: sheetContext.tr('Set Stock', 'تعيين المخزون'),
+                onTap: () async {
                   Navigator.pop(sheetContext);
-                  controller.changeStock(product.id, product.stock + 5);
+                  await _showSetStockDialog(context, controller, product);
                 },
               ),
               _ActionSheetTile(
                 icon: Icons.attach_money_outlined,
-                label: sheetContext.l10n.sellerProductsIncreasePrice,
-                onTap: () {
+                label: sheetContext.tr('Set Price', 'تعيين السعر'),
+                onTap: () async {
                   Navigator.pop(sheetContext);
-                  controller.changePrice(product.id, product.price + 2);
+                  await _showSetPriceDialog(context, controller, product);
                 },
               ),
               if (controller.isPublicListing(product))
@@ -836,14 +844,187 @@ Future<void> _confirmToggleProduct(
   if (!confirmed) {
     return;
   }
-  controller.toggleActive(product.id);
+  final updated = await controller.toggleActive(product.id);
   if (context.mounted) {
-    AppActionFeedback.success(
+    if (updated == null) {
+      AppActionFeedback.error(
+        context,
+        context.tr('Unable to update product', 'تعذر تحديث المنتج'),
+      );
+    } else {
+      AppActionFeedback.success(
+        context,
+        isDeactivating
+            ? context.tr('Product deactivated', 'تم إيقاف المنتج')
+            : context.tr('Product activated', 'تم تفعيل المنتج'),
+      );
+    }
+  }
+}
+
+Future<void> _showSetStockDialog(
+  BuildContext context,
+  SellerProductController controller,
+  ProductModel product,
+) async {
+  final stockController = TextEditingController(text: '${product.stock}');
+  final stock = await showDialog<int>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: Text(dialogContext.tr('Set Stock', 'تعيين المخزون')),
+        content: TextField(
+          controller: stockController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: dialogContext.tr('Stock', 'المخزون'),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(dialogContext.tr('Cancel', 'إلغاء')),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = int.tryParse(stockController.text.trim());
+              if (value == null || value < 0) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      dialogContext.tr(
+                        'Enter a valid stock value',
+                        'أدخل قيمة مخزون صحيحة',
+                      ),
+                    ),
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(dialogContext, value);
+            },
+            child: Text(dialogContext.tr('Save', 'حفظ')),
+          ),
+        ],
+      );
+    },
+  );
+  stockController.dispose();
+  if (!context.mounted || stock == null) return;
+  if (stock == 0) {
+    final confirmed = await AppConfirmationDialog.show(
       context,
-      isDeactivating
-          ? context.tr('Product deactivated', 'تم إيقاف المنتج')
-          : context.tr('Product activated', 'تم تفعيل المنتج'),
+      title: context.tr('Set stock to zero?', 'تعيين المخزون إلى صفر؟'),
+      message: context.tr(
+        'This product may become unavailable until you add stock again.',
+        'قد يصبح المنتج غير متاح حتى تضيف مخزوناً مرة أخرى.',
+      ),
+      cancelLabel: context.tr('Cancel', 'إلغاء'),
+      confirmLabel: context.tr('Set to 0', 'تعيين إلى 0'),
+      icon: Icons.inventory_2_outlined,
+      tone: AppConfirmationTone.warning,
     );
+    if (!confirmed) return;
+  }
+  final updated = await controller.changeStock(product.id, stock);
+  if (context.mounted) {
+    if (updated == null) {
+      AppActionFeedback.error(
+        context,
+        context.tr('Unable to update stock', 'تعذر تحديث المخزون'),
+      );
+    } else {
+      AppActionFeedback.success(
+        context,
+        context.tr('Stock updated', 'تم تحديث المخزون'),
+      );
+    }
+  }
+}
+
+Future<void> _showSetPriceDialog(
+  BuildContext context,
+  SellerProductController controller,
+  ProductModel product,
+) async {
+  final priceController = TextEditingController(
+    text: product.price.toStringAsFixed(2),
+  );
+  final price = await showDialog<double>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: Text(dialogContext.tr('Set Price', 'تعيين السعر')),
+        content: TextField(
+          controller: priceController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: dialogContext.tr('Price', 'السعر'),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(dialogContext.tr('Cancel', 'إلغاء')),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = double.tryParse(priceController.text.trim());
+              if (value == null || value <= 0) {
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      dialogContext.tr(
+                        'Enter a valid price',
+                        'أدخل سعراً صحيحاً',
+                      ),
+                    ),
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(dialogContext, value);
+            },
+            child: Text(dialogContext.tr('Save', 'حفظ')),
+          ),
+        ],
+      );
+    },
+  );
+  priceController.dispose();
+  if (!context.mounted || price == null) return;
+  if (controller.requiresProductApproval &&
+      product.status == ProductStatus.active) {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr(
+        'Price change needs review',
+        'تغيير السعر يحتاج مراجعة',
+      ),
+      message: context.tr(
+        'Changing the price of an active product will submit it for approval again.',
+        'تغيير سعر منتج نشط سيرسله للمراجعة مرة أخرى.',
+      ),
+      cancelLabel: context.tr('Cancel', 'إلغاء'),
+      confirmLabel: context.tr('Continue', 'متابعة'),
+      icon: Icons.price_change_outlined,
+      tone: AppConfirmationTone.warning,
+    );
+    if (!confirmed) return;
+  }
+  final updated = await controller.changePrice(product.id, price);
+  if (context.mounted) {
+    if (updated == null) {
+      AppActionFeedback.error(
+        context,
+        context.tr('Unable to update price', 'تعذر تحديث السعر'),
+      );
+    } else {
+      AppActionFeedback.success(
+        context,
+        context.tr('Price updated', 'تم تحديث السعر'),
+      );
+    }
   }
 }
 
@@ -869,12 +1050,19 @@ Future<void> _confirmDeleteProduct(
   if (!confirmed) {
     return;
   }
-  controller.deleteProduct(product.id);
+  final deleted = await controller.deleteProduct(product.id);
   if (context.mounted) {
-    AppActionFeedback.success(
-      context,
-      context.tr('Product deleted', 'تم حذف المنتج'),
-    );
+    if (deleted == null) {
+      AppActionFeedback.error(
+        context,
+        context.tr('Unable to delete product', 'تعذر حذف المنتج'),
+      );
+    } else {
+      AppActionFeedback.success(
+        context,
+        context.tr('Product deleted', 'تم حذف المنتج'),
+      );
+    }
   }
 }
 
@@ -888,7 +1076,7 @@ class _ActionSheetTile extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
+  final FutureOr<void> Function() onTap;
   final bool destructive;
 
   @override
@@ -903,7 +1091,9 @@ class _ActionSheetTile extends StatelessWidget {
         label,
         style: TextStyle(color: foreground, fontWeight: FontWeight.w700),
       ),
-      onTap: onTap,
+      onTap: () {
+        onTap();
+      },
     );
   }
 }

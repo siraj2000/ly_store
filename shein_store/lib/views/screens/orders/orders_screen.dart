@@ -13,7 +13,9 @@ import '../../../core/widgets/app_empty_state.dart';
 import '../../widgets/common/app_header.dart';
 
 class OrdersScreen extends StatelessWidget {
-  const OrdersScreen({super.key});
+  const OrdersScreen({super.key, this.initialStatus = 'All'});
+
+  final String initialStatus;
 
   static const _tabs = [
     'All',
@@ -29,8 +31,10 @@ class OrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final initialIndex = _tabs.indexOf(initialStatus);
     return DefaultTabController(
       length: _tabs.length,
+      initialIndex: initialIndex < 0 ? 0 : initialIndex,
       child: Scaffold(
         appBar: AppHeader(title: context.tr('Orders', 'الطلبات')),
         body: Column(
@@ -142,7 +146,16 @@ class OrdersScreen extends StatelessWidget {
                                 children: [
                                   if (order.status == 'Unpaid')
                                     OutlinedButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        orderController.markOrderPaid(order.id);
+                                        AppActionFeedback.success(
+                                          context,
+                                          context.tr(
+                                            'Payment completed',
+                                            'تم الدفع بنجاح',
+                                          ),
+                                        );
+                                      },
                                       child: Text(
                                         context.tr('Pay Now', 'ادفع الآن'),
                                       ),

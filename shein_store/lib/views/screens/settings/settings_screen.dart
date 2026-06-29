@@ -115,24 +115,57 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.privacy_tip_outlined,
                     title: context.l10n.settingsPrivacyPreferences,
                     subtitle: context.l10n.settingsManageVisibility,
+                    onTap: () => _showInfoSheet(
+                      context,
+                      title: context.l10n.settingsPrivacyPreferences,
+                      message: context.tr(
+                        'Privacy preferences are saved locally in this demo. Backend sync can be connected later.',
+                        'تفضيلات الخصوصية محفوظة محلياً في هذا العرض التجريبي ويمكن ربطها بالخادم لاحقاً.',
+                      ),
+                    ),
                   ),
                   ProfileMenuItem(
                     icon: Icons.cleaning_services_outlined,
                     title: context.l10n.settingsClearCache,
                     subtitle: context.l10n.settingsClearCacheSubtitle,
+                    onTap: () => _confirmClearCache(context),
                   ),
                   ProfileMenuItem(
                     icon: Icons.info_outline,
                     title: context.l10n.settingsAboutApp,
                     subtitle: context.l10n.settingsAboutSubtitle,
+                    onTap: () => _showInfoSheet(
+                      context,
+                      title: context.l10n.settingsAboutApp,
+                      message: context.tr(
+                        'LY STORE is a demo marketplace app using local data and API-ready screens.',
+                        'LY STORE تطبيق سوق تجريبي يستخدم بيانات محلية وشاشات جاهزة للربط البرمجي.',
+                      ),
+                    ),
                   ),
                   ProfileMenuItem(
                     icon: Icons.description_outlined,
                     title: context.l10n.settingsTermsConditions,
+                    onTap: () => _showInfoSheet(
+                      context,
+                      title: context.l10n.settingsTermsConditions,
+                      message: context.tr(
+                        'Demo terms: product, payment, and delivery data shown here is for testing only.',
+                        'الشروط التجريبية: بيانات المنتجات والدفع والتوصيل هنا للاختبار فقط.',
+                      ),
+                    ),
                   ),
                   ProfileMenuItem(
                     icon: Icons.shield_outlined,
                     title: context.l10n.settingsPrivacyPolicy,
+                    onTap: () => _showInfoSheet(
+                      context,
+                      title: context.l10n.settingsPrivacyPolicy,
+                      message: context.tr(
+                        'Demo privacy policy: local preferences are stored on this device using SharedPreferences.',
+                        'سياسة الخصوصية التجريبية: يتم حفظ التفضيلات محلياً على هذا الجهاز باستخدام SharedPreferences.',
+                      ),
+                    ),
                   ),
                   if (authController.isLoggedIn)
                     Padding(
@@ -182,6 +215,63 @@ class SettingsScreen extends StatelessWidget {
     }
     authController.logout();
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (_) => false);
+  }
+
+  Future<void> _confirmClearCache(BuildContext context) async {
+    final confirmed = await AppConfirmationDialog.show(
+      context,
+      title: context.tr('Clear cache?', 'مسح التخزين المؤقت؟'),
+      message: context.tr(
+        'This clears safe temporary demo cache only. Your account, orders, and cart will stay.',
+        'سيتم مسح التخزين المؤقت التجريبي فقط. سيبقى حسابك وطلباتك وسلتك محفوظة.',
+      ),
+      cancelLabel: context.tr('Cancel', 'إلغاء'),
+      confirmLabel: context.tr('Clear', 'مسح'),
+      icon: Icons.cleaning_services_outlined,
+    );
+    if (!context.mounted || !confirmed) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.tr('Cache cleared', 'تم مسح التخزين المؤقت')),
+      ),
+    );
+  }
+
+  void _showInfoSheet(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              Text(message),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => Navigator.pop(sheetContext),
+                child: Text(context.tr('Close', 'إغلاق')),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

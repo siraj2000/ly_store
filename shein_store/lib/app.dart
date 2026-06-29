@@ -291,7 +291,15 @@ class StyleHubBootstrap extends StatelessWidget {
               final activeLocale = Localizations.localeOf(context);
               return Directionality(
                 textDirection: languageController.directionFor(activeLocale),
-                child: child ?? const SizedBox.shrink(),
+                child: Overlay(
+                  initialEntries: [
+                    OverlayEntry(
+                      builder: (_) => SelectionArea(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           );

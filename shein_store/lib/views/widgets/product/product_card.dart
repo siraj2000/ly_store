@@ -151,7 +151,12 @@ class _VerticalProductCard extends StatelessWidget {
       context,
       product.categoryName,
     );
-    final store = context.read<ProductController>().storeForProduct(product);
+    final productController = context.watch<ProductController>();
+    final store = productController.storeForProduct(product);
+    final ratingSummary = productController.ratingSummaryForProduct(product.id);
+    final isPurchased = productController.currentCustomerPurchasedProduct(
+      product.id,
+    );
 
     return Padding(
       padding: EdgeInsets.all(compact ? 5 : 6),
@@ -168,6 +173,7 @@ class _VerticalProductCard extends StatelessWidget {
               onWishlistTap: onWishlistTap,
               onQuickAddTap: onQuickAddTap,
               imageRadius: imageRadius,
+              isPurchased: isPurchased,
             ),
           ),
           SizedBox(height: compact ? 8 : 10),
@@ -209,8 +215,8 @@ class _VerticalProductCard extends StatelessWidget {
             Row(
               children: [
                 RatingStars(
-                  rating: product.rating,
-                  reviewCount: product.reviewCount,
+                  rating: ratingSummary.averageRating,
+                  reviewCount: ratingSummary.reviewCount,
                 ),
                 const Spacer(),
                 Flexible(
@@ -267,7 +273,12 @@ class _HorizontalProductCard extends StatelessWidget {
       context,
       product.categoryName,
     );
-    final store = context.read<ProductController>().storeForProduct(product);
+    final productController = context.watch<ProductController>();
+    final store = productController.storeForProduct(product);
+    final ratingSummary = productController.ratingSummaryForProduct(product.id);
+    final isPurchased = productController.currentCustomerPurchasedProduct(
+      product.id,
+    );
 
     return Padding(
       padding: EdgeInsets.all(compact ? 6 : 8),
@@ -285,6 +296,7 @@ class _HorizontalProductCard extends StatelessWidget {
                 onWishlistTap: onWishlistTap,
                 onQuickAddTap: onQuickAddTap,
                 imageRadius: 10,
+                isPurchased: isPurchased,
               ),
             ),
           ),
@@ -330,8 +342,8 @@ class _HorizontalProductCard extends StatelessWidget {
                 if (showRating) ...[
                   const SizedBox(height: 6),
                   RatingStars(
-                    rating: product.rating,
-                    reviewCount: product.reviewCount,
+                    rating: ratingSummary.averageRating,
+                    reviewCount: ratingSummary.reviewCount,
                   ),
                 ],
               ],
@@ -438,6 +450,7 @@ class _ProductImageStack extends StatelessWidget {
     required this.onWishlistTap,
     required this.onQuickAddTap,
     required this.imageRadius,
+    required this.isPurchased,
   });
 
   final ProductModel product;
@@ -447,6 +460,7 @@ class _ProductImageStack extends StatelessWidget {
   final VoidCallback onWishlistTap;
   final VoidCallback onQuickAddTap;
   final double imageRadius;
+  final bool isPurchased;
 
   @override
   Widget build(BuildContext context) {
@@ -496,6 +510,12 @@ class _ProductImageStack extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+        if (isPurchased)
+          Positioned(
+            left: 8,
+            bottom: 8,
+            child: _PurchasedBadge(compact: compact),
           ),
         Positioned(
           top: 8,
@@ -597,6 +617,55 @@ class _ActionCircleButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _PurchasedBadge extends StatelessWidget {
+  const _PurchasedBadge({required this.compact});
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 7 : 8,
+        vertical: compact ? 4 : 5,
+      ),
+      decoration: BoxDecoration(
+        color: colors.success.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: colors.background.withValues(alpha: 0.18),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.verified_rounded,
+            color: Colors.white,
+            size: compact ? 12 : 13,
+          ),
+          if (!compact) ...[
+            const SizedBox(width: 4),
+            Text(
+              context.tr('Purchased', 'تم شراؤه'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

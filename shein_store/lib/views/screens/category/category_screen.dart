@@ -920,7 +920,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
       final tagMatch = product.tags.any(
         (tag) => tag.trim().toLowerCase() == normalizedSubcategory,
       );
-      if (product.subcategoryName.trim().toLowerCase() ==
+      if (product.subcategoryId.trim().toLowerCase() == normalizedSubcategory ||
+          product.subcategoryName.trim().toLowerCase() ==
               normalizedSubcategory ||
           tagMatch) {
         return _productImage(product);

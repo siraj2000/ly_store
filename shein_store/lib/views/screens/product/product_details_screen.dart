@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../controllers/auth_controller.dart';
@@ -10,17 +11,20 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/business_activity_helper.dart';
 import '../../../core/helpers/cart_action_feedback_helper.dart';
+import '../../../core/helpers/app_copy_helper.dart';
 import '../../../core/utils/auth_required_helper.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/app_bottom_sheet.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/product_model.dart';
+import '../../../models/review_model.dart';
 import '../../../models/store_model.dart';
 import '../../widgets/common/app_header.dart';
 import '../../widgets/common/section_header.dart';
 import '../../widgets/common/store_rating_stars.dart';
 import '../../widgets/product/product_card.dart';
+import '../../widgets/reviews/product_review_form_sheet.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key, required this.productId});
@@ -37,6 +41,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   String? _selectedSize;
   int _quantity = 1;
   bool _trackedView = false;
+  String _reviewSort = 'recent';
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +95,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         }
 
         final locale = Localizations.localeOf(context);
-        final reviews = productController.reviewsForProduct(product.id);
+        final reviews = _sortedReviews(
+          productController.reviewsForProduct(product.id),
+        );
+        final ratingSummary = productController.ratingSummaryForProduct(
+          product.id,
+        );
+        final existingReview = productController
+            .currentCustomerReviewForProduct(product.id);
+        final reviewEligibility = productController.reviewEligibilityForProduct(
+          product.id,
+        );
+        final canShowReviewAction =
+            reviewEligibility.canReview || existingReview != null;
+        final isPurchased = productController.currentCustomerPurchasedProduct(
+          product.id,
+        );
         final related = productController.relatedProducts(product);
         final store = productController.storeForProduct(product);
         // ignore: unused_local_variable
@@ -116,6 +136,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           if (product.isNew) context.tr('New in', 'وصل حديثاً'),
           if (product.isReturnable)
             context.tr('30-day return', 'إرجاع خلال 30 يوماً'),
+          if (isPurchased) context.tr('Purchased', 'تم شراؤه'),
         ];
 
         return Scaffold(
@@ -282,8 +303,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                         const Spacer(),
                         _RatingBadge(
-                          rating: product.rating,
-                          reviewCount: product.reviewCount,
+                          rating: ratingSummary.averageRating,
+                          reviewCount: ratingSummary.reviewCount,
                         ),
                       ],
                     ),
@@ -342,12 +363,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                product.sku,
-                                style: TextStyle(
-                                  color: colors.primaryText,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      product.sku,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: colors.primaryText,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  AppCopyIconButton(
+                                    text: product.sku,
+                                    feedback: context.l10n.copiedSku,
+                                    tooltip: context.l10n.copy,
+                                    iconSize: 18,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -628,64 +663,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ],
                 ),
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: colors.card,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: colors.border),
+              _DetailPanel(
+                title: context.tr('Customer reviews', 'تقييمات العملاء'),
+                subtitle: context.tr(
+                  'Real feedback from shoppers who received this product.',
+                  'آراء حقيقية من عملاء استلموا هذا المنتج.',
                 ),
+                icon: Icons.rate_review_outlined,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                context.tr('Reviews', 'التقييمات'),
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: colors.primaryText,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                context.tr(
-                                  'What shoppers are saying about the fit, quality, and overall value.',
-                                  'ماذا يقول المتسوقون عن المقاس والجودة والقيمة العامة.',
-                                ),
-                                style: TextStyle(
-                                  color: colors.secondaryText,
-                                  height: 1.45,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _RatingBadge(
-                          rating: product.rating,
-                          reviewCount: product.reviewCount,
-                        ),
-                      ],
-                    ),
+                    _ReviewSummaryCard(summary: ratingSummary),
                     const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Chip(
-                          label: Text(context.tr('With photos', 'مع الصور')),
-                        ),
-                        Chip(label: Text(context.tr('Size', 'المقاس'))),
-                        Chip(label: Text(context.tr('Rating', 'التقييم'))),
-                        Chip(label: Text(context.tr('Most recent', 'الأحدث'))),
-                      ],
+                    _ReviewSortBar(
+                      selectedSort: _reviewSort,
+                      onChanged: (value) => setState(() => _reviewSort = value),
                     ),
                     const SizedBox(height: 12),
                     if (reviews.isEmpty)
@@ -701,23 +693,27 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                       )
                     else
-                      ...reviews
-                          .take(3)
-                          .map(
-                            (review) => _ReviewTile(
-                              author: review.author,
-                              comment: review.comment,
-                              rating: review.rating,
-                            ),
+                      ...reviews.map((review) => _ReviewTile(review: review)),
+                    const SizedBox(height: 10),
+                    if (canShowReviewAction)
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => _reviewAction(
+                            context,
+                            product,
+                            existingReview: existingReview,
                           ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: TextButton(
-                        onPressed: () => _reviewAction(context, authController),
-                        child: Text(context.tr('Write Review', 'اكتب تقييماً')),
-                      ),
-                    ),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(
+                            existingReview == null
+                                ? context.tr('Write a Review', 'اكتب تقييمًا')
+                                : context.tr('Edit Review', 'تعديل التقييم'),
+                          ),
+                        ),
+                      )
+                    else
+                      _ReviewEligibilityHint(eligibility: reviewEligibility),
                   ],
                 ),
               ),
@@ -756,7 +752,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                             onWishlistTap: () =>
                                 wishlistController.toggleWishlist(item),
-                            onQuickAddTap: () {},
+                            onQuickAddTap: () => _quickAdd(context, item),
                           ),
                         );
                       },
@@ -771,42 +767,138 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  void _showShareMessage(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.tr('Share', 'مشاركة')),
-        content: Text(
-          context.tr(
-            'Native sharing is not configured in this mock app yet.',
-            'المشاركة الأصلية غير مفعلة في هذا التطبيق التجريبي بعد.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('Close', 'إغلاق')),
-          ),
-        ],
-      ),
+  Future<void> _showShareMessage(BuildContext context) async {
+    final product = context.read<ProductController>().productById(
+      widget.productId,
     );
-  }
-
-  void _reviewAction(BuildContext context, AuthController authController) {
-    if (authController.isGuest) {
-      AppBottomSheet.showAuthRequired(context);
+    final text = product == null
+        ? 'LY STORE'
+        : 'LY STORE • ${product.title} • ${formatCurrency(product.price)}';
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!context.mounted) {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          context.tr(
-            'Review form available after delivered purchase',
-            'نموذج التقييم متاح بعد استلام الطلب',
-          ),
-        ),
+        content: Text(context.tr('Product link copied', 'تم نسخ رابط المنتج')),
       ),
     );
+  }
+
+  Future<void> _quickAdd(BuildContext context, ProductModel product) async {
+    await AuthRequiredHelper.guard(
+      context,
+      onAuthenticated: () async {
+        final selection = await AppBottomSheet.showVariantSelector(
+          context,
+          colors: product.colors,
+          sizes: product.sizes,
+          maxQuantity: product.stock,
+        );
+        if (!context.mounted || selection == null) {
+          return;
+        }
+        final result = context.read<CartController>().addToCart(
+          product,
+          selection['color'] as String,
+          selection['size'] as String,
+          selection['quantity'] as int,
+        );
+        CartActionFeedbackHelper.show(context, result);
+      },
+    );
+  }
+
+  List<ReviewModel> _sortedReviews(List<ReviewModel> reviews) {
+    final items = List<ReviewModel>.from(reviews);
+    switch (_reviewSort) {
+      case 'highest':
+        items.sort((a, b) => b.rating.compareTo(a.rating));
+      case 'lowest':
+        items.sort((a, b) => a.rating.compareTo(b.rating));
+      case 'recent':
+      default:
+        items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    return items;
+  }
+
+  Future<void> _reviewAction(
+    BuildContext context,
+    ProductModel product, {
+    ReviewModel? existingReview,
+  }) async {
+    final productController = context.read<ProductController>();
+    final authController = context.read<AuthController>();
+    if (authController.isGuest || !authController.isLoggedIn) {
+      await AppBottomSheet.showAuthRequired(context);
+      return;
+    }
+    final eligibility = productController.reviewEligibilityForProduct(
+      product.id,
+    );
+    if (existingReview == null && !eligibility.canReview) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_reviewEligibilityMessage(context, eligibility)),
+        ),
+      );
+      return;
+    }
+    await ProductReviewFormSheet.show(
+      context: context,
+      product: product,
+      existingReview: existingReview,
+      onSubmit: ({required rating, required comment}) =>
+          productController.saveProductReview(
+            productId: product.id,
+            rating: rating,
+            comment: comment,
+            existingReview: existingReview,
+          ),
+    );
+  }
+
+  String _reviewEligibilityMessage(
+    BuildContext context,
+    ReviewEligibilityResult eligibility,
+  ) {
+    switch (eligibility.reason) {
+      case ReviewEligibilityReason.notLoggedIn:
+        return context.tr(
+          'Please log in and purchase this product before writing a review.',
+          'يرجى تسجيل الدخول وشراء هذا المنتج قبل كتابة تقييم.',
+        );
+      case ReviewEligibilityReason.notCustomer:
+        return context.tr(
+          'Only customer accounts can review products.',
+          'يمكن لحسابات العملاء فقط تقييم المنتجات.',
+        );
+      case ReviewEligibilityReason.notPurchased:
+        return context.tr(
+          'You can review this product after purchasing it.',
+          'يمكنك تقييم هذا المنتج بعد شرائه.',
+        );
+      case ReviewEligibilityReason.paymentNotCompleted:
+        return context.tr(
+          'You can review this product after payment is completed.',
+          'يمكنك تقييم هذا المنتج بعد اكتمال الدفع.',
+        );
+      case ReviewEligibilityReason.orderCancelled:
+        return context.tr(
+          'Cancelled or refunded orders cannot be reviewed.',
+          'لا يمكن تقييم الطلبات الملغية أو المستردة.',
+        );
+      case ReviewEligibilityReason.alreadyReviewed:
+        return context.tr(
+          'You already reviewed this product. Use Edit Review instead.',
+          'لقد قيّمت هذا المنتج بالفعل. استخدم تعديل التقييم.',
+        );
+      case ReviewEligibilityReason.productNotFound:
+        return context.tr('Product unavailable.', 'المنتج غير متوفر.');
+      case ReviewEligibilityReason.success:
+        return '';
+    }
   }
 
   void _addToBag(BuildContext context, ProductModel product) {
@@ -1695,20 +1787,229 @@ class _StorePill extends StatelessWidget {
   }
 }
 
-class _ReviewTile extends StatelessWidget {
-  const _ReviewTile({
-    required this.author,
-    required this.comment,
-    required this.rating,
-  });
+class _ReviewSummaryCard extends StatelessWidget {
+  const _ReviewSummaryCard({required this.summary});
 
-  final String author;
-  final String comment;
-  final double rating;
+  final ProductRatingSummary summary;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceSoft,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 92,
+            child: Column(
+              children: [
+                Text(
+                  summary.averageRating.toStringAsFixed(1),
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  context.tr(
+                    '${summary.reviewCount} reviews',
+                    '${summary.reviewCount} تقييم',
+                  ),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              children: [5, 4, 3, 2, 1]
+                  .map(
+                    (star) => _RatingBreakdownRow(
+                      star: star,
+                      count: summary.ratingBreakdown[star] ?? 0,
+                      total: summary.reviewCount,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RatingBreakdownRow extends StatelessWidget {
+  const _RatingBreakdownRow({
+    required this.star,
+    required this.count,
+    required this.total,
+  });
+
+  final int star;
+  final int count;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final value = total == 0 ? 0.0 : count / total;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Text(
+            '$star',
+            style: TextStyle(
+              color: colors.secondaryText,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(Icons.star_rounded, color: colors.warning, size: 14),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                minHeight: 7,
+                value: value,
+                backgroundColor: colors.surface,
+                color: colors.warning,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 22,
+            child: Text(
+              '$count',
+              textAlign: TextAlign.end,
+              style: TextStyle(color: colors.secondaryText, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewSortBar extends StatelessWidget {
+  const _ReviewSortBar({required this.selectedSort, required this.onChanged});
+
+  final String selectedSort;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final options = {
+      'recent': context.tr('Most Recent', 'الأحدث'),
+      'highest': context.tr('Highest Rating', 'الأعلى تقييماً'),
+      'lowest': context.tr('Lowest Rating', 'الأقل تقييماً'),
+    };
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.entries.map((entry) {
+        return ChoiceChip(
+          label: Text(entry.value),
+          selected: selectedSort == entry.key,
+          onSelected: (_) => onChanged(entry.key),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _ReviewEligibilityHint extends StatelessWidget {
+  const _ReviewEligibilityHint({required this.eligibility});
+
+  final ReviewEligibilityResult eligibility;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final message = switch (eligibility.reason) {
+      ReviewEligibilityReason.notLoggedIn => context.tr(
+        'You can read reviews. To write one, purchase this product first.',
+        'يمكنك قراءة التقييمات، ولإضافة تقييم يجب شراء المنتج أولًا.',
+      ),
+      ReviewEligibilityReason.notCustomer => context.tr(
+        'Only customer accounts can write product reviews.',
+        'يمكن لحسابات العملاء فقط كتابة تقييمات المنتجات.',
+      ),
+      ReviewEligibilityReason.notPurchased => context.tr(
+        'You can review this product after purchasing it.',
+        'يمكنك تقييم هذا المنتج بعد شرائه.',
+      ),
+      ReviewEligibilityReason.paymentNotCompleted => context.tr(
+        'You can review this product after payment is completed.',
+        'يمكنك تقييم هذا المنتج بعد اكتمال الدفع.',
+      ),
+      ReviewEligibilityReason.orderCancelled => context.tr(
+        'Cancelled or refunded orders cannot be reviewed.',
+        'لا يمكن تقييم الطلبات الملغية أو المستردة.',
+      ),
+      ReviewEligibilityReason.productNotFound => context.tr(
+        'Product unavailable.',
+        'المنتج غير متوفر.',
+      ),
+      ReviewEligibilityReason.alreadyReviewed ||
+      ReviewEligibilityReason.success => '',
+    };
+    if (message.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colors.surfaceSoft,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline_rounded, color: colors.icon, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                color: colors.secondaryText,
+                fontSize: 13,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewTile extends StatelessWidget {
+  const _ReviewTile({required this.review});
+
+  final ReviewModel review;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final date =
+        '${review.createdAt.year}/${review.createdAt.month.toString().padLeft(2, '0')}/${review.createdAt.day.toString().padLeft(2, '0')}';
+    final author = review.customerName;
     return Container(
       margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(14),
@@ -1719,21 +2020,10 @@ class _ReviewTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: colors.surface,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              author.isEmpty ? '?' : author.characters.first.toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: colors.primaryText,
-              ),
-            ),
+          CircleAvatar(
+            backgroundColor: colors.surface,
+            foregroundColor: colors.primaryText,
+            child: Text(author.isEmpty ? '?' : author.characters.first),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1745,30 +2035,40 @@ class _ReviewTile extends StatelessWidget {
                     Expanded(
                       child: Text(
                         author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           color: colors.primaryText,
                         ),
                       ),
                     ),
+                    Icon(Icons.star_rounded, color: colors.warning, size: 17),
+                    const SizedBox(width: 3),
                     Text(
-                      rating.toStringAsFixed(1),
+                      review.rating.toStringAsFixed(1),
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         color: colors.primaryText,
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.star_rounded,
-                      color: Colors.amber.shade600,
-                      size: 16,
-                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    if (review.isVerifiedPurchase)
+                      _BadgePill(
+                        label: context.tr('Verified Purchase', 'شراء موثق'),
+                      ),
+                    _BadgePill(label: date),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Text(
-                  comment,
+                  review.comment,
                   style: TextStyle(
                     fontSize: 13,
                     color: colors.secondaryText,

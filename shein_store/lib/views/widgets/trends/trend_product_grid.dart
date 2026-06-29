@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../controllers/product_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/product_image.dart';
@@ -96,6 +98,7 @@ class _TrendProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final productController = context.watch<ProductController>();
     return Material(
       color: colors.card,
       borderRadius: BorderRadius.circular(18),
@@ -242,7 +245,7 @@ class _TrendProductTile extends StatelessWidget {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            '${product.rating.toStringAsFixed(1)} • ${product.soldCount} sold',
+                            '${productController.ratingSummaryForProduct(product.id).averageRating.toStringAsFixed(1)} • ${product.soldCount} sold',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

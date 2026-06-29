@@ -85,6 +85,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final paymentOptions = _checkoutPaymentMethods(context);
         final paymentIds = paymentOptions.map((item) => item.id).toSet();
         final selectedPayment = checkoutController.paymentMethod;
+        final effectiveSelectedPayment =
+            selectedPayment != null && paymentIds.contains(selectedPayment.id)
+            ? selectedPayment
+            : paymentOptions.first;
         final totalPieces = selectedItems.fold<int>(
           0,
           (sum, item) => sum + item.quantity,
@@ -122,9 +126,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               _CheckoutHeroCard(
                 itemCount: selectedItems.length,
                 totalPieces: totalPieces,
-                total: cartController.calculateTotal(),
+                total: checkoutController.finalTotal,
                 address: previewAddress,
-                paymentLabel: selectedPayment?.brand,
+                paymentLabel: effectiveSelectedPayment.brand,
               ),
               _Section(
                 icon: Icons.verified_user_outlined,
@@ -265,8 +269,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     const SizedBox(height: 14),
                     _PaymentMethodSelect(
-                      selectedId:
-                          selectedPayment?.id ?? paymentOptions.first.id,
+                      selectedId: effectiveSelectedPayment.id,
                       methods: paymentOptions,
                       onChanged: (value) {
                         if (value == null) {
@@ -283,24 +286,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       },
                     ),
                     const SizedBox(height: 14),
-                    _SelectedPaymentPreview(
-                      method: selectedPayment ?? paymentOptions.first,
-                    ),
-                    if (selectedPayment?.id == 'pay-me') ...[
+                    _SelectedPaymentPreview(method: effectiveSelectedPayment),
+                    if (effectiveSelectedPayment.id == 'pay-me') ...[
                       const SizedBox(height: 12),
                       _PaymentInfoNote(
                         title: context.tr(
                           'Pay Me request ready',
                           'طلب Pay Me جاهز',
                         ),
-                        subtitle: selectedPayment!.maskedNumber.trim().isEmpty
+                        subtitle:
+                            effectiveSelectedPayment.maskedNumber.trim().isEmpty
                             ? context.tr(
                                 'Add the payment phone number from the Pay Me dialog.',
                                 'أضف رقم هاتف الدفع من نافذة Pay Me.',
                               )
                             : context.tr(
-                                'Payment request will be sent to ${selectedPayment.maskedNumber}.',
-                                'سيتم إرسال طلب الدفع إلى ${selectedPayment.maskedNumber}.',
+                                'Payment request will be sent to ${effectiveSelectedPayment.maskedNumber}.',
+                                'سيتم إرسال طلب الدفع إلى ${effectiveSelectedPayment.maskedNumber}.',
                               ),
                       ),
                     ],
@@ -330,6 +332,45 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             .map((item) => _CheckoutItemCard(item: item))
                             .toList(),
                       ),
+              ),
+              _Section(
+                icon: Icons.stars_outlined,
+                title: context.tr('Rewards & wallet', 'المكافآت والمحفظة'),
+                subtitle: context.tr(
+                  'Apply real points and wallet balance before placing the order.',
+                  'استخدم النقاط ورصيد المحفظة الحقيقي قبل تنفيذ الطلب.',
+                ),
+                child: Column(
+                  children: [
+                    _RewardToggleCard(
+                      icon: Icons.stars_rounded,
+                      title: context.tr('Use points', 'استخدام النقاط'),
+                      subtitle: context.tr(
+                        '${checkoutController.availablePoints} available • max ${checkoutController.maxRedeemablePoints} points',
+                        '${checkoutController.availablePoints} متاحة • الحد ${checkoutController.maxRedeemablePoints} نقطة',
+                      ),
+                      value: checkoutController.pointsEnabled,
+                      amount: checkoutController.pointsDiscount,
+                      onChanged: checkoutController.maxRedeemablePoints == 0
+                          ? null
+                          : checkoutController.usePoints,
+                    ),
+                    const SizedBox(height: 10),
+                    _RewardToggleCard(
+                      icon: Icons.account_balance_wallet_outlined,
+                      title: context.tr('Use wallet', 'استخدام المحفظة'),
+                      subtitle: context.tr(
+                        '${checkoutController.availableWalletBalance.toStringAsFixed(2)} LYD available',
+                        '${checkoutController.availableWalletBalance.toStringAsFixed(2)} د.ل متاحة',
+                      ),
+                      value: checkoutController.walletEnabled,
+                      amount: checkoutController.walletUsed,
+                      onChanged: checkoutController.maxWalletAmount <= 0
+                          ? null
+                          : checkoutController.useWallet,
+                    ),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -438,12 +479,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           _SummaryLine(
                             label: context.tr('Payment', 'الدفع'),
-                            value:
-                                selectedPayment?.brand ??
-                                context.tr(
-                                  'Choose payment method',
-                                  'اختر طريقة الدفع',
-                                ),
+                            value: effectiveSelectedPayment.brand,
                             inverted: true,
                           ),
                         ],
@@ -455,6 +491,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       value: formatCurrency(cartController.calculateSubtotal()),
                     ),
                     _SummaryLine(
+                      label: context.tr('Coupon discount', 'خصم الكوبون'),
+                      value:
+                          '-${formatCurrency(checkoutController.couponDiscount)}',
+                    ),
+                    _SummaryLine(
+                      label: context.tr('Points discount', 'خصم النقاط'),
+                      value:
+                          '-${formatCurrency(checkoutController.pointsDiscount)}',
+                    ),
+                    _SummaryLine(
+                      label: context.tr('Wallet used', 'المستخدم من المحفظة'),
+                      value:
+                          '-${formatCurrency(checkoutController.walletUsed)}',
+                    ),
+                    _SummaryLine(
                       label: context.tr('Delivery', 'التوصيل'),
                       value: context.tr(
                         'Confirmed with entered address',
@@ -464,7 +515,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const Divider(height: 28),
                     _SummaryLine(
                       label: context.tr('Total to pay', 'إجمالي الدفع'),
-                      value: formatCurrency(cartController.calculateTotal()),
+                      value: formatCurrency(checkoutController.finalTotal),
                       emphasized: true,
                     ),
                     const SizedBox(height: 14),
@@ -739,9 +790,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    final paymentOptions = _checkoutPaymentMethods(context);
     var paymentMethod = checkoutController.paymentMethod;
-    if (paymentMethod?.id == 'pay-me' &&
-        paymentMethod!.maskedNumber.trim().isEmpty) {
+    if (paymentMethod == null ||
+        !paymentOptions.any((method) => method.id == paymentMethod?.id)) {
+      paymentMethod = paymentOptions.first;
+      checkoutController.setPaymentMethod(paymentMethod);
+    }
+    if (paymentMethod.id == 'pay-me' &&
+        paymentMethod.maskedNumber.trim().isEmpty) {
       final phone = await _showPayMeDialog(
         context,
         _phoneController.text.trim(),
@@ -796,7 +853,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
           AppConfirmationDetailRow(
             label: context.tr('Final total', 'الإجمالي النهائي'),
-            value: formatCurrency(cartController.calculateTotal()),
+            value: formatCurrency(checkoutController.finalTotal),
             emphasized: true,
           ),
           AppConfirmationDetailRow(
@@ -1262,9 +1319,12 @@ class _PaymentMethodSelect extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final safeSelectedId = methods.any((method) => method.id == selectedId)
+        ? selectedId
+        : (methods.isEmpty ? null : methods.first.id);
 
     return DropdownButtonFormField<String>(
-      initialValue: selectedId,
+      initialValue: safeSelectedId,
       onChanged: onChanged,
       icon: Icon(Icons.keyboard_arrow_down_rounded, color: colors.icon),
       decoration: InputDecoration(
@@ -1592,6 +1652,91 @@ class _EmptyCheckoutHint extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RewardToggleCard extends StatelessWidget {
+  const _RewardToggleCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.amount,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final double amount;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final enabled = onChanged != null;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: value ? colors.primaryText : colors.surfaceSoft,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: value ? colors.primaryText : colors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: value
+                  ? colors.surface.withValues(alpha: 0.16)
+                  : colors.surface,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(icon, color: value ? colors.surface : colors.icon),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: value ? colors.surface : colors.primaryText,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: value
+                        ? colors.surface.withValues(alpha: 0.74)
+                        : colors.secondaryText,
+                    height: 1.35,
+                  ),
+                ),
+                if (amount > 0) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    '-${formatCurrency(amount)}',
+                    style: TextStyle(
+                      color: value ? colors.surface : colors.discount,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Switch.adaptive(value: value, onChanged: enabled ? onChanged : null),
         ],
       ),
     );
