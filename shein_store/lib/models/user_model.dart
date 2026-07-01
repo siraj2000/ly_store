@@ -37,6 +37,9 @@ class UserModel {
     this.recentlyViewedProductIds = const [],
     this.measurements = const {},
     this.mockPassword = '',
+    this.normalizedPhoneNumber = '',
+    this.phoneVerified = true,
+    this.status = 'active',
     this.adminRoleName = '',
     this.adminPermissionIds = const [],
     this.adminIsActive = true,
@@ -83,6 +86,9 @@ class UserModel {
   final Map<String, String> measurements;
   // Mock password storage for demo only. Replace with secure backend authentication later.
   final String mockPassword;
+  final String normalizedPhoneNumber;
+  final bool phoneVerified;
+  final String status;
   final String adminRoleName;
   final List<String> adminPermissionIds;
   final bool adminIsActive;
@@ -125,6 +131,9 @@ class UserModel {
     List<String>? recentlyViewedProductIds,
     Map<String, String>? measurements,
     String? mockPassword,
+    String? normalizedPhoneNumber,
+    bool? phoneVerified,
+    String? status,
     String? adminRoleName,
     List<String>? adminPermissionIds,
     bool? adminIsActive,
@@ -165,6 +174,10 @@ class UserModel {
           recentlyViewedProductIds ?? this.recentlyViewedProductIds,
       measurements: measurements ?? this.measurements,
       mockPassword: mockPassword ?? this.mockPassword,
+      normalizedPhoneNumber:
+          normalizedPhoneNumber ?? this.normalizedPhoneNumber,
+      phoneVerified: phoneVerified ?? this.phoneVerified,
+      status: status ?? this.status,
       adminRoleName: adminRoleName ?? this.adminRoleName,
       adminPermissionIds: adminPermissionIds ?? this.adminPermissionIds,
       adminIsActive: adminIsActive ?? this.adminIsActive,
@@ -255,6 +268,12 @@ class UserModel {
         json['measurements'] as Map<String, dynamic>? ?? const {},
       ),
       mockPassword: json['mockPassword'] as String? ?? '',
+      normalizedPhoneNumber:
+          json['normalizedPhoneNumber'] as String? ??
+          json['phone'] as String? ??
+          '',
+      phoneVerified: json['phoneVerified'] as bool? ?? true,
+      status: json['status'] as String? ?? 'active',
       adminRoleName: json['adminRoleName'] as String? ?? '',
       adminPermissionIds: (json['adminPermissionIds'] as List<dynamic>? ?? [])
           .map((item) => item as String)
@@ -318,6 +337,9 @@ class UserModel {
     'recentlyViewedProductIds': recentlyViewedProductIds,
     'measurements': measurements,
     'mockPassword': mockPassword,
+    'normalizedPhoneNumber': normalizedPhoneNumber,
+    'phoneVerified': phoneVerified,
+    'status': status,
     'adminRoleName': adminRoleName,
     'adminPermissionIds': adminPermissionIds,
     'adminIsActive': adminIsActive,

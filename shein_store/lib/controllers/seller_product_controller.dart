@@ -435,12 +435,6 @@ class SellerProductController extends ChangeNotifier {
     if (!saveAsDraft && selectedSubcategory.isEmpty) {
       errors['subcategory'] = 'Please select a subcategory';
     }
-    if (!saveAsDraft && selectedColors.isEmpty) {
-      errors['colors'] = 'Select at least one color';
-    }
-    if (!saveAsDraft && selectedSizes.isEmpty) {
-      errors['sizes'] = 'Select at least one size';
-    }
     if (!saveAsDraft && selectedImages.isEmpty) {
       errors['images'] = 'Add at least one product image';
     }
@@ -789,8 +783,10 @@ class SellerProductController extends ChangeNotifier {
 
   Future<ProductModel?> duplicateProduct(ProductModel product) async {
     if (!_isSeller) return null;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final nextProduct = product.copyWith(
-      id: 'seller_product_${DateTime.now().millisecondsSinceEpoch}',
+      id: 'seller_product_$timestamp',
+      sku: '${product.sku}-COPY-$timestamp',
       status: ProductStatus.draft,
       isActive: false,
       clearPublishedAt: true,
@@ -955,7 +951,7 @@ class SellerProductController extends ChangeNotifier {
     required List<String> sizes,
     ProductModel? existingProduct,
   }) {
-    if (colors.isEmpty || sizes.isEmpty) {
+    if (colors.isEmpty && sizes.isEmpty) {
       return const [];
     }
     final existingByKey = {
@@ -963,12 +959,14 @@ class SellerProductController extends ChangeNotifier {
           in existingProduct?.variants ?? const <ProductVariantModel>[])
         '${variant.color}::${variant.size}': variant,
     };
-    final total = colors.length * sizes.length;
+    final colorOptions = colors.isEmpty ? const [''] : colors;
+    final sizeOptions = sizes.isEmpty ? const [''] : sizes;
+    final total = colorOptions.length * sizeOptions.length;
     final baseStock = total == 0 ? 0 : productStock ~/ total;
     var remainder = total == 0 ? 0 : productStock % total;
     final variants = <ProductVariantModel>[];
-    for (final color in colors) {
-      for (final size in sizes) {
+    for (final color in colorOptions) {
+      for (final size in sizeOptions) {
         final key = '$color::$size';
         final existing = existingByKey[key];
         final stock = existing?.stock ?? (baseStock + (remainder > 0 ? 1 : 0));
@@ -982,7 +980,12 @@ class SellerProductController extends ChangeNotifier {
             size: size,
             sku:
                 existing?.sku ??
-                '${baseSku}_${color}_$size'
+                [
+                      baseSku,
+                      if (color.isNotEmpty) color,
+                      if (size.isNotEmpty) size,
+                    ]
+                    .join('_')
                     .replaceAll(RegExp(r'[^A-Za-z0-9]+'), '_')
                     .toUpperCase(),
             stock: stock,

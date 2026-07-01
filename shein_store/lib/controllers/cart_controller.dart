@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/cart_item_model.dart';
 import '../models/coupon_model.dart';
 import '../models/product_model.dart';
-import '../models/product_status.dart';
 import '../models/user_role.dart';
+import '../core/helpers/product_orderability_helper.dart';
 import '../services/cart_service.dart';
 import 'auth_controller.dart';
 import 'product_controller.dart';
@@ -222,6 +222,71 @@ class CartController extends ChangeNotifier {
   List<CartItemModel> get selectedItems =>
       _items.where((item) => item.isSelected).toList();
 
+  List<CartItemAvailabilityResult> get availabilityResults =>
+      _items.map(availabilityForItem).toList();
+
+  List<CartItemAvailabilityResult> get selectedAvailabilityIssues =>
+      selectedItems
+          .map(availabilityForItem)
+          .where((result) => !result.isAvailable)
+          .toList();
+
+  bool get hasUnavailableSelectedItems => selectedAvailabilityIssues.isNotEmpty;
+
+  CartItemAvailabilityResult availabilityForItem(CartItemModel item) {
+    final productController = _productController;
+    final canonicalProduct = productController == null
+        ? item.product
+        : productController.productById(item.product.id);
+    final seller = canonicalProduct == null
+        ? null
+        : productController?.sellerForProduct(canonicalProduct);
+    final store = canonicalProduct == null
+        ? null
+        : productController?.storeForProduct(canonicalProduct);
+    return ProductOrderabilityHelper.validate(
+      cartItemId: item.id,
+      product: canonicalProduct,
+      seller: seller,
+      store: store,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+      requestedQuantity: item.quantity,
+    );
+  }
+
+  void removeUnavailableItems() {
+    if (_authController?.currentRole != UserRole.customer) {
+      return;
+    }
+    _items.removeWhere((item) => !availabilityForItem(item).isAvailable);
+    _persistCart();
+    notifyListeners();
+  }
+
+  CartActionResult reduceQuantityToAvailableStock(String cartItemId) {
+    if (_authController?.currentRole != UserRole.customer) {
+      return _setResult(CartActionResult.failure('customer_required'));
+    }
+    final index = _items.indexWhere((item) => item.id == cartItemId);
+    if (index == -1) {
+      return _setResult(CartActionResult.failure('cart_item_not_found'));
+    }
+    final item = _items[index];
+    final availability = availabilityForItem(item);
+    final availableStock = availability.availableStock ?? 0;
+    if (!availability.canAutoFix || availableStock < 1) {
+      return _setResult(
+        CartActionResult.failure(
+          availability.reasonCode.name,
+          availableStock: availability.availableStock,
+          product: item.product,
+        ),
+      );
+    }
+    return updateQuantity(cartItemId, availableStock);
+  }
+
   String freeShippingMessage() {
     return _cartService.freeShippingMessage(calculateSubtotal());
   }
@@ -242,66 +307,32 @@ class CartController extends ChangeNotifier {
     required String selectedSize,
     required int requestedQuantity,
   }) {
-    if (requestedQuantity < 1) {
-      return CartActionResult.failure('quantity_minimum');
-    }
     final productController = _productController;
     final canonicalProduct = productController?.productById(product.id);
-    if (canonicalProduct == null) {
-      return CartActionResult.failure('product_not_found');
-    }
-    if (!canonicalProduct.isActive ||
-        canonicalProduct.isDeleted ||
-        canonicalProduct.status.id != 'active') {
-      return CartActionResult.failure('product_unavailable');
-    }
-    final store = productController?.storeForProduct(canonicalProduct);
-    if (store == null || !store.isActive || store.vacationMode) {
-      return CartActionResult.failure('store_unavailable');
-    }
-    if (canonicalProduct.colors.isNotEmpty &&
-        !canonicalProduct.colors.contains(selectedColor)) {
-      return CartActionResult.failure('color_unavailable');
-    }
-    if (canonicalProduct.sizes.isNotEmpty &&
-        !canonicalProduct.sizes.contains(selectedSize)) {
-      return CartActionResult.failure('size_unavailable');
-    }
-    var matchingVariantIndex = -1;
-    for (var index = 0; index < canonicalProduct.variants.length; index++) {
-      final item = canonicalProduct.variants[index];
-      final colorMatches = item.color.isEmpty || item.color == selectedColor;
-      final sizeMatches = item.size.isEmpty || item.size == selectedSize;
-      if (colorMatches && sizeMatches) {
-        matchingVariantIndex = index;
-        break;
-      }
-    }
-    final variant = matchingVariantIndex == -1
+    final seller = canonicalProduct == null
         ? null
-        : canonicalProduct.variants[matchingVariantIndex];
-    if (canonicalProduct.variants.isNotEmpty) {
-      if (variant == null || !variant.isActive) {
-        return CartActionResult.failure('variant_unavailable');
-      }
-    }
-    final availableStock = variant?.stock ?? canonicalProduct.stock;
-    if (availableStock < 1) {
+        : productController?.sellerForProduct(canonicalProduct);
+    final store = canonicalProduct == null
+        ? null
+        : productController?.storeForProduct(canonicalProduct);
+    final availability = ProductOrderabilityHelper.validate(
+      cartItemId: '',
+      product: canonicalProduct,
+      seller: seller,
+      store: store,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+      requestedQuantity: requestedQuantity,
+    );
+    if (!availability.isAvailable) {
       return CartActionResult.failure(
-        'out_of_stock',
-        availableStock: availableStock,
-        product: canonicalProduct,
-      );
-    }
-    if (requestedQuantity > availableStock) {
-      return CartActionResult.failure(
-        'insufficient_stock',
-        availableStock: availableStock,
+        availability.reasonCode.name,
+        availableStock: availability.availableStock,
         product: canonicalProduct,
       );
     }
     return CartActionResult.success(
-      availableStock: availableStock,
+      availableStock: availability.availableStock,
       product: canonicalProduct,
     );
   }

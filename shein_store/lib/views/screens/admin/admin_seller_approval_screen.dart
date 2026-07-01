@@ -23,7 +23,9 @@ class AdminSellerApprovalScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 6),
-                  const Text('Seller verification request placeholder'),
+                  const Text(
+                    'Seller verification belongs to the separate Admin app.',
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,

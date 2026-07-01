@@ -1441,4 +1441,73 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get copy => 'نسخ';
+
+  @override
+  String get cartItemNoLongerAvailable => 'هذا المنتج لم يعد متاحاً';
+
+  @override
+  String get reviewCart => 'مراجعة السلة';
+
+  @override
+  String get removeItem => 'إزالة المنتج';
+
+  @override
+  String get removeUnavailableItems => 'إزالة المنتجات غير المتاحة';
+
+  @override
+  String get updateQuantity => 'تعديل الكمية';
+
+  @override
+  String get reselectColorSize => 'يرجى إعادة اختيار اللون والمقاس';
+
+  @override
+  String get storeVacationMode => 'المتجر حالياً في وضع الإجازة';
+
+  @override
+  String get productOutOfStock => 'المنتج غير متوفر في المخزون';
+
+  @override
+  String get quantityGreaterThanStock => 'الكمية المطلوبة أكبر من المتاح';
+
+  @override
+  String get currentlyUnavailable => 'غير متاح حالياً';
+
+  @override
+  String get outOfStock => 'نفد المخزون';
+
+  @override
+  String get productUnavailable => 'هذا المنتج غير متاح حالياً';
+
+  @override
+  String get storeOnVacation => 'المتجر حالياً في وضع الإجازة';
+
+  @override
+  String get unavailableRemoveFromCart => 'إزالة المنتج غير المتاح';
+
+  @override
+  String get chooseColor => 'اختر اللون';
+
+  @override
+  String get chooseSize => 'اختر المقاس';
+
+  @override
+  String get selectColor => 'اختر اللون';
+
+  @override
+  String get selectSize => 'اختر المقاس';
+
+  @override
+  String get selectColorAndSize => 'اختر اللون والمقاس';
+
+  @override
+  String get noOptionsRequired => 'لا توجد خيارات مطلوبة';
+
+  @override
+  String get reviewUnavailableItem => 'راجع المنتج غير المتاح';
+
+  @override
+  String get paymentPending => 'الدفع قيد الانتظار';
+
+  @override
+  String get reduceToAvailableStock => 'تعديل للكمية المتاحة';
 }

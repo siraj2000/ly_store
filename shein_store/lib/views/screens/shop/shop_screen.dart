@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../controllers/auth_controller.dart';
 import '../../../controllers/cart_controller.dart';
 import '../../../controllers/category_controller.dart';
+import '../../../controllers/notification_controller.dart';
 import '../../../controllers/product_controller.dart';
 import '../../../controllers/search_controller.dart';
 import '../../../controllers/wishlist_controller.dart';
@@ -16,7 +17,6 @@ import '../../../core/widgets/app_bottom_sheet.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../models/category_model.dart';
 import '../../../models/product_model.dart';
-import '../../widgets/common/notification_bell_button.dart';
 import '../../widgets/product/product_card.dart';
 import '../../widgets/shop/category_image_item.dart';
 import '../../widgets/shop/promo_banner.dart';
@@ -36,6 +36,7 @@ class _ShopScreenState extends State<ShopScreen> {
   String _selectedDepartmentId = 'all';
   String _selectedFeedTab = 'for_you';
   String? _selectedHomeCategoryId;
+  bool _openedSearchFromTyping = false;
 
   static const List<String> _departments = [
     'all',
@@ -99,6 +100,7 @@ class _ShopScreenState extends State<ShopScreen> {
               return Scaffold(
                 backgroundColor: colors.background,
                 body: AppLoading(
+                  layout: AppLoadingLayout.marketplace,
                   message: context.tr(
                     'Loading storefront...',
                     'جارٍ تحميل واجهة التسوق...',
@@ -133,12 +135,12 @@ class _ShopScreenState extends State<ShopScreen> {
                         ),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
-                            _buildTopSearchHeader(
+                            _buildSlimTopSearchHeader(
                               context,
                               authController: authController,
                             ),
                             const SizedBox(height: 10),
-                            _buildDepartmentNavigation(context),
+                            _buildPolishedDepartmentNavigation(context),
                             const SizedBox(height: 10),
                             _buildHeroCarousel(context),
                             const SizedBox(height: 10),
@@ -196,6 +198,8 @@ class _ShopScreenState extends State<ShopScreen> {
         .toList();
   }
 
+  // Kept as a fallback reference while the polished shop header is active.
+  // ignore: unused_element
   Widget _buildTopSearchHeader(
     BuildContext context, {
     required AuthController authController,
@@ -204,7 +208,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
     return Row(
       children: [
-        const NotificationBellButton(),
+        const SizedBox.shrink(),
         IconButton(
           tooltip: context.tr('Orders', 'الطلبات'),
           onPressed: () {
@@ -247,7 +251,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
                 IconButton(
                   tooltip: context.tr('Image search', 'البحث بالصور'),
-                  onPressed: () => _openImageSearchPlaceholder(context),
+                  onPressed: () => _openImageSearchInfo(context),
                   icon: const Icon(Icons.camera_alt_outlined),
                 ),
               ],
@@ -286,6 +290,317 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
+  Widget _buildSlimTopSearchHeader(
+    BuildContext context, {
+    required AuthController authController,
+  }) {
+    final colors = context.appColors;
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _shopHeaderIconButton(
+            context,
+            tooltip: context.tr('Shop Menu', 'قائمة التسوق'),
+            icon: Icons.menu_rounded,
+            onPressed: _openShopMenu,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                color: colors.background,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: colors.border),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: TextField(
+                      controller: _homeSearchController,
+                      textAlignVertical: TextAlignVertical.center,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (value) =>
+                          _handleHeaderSearchTyping(context, value),
+                      onSubmitted: (_) => _runHeaderSearch(context),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: context.tr(
+                          'Search fashion, beauty, home...',
+                          'ابحث عن أزياء وجمال ومنزل...',
+                        ),
+                        hintStyle: TextStyle(
+                          color: colors.secondaryText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: colors.primaryText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.tr('Image search', 'البحث بالصور'),
+                    onPressed: () => _openImageSearchInfo(context),
+                    icon: const Icon(Icons.camera_alt_outlined),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _shopHeaderNotificationButton(context),
+          const SizedBox(width: 6),
+          _shopHeaderIconButton(
+            context,
+            tooltip: context.tr('Wishlist', 'المفضلة'),
+            icon: Icons.favorite_border,
+            onPressed: () {
+              if (authController.isGuest) {
+                AppBottomSheet.showAuthRequired(context);
+              } else {
+                Navigator.pushNamed(context, AppRoutes.wishlist);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Kept as a fallback reference while the slim shop header is active.
+  // ignore: unused_element
+  Widget _buildPolishedTopSearchHeader(
+    BuildContext context, {
+    required AuthController authController,
+  }) {
+    final colors = context.appColors;
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _shopHeaderIconButton(
+            context,
+            tooltip: context.tr('Shop Menu', 'قائمة التسوق'),
+            icon: Icons.menu_rounded,
+            onPressed: _openShopMenu,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: colors.background,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: colors.border),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(start: 14),
+                    child: Icon(
+                      Icons.search_rounded,
+                      size: 22,
+                      color: colors.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _homeSearchController,
+                      textAlignVertical: TextAlignVertical.center,
+                      textInputAction: TextInputAction.search,
+                      onChanged: (value) =>
+                          _handleHeaderSearchTyping(context, value),
+                      onSubmitted: (_) => _runHeaderSearch(context),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: context.tr(
+                          'Search fashion, beauty, home...',
+                          'ابحث عن أزياء وجمال ومنزل...',
+                        ),
+                        hintStyle: TextStyle(
+                          color: colors.secondaryText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: TextStyle(
+                        color: colors.primaryText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.tr('Image search', 'البحث بالصور'),
+                    onPressed: () => _openImageSearchInfo(context),
+                    icon: const Icon(Icons.camera_alt_outlined),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _shopHeaderIconButton(
+            context,
+            tooltip: context.tr('Orders', 'الطلبات'),
+            icon: Icons.calendar_today_outlined,
+            onPressed: () {
+              if (authController.isGuest) {
+                AppBottomSheet.showAuthRequired(context);
+              } else {
+                Navigator.pushNamed(context, AppRoutes.orders);
+              }
+            },
+          ),
+          const SizedBox(width: 6),
+          const SizedBox.shrink(),
+          const SizedBox(width: 6),
+          _shopHeaderIconButton(
+            context,
+            tooltip: context.tr('Wishlist', 'المفضلة'),
+            icon: Icons.favorite_border,
+            onPressed: () {
+              if (authController.isGuest) {
+                AppBottomSheet.showAuthRequired(context);
+              } else {
+                Navigator.pushNamed(context, AppRoutes.wishlist);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _shopHeaderIconButton(
+    BuildContext context, {
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return _shopHeaderIconShell(
+      context,
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onPressed,
+        icon: Icon(icon),
+      ),
+    );
+  }
+
+  Widget _shopHeaderIconShell(BuildContext context, {required Widget child}) {
+    final colors = context.appColors;
+
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: colors.background,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.border),
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+  }
+
+  Widget _shopHeaderNotificationButton(BuildContext context) {
+    final colors = context.appColors;
+
+    return Selector<NotificationController, int>(
+      selector: (_, controller) => controller.unreadCount,
+      builder: (context, unreadCount, _) {
+        final label = unreadCount > 99 ? '99+' : '$unreadCount';
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.notifications),
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: colors.background,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colors.border),
+                    ),
+                    child: Icon(
+                      Icons.notifications_none_outlined,
+                      color: colors.primaryText,
+                    ),
+                  ),
+                ),
+                if (unreadCount > 0)
+                  PositionedDirectional(
+                    top: 0,
+                    end: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 22),
+                      decoration: BoxDecoration(
+                        color: colors.discount,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: colors.surface, width: 2),
+                      ),
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _runHeaderSearch(BuildContext context) {
     final controller = context.read<SearchController>();
     final query = _homeSearchController.text.trim();
@@ -299,15 +614,34 @@ class _ShopScreenState extends State<ShopScreen> {
     Navigator.pushNamed(context, AppRoutes.search);
   }
 
-  void _openImageSearchPlaceholder(BuildContext context) {
+  void _handleHeaderSearchTyping(BuildContext context, String value) {
+    final query = value.trim();
+    final controller = context.read<SearchController>();
+    controller.setQuery(query);
+
+    if (query.isEmpty || _openedSearchFromTyping) {
+      return;
+    }
+
+    _openedSearchFromTyping = true;
+    controller.addRecentSearch(query);
+    controller.search();
+    Navigator.pushNamed(context, AppRoutes.search).whenComplete(() {
+      if (mounted) {
+        _openedSearchFromTyping = false;
+      }
+    });
+  }
+
+  void _openImageSearchInfo(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.tr('Image search', 'البحث بالصور')),
         content: Text(
           context.tr(
-            'Visual search placeholder ready for future API integration.',
-            'واجهة البحث بالصور جاهزة حالياً كنسخة تجريبية لربطها لاحقاً.',
+            'Image search is not enabled in this local demo yet. It is prepared for future API integration.',
+            'البحث بالصور غير مفعل في نسخة الديمو المحلية حالياً، لكنه جاهز للربط مع الواجهة البرمجية لاحقاً.',
           ),
         ),
         actions: [
@@ -320,6 +654,8 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
+  // Kept as a fallback reference while the polished department chips are active.
+  // ignore: unused_element
   Widget _buildDepartmentNavigation(BuildContext context) {
     final colors = context.appColors;
 
@@ -379,6 +715,99 @@ class _ShopScreenState extends State<ShopScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildPolishedDepartmentNavigation(BuildContext context) {
+    final colors = context.appColors;
+
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _departments.length + 1,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          if (index == _departments.length) {
+            return _departmentMenuChip(
+              context,
+              label: context.tr('More', 'المزيد'),
+              onTap: _openShopMenu,
+            );
+          }
+
+          final id = _departments[index];
+          final isSelected = _selectedDepartmentId == id;
+
+          return InkWell(
+            borderRadius: BorderRadius.circular(999),
+            onTap: () {
+              setState(() {
+                _selectedDepartmentId = id;
+                _selectedHomeCategoryId = null;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: isSelected ? colors.primaryText : colors.surface,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isSelected ? colors.primaryText : colors.border,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _localizedDepartmentNavLabel(context, id),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isSelected ? colors.surface : colors.primaryText,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _departmentMenuChip(
+    BuildContext context, {
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    final colors = context.appColors;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.menu_rounded, size: 18, color: colors.primaryText),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: colors.primaryText,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -892,6 +1321,7 @@ class _ShopScreenState extends State<ShopScreen> {
           context,
           colors: product.colors,
           sizes: product.sizes,
+          variants: product.variants,
           maxQuantity: product.stock,
         );
         if (!mounted || selection == null) {

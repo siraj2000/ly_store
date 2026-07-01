@@ -9,6 +9,7 @@ import 'package:stylehub_store/controllers/seller_store_controller.dart';
 import 'package:stylehub_store/models/admin/platform_setting_model.dart';
 import 'package:stylehub_store/models/order_item_model.dart';
 import 'package:stylehub_store/models/order_model.dart';
+import 'package:stylehub_store/models/product_model.dart';
 import 'package:stylehub_store/models/product_status.dart';
 import 'package:stylehub_store/models/seller_order_model.dart';
 import 'package:stylehub_store/repositories/local_admin_repository.dart';
@@ -109,6 +110,25 @@ void main() {
       expect(updated.price, original.price + 5);
       expect(updated.status, ProductStatus.pendingApproval);
       expect(updated.isActive, isFalse);
+    });
+
+    test('copy product creates a safe unpublished draft', () async {
+      final context = await _SellerTestContext.create(
+        requiresProductApproval: true,
+      );
+      final original = context.mockData.productsForSeller('seller_1').first;
+
+      final copy = await context.productController.duplicateProduct(original);
+
+      expect(copy, isNotNull);
+      expect(copy!.id, isNot(original.id));
+      expect(copy.sku, isNot(original.sku));
+      expect(copy.sku, contains(original.sku));
+      expect(copy.status, ProductStatus.draft);
+      expect(copy.isActive, isFalse);
+      expect(copy.publishedAt, isNull);
+      expect(copy.sellerId, original.sellerId);
+      expect(copy.storeId, original.storeId);
     });
 
     test(
@@ -286,6 +306,49 @@ void main() {
             .fold<int>(0, (total, variant) => total + variant.stock),
       );
     });
+
+    test(
+      'seller variants support color-only size-only and no-option products',
+      () async {
+        final context = await _SellerTestContext.create();
+        final controller = context.productController;
+        final existing = context.mockData.productsForSeller('seller_1').first;
+
+        ProductModelBuilderArgs baseArgs(
+          String id,
+          List<String> colors,
+          List<String> sizes,
+        ) => ProductModelBuilderArgs(id: id, colors: colors, sizes: sizes);
+
+        final colorOnly = _buildSellerTestProduct(
+          controller,
+          existing,
+          baseArgs('seller_test_color_only', const [
+            'Black',
+            'White',
+          ], const []),
+        );
+        final sizeOnly = _buildSellerTestProduct(
+          controller,
+          existing,
+          baseArgs('seller_test_size_only', const [], const ['S', 'M']),
+        );
+        final noOptions = _buildSellerTestProduct(
+          controller,
+          existing,
+          baseArgs('seller_test_no_options', const [], const []),
+        );
+
+        expect(colorOnly.variants, hasLength(2));
+        expect(colorOnly.variants.map((item) => item.color), contains('Black'));
+        expect(colorOnly.variants.every((item) => item.size.isEmpty), isTrue);
+        expect(sizeOnly.variants, hasLength(2));
+        expect(sizeOnly.variants.every((item) => item.color.isEmpty), isTrue);
+        expect(sizeOnly.variants.map((item) => item.size), contains('M'));
+        expect(noOptions.variants, isEmpty);
+        expect(noOptions.stock, 7);
+      },
+    );
 
     test(
       'seller order update recomputes master status and notifies customer',
@@ -643,6 +706,54 @@ _SplitOrderFixture _createSplitOrder(MockDataService mockData) {
   return _SplitOrderFixture(
     masterOrder: masterOrder,
     sellerOrders: sellerOrders,
+  );
+}
+
+class ProductModelBuilderArgs {
+  const ProductModelBuilderArgs({
+    required this.id,
+    required this.colors,
+    required this.sizes,
+  });
+
+  final String id;
+  final List<String> colors;
+  final List<String> sizes;
+}
+
+ProductModel _buildSellerTestProduct(
+  SellerProductController controller,
+  ProductModel existing,
+  ProductModelBuilderArgs args,
+) {
+  return controller.buildProduct(
+    id: args.id,
+    titleEn: 'Option Test Product',
+    titleAr: 'منتج اختبار الخيارات',
+    descriptionEn: 'Checks optional color and size behavior.',
+    descriptionAr: 'يتحقق من سلوك اللون والمقاس الاختياري.',
+    categoryId: existing.categoryId,
+    categoryName: existing.categoryName,
+    subcategoryId: existing.subcategoryId,
+    subcategoryName: existing.subcategoryName,
+    department: existing.departmentId.isNotEmpty
+        ? existing.departmentId
+        : existing.department,
+    price: 20,
+    oldPrice: 25,
+    stock: 7,
+    sku: args.id.toUpperCase(),
+    colors: args.colors,
+    sizes: args.sizes,
+    materialEn: 'Cotton',
+    materialAr: 'قطن',
+    compositionEn: 'Blend',
+    compositionAr: 'مزيج',
+    careInstructionsEn: 'Wash gently',
+    careInstructionsAr: 'غسل بلطف',
+    saveAsDraft: false,
+    isReturnable: true,
+    selectedImagePaths: existing.imageUrls,
   );
 }
 

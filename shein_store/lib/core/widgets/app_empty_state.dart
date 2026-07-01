@@ -8,11 +8,13 @@ class AppEmptyState extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
+    this.icon,
     this.action,
   });
 
   final String title;
   final String message;
+  final IconData? icon;
   final Widget? action;
 
   @override
@@ -40,7 +42,10 @@ class AppEmptyState extends StatelessWidget {
                   color: colors.surfaceSoft,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.inventory_2_outlined, color: colors.icon),
+                child: Icon(
+                  icon ?? Icons.inventory_2_outlined,
+                  color: colors.icon,
+                ),
               ),
               const SizedBox(height: AppSizes.md),
               Text(

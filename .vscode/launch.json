@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "LY STORE Flutter",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "${workspaceFolder}/shein_store",
+      "program": "lib/main.dart"
+    }
+  ]
+}

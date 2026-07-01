@@ -1,13 +1,19 @@
 import '../models/app_preferences_model.dart';
+import '../models/pending_registration_session.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
+import '../core/helpers/phone_number_normalizer.dart';
+import 'auth_otp_service.dart';
 import 'mock_data_service.dart';
 
 class AuthService {
-  AuthService(this._mockDataService);
+  AuthService(this._mockDataService, {AuthOtpService? otpService})
+    : _otpService = otpService ?? AuthOtpService();
 
   final MockDataService _mockDataService;
+  final AuthOtpService _otpService;
   UserModel? _currentUser;
+  PendingRegistrationSession? _pendingRegistrationSession;
   final Map<String, _PasswordResetSession> _passwordResetSessions = {};
 
   Future<void> initialize() async {
@@ -28,6 +34,9 @@ class AuthService {
   }
 
   UserModel? get currentUser => _currentUser;
+
+  PendingRegistrationSession? get pendingRegistrationSession =>
+      _pendingRegistrationSession;
 
   Future<UserModel> login(String email, String password) async {
     await Future<void>.delayed(const Duration(milliseconds: 700));
@@ -62,6 +71,52 @@ class AuthService {
     throw Exception('invalid_credentials');
   }
 
+  Future<UserModel> loginWithPhonePassword(
+    String phone,
+    String password,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    final normalizedPhone = PhoneNumberNormalizer.normalize(phone);
+    if (!PhoneNumberNormalizer.isValid(normalizedPhone)) {
+      throw Exception('invalid_phone_number');
+    }
+    final user = _mockDataService.userByNormalizedPhone(normalizedPhone);
+    if (user == null) {
+      throw Exception('phone_not_registered');
+    }
+    if (user.role == UserRole.admin) {
+      throw Exception('admin_separate_app');
+    }
+    if (!user.isActive || user.status == 'suspended') {
+      throw Exception('account_suspended');
+    }
+    if (user.status == 'deleted') {
+      throw Exception('account_not_found');
+    }
+    if (user.role == UserRole.customer && !user.phoneVerified) {
+      throw Exception('phone_not_verified');
+    }
+    if (user.mockPassword != password.trim()) {
+      throw Exception('invalid_phone_or_password');
+    }
+    if (user.role == UserRole.seller) {
+      if (user.sellerStatus == 'suspended') {
+        throw Exception('seller_suspended');
+      }
+      if (user.sellerStatus == 'pending') {
+        throw Exception('seller_pending');
+      }
+      final store = _mockDataService.ensureStoreForSeller(user);
+      final refreshedSeller =
+          _mockDataService.userById(user.id) ??
+          user.copyWith(linkedStoreId: store.id, updatedAt: DateTime.now());
+      await setCurrentUser(refreshedSeller);
+      return _currentUser!;
+    }
+    await setCurrentUser(user);
+    return _currentUser!;
+  }
+
   Future<UserModel> register(String email, String password) async {
     await Future<void>.delayed(const Duration(milliseconds: 700));
     final normalizedEmail = email.trim().toLowerCase();
@@ -76,6 +131,146 @@ class AuthService {
     await _mockDataService.addUser(newUser);
     await setCurrentUser(newUser);
     return _currentUser!;
+  }
+
+  Future<PendingRegistrationSession> startCustomerRegistration({
+    required String fullName,
+    required String phone,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    final cleanName = fullName.trim().replaceAll(RegExp(r'\s+'), ' ');
+    if (cleanName.isEmpty) {
+      throw Exception('full_name_required');
+    }
+    if (cleanName.split(' ').where((part) => part.trim().isNotEmpty).length <
+        2) {
+      throw Exception('full_name_two_words_required');
+    }
+    final normalizedPhone = PhoneNumberNormalizer.normalize(phone);
+    if (!PhoneNumberNormalizer.isValid(normalizedPhone)) {
+      throw Exception('invalid_phone_number');
+    }
+    if (_mockDataService.userByNormalizedPhone(normalizedPhone) != null) {
+      throw Exception('phone_already_registered');
+    }
+    final otp = await _otpService.sendOtp(normalizedPhone);
+    _pendingRegistrationSession = PendingRegistrationSession(
+      sessionId: 'registration_${DateTime.now().microsecondsSinceEpoch}',
+      fullName: cleanName,
+      normalizedPhoneNumber: normalizedPhone,
+      otpId: otp.otpId,
+      expiresAt: otp.expiresAt,
+      createdAt: DateTime.now(),
+    );
+    return _pendingRegistrationSession!;
+  }
+
+  Future<void> verifyRegistrationOtp(String code) async {
+    final session = _pendingRegistrationSession;
+    if (session == null) {
+      throw Exception('registration_session_required');
+    }
+    final cleanCode = code.trim();
+    if (cleanCode.isEmpty) {
+      throw Exception('otp_required');
+    }
+    if (!RegExp(r'^\d{6}$').hasMatch(cleanCode)) {
+      throw Exception('otp_must_be_6_digits');
+    }
+    final result = await _otpService.verifyOtp(
+      otpId: session.otpId,
+      code: cleanCode,
+    );
+    switch (result.status) {
+      case OtpVerificationStatus.verified:
+        _pendingRegistrationSession = session.copyWith(otpVerified: true);
+        return;
+      case OtpVerificationStatus.expired:
+        throw Exception('otp_expired');
+      case OtpVerificationStatus.tooManyAttempts:
+        throw Exception('too_many_attempts');
+      case OtpVerificationStatus.invalid:
+        _pendingRegistrationSession = session.copyWith(
+          attemptCount: session.attemptCount + 1,
+        );
+        throw Exception('invalid_otp');
+    }
+  }
+
+  Future<PendingRegistrationSession> resendRegistrationOtp() async {
+    final session = _pendingRegistrationSession;
+    if (session == null) {
+      throw Exception('registration_session_required');
+    }
+    final otp = await _otpService.resendOtp(session.normalizedPhoneNumber);
+    _pendingRegistrationSession = session.copyWith(
+      otpId: otp.otpId,
+      expiresAt: otp.expiresAt,
+      attemptCount: 0,
+      otpVerified: false,
+    );
+    return _pendingRegistrationSession!;
+  }
+
+  Future<UserModel> completeCustomerRegistration({
+    required String password,
+    required String confirmPassword,
+  }) async {
+    final session = _pendingRegistrationSession;
+    if (session == null) {
+      throw Exception('registration_session_required');
+    }
+    if (!session.otpVerified) {
+      throw Exception('otp_not_verified');
+    }
+    final nextPassword = password.trim();
+    if (nextPassword.isEmpty) {
+      throw Exception('password_required');
+    }
+    if (nextPassword.length < 6) {
+      throw Exception('weak_password');
+    }
+    if (nextPassword != confirmPassword.trim()) {
+      throw Exception('passwords_do_not_match');
+    }
+    final digitsOnly = session.normalizedPhoneNumber.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    final email = '$digitsOnly@phone.lystore.local';
+    final newUser = _mockDataService
+        .createDefaultUser(
+          email,
+          password: nextPassword,
+          name: session.fullName,
+        )
+        .copyWith(
+          phone: session.normalizedPhoneNumber,
+          normalizedPhoneNumber: session.normalizedPhoneNumber,
+          phoneVerified: true,
+          status: 'active',
+          updatedAt: DateTime.now(),
+        );
+    await _mockDataService.addUser(newUser);
+    await setCurrentUser(newUser);
+    _otpService.clearOtp(session.otpId);
+    _pendingRegistrationSession = null;
+    return _currentUser!;
+  }
+
+  String? debugRegistrationOtpCode() {
+    final session = _pendingRegistrationSession;
+    if (session == null) {
+      return null;
+    }
+    return _otpService.debugCodeForOtp(session.otpId);
+  }
+
+  void expireRegistrationOtpForTesting() {
+    final session = _pendingRegistrationSession;
+    if (session != null) {
+      _otpService.expireOtpForTesting(session.otpId);
+    }
   }
 
   Future<void> forgotPassword(String emailOrPhone) async {

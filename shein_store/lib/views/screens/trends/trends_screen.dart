@@ -11,6 +11,7 @@ import '../../../core/helpers/cart_action_feedback_helper.dart';
 import '../../../core/utils/auth_required_helper.dart';
 import '../../../core/widgets/app_bottom_sheet.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../core/widgets/app_loading.dart';
 import '../../../models/product_model.dart';
 import '../../../models/trend_tag_model.dart';
 import '../../widgets/trends/trend_filter_chips.dart';
@@ -57,6 +58,16 @@ class _TrendsScreenState extends State<TrendsScreen> {
         }
 
         final colors = context.appColors;
+        if (trendController.isLoading && !trendController.initialized) {
+          return Scaffold(
+            backgroundColor: colors.background,
+            body: AppLoading(
+              layout: AppLoadingLayout.marketplace,
+              message: context.l10n.trendsTitle,
+            ),
+          );
+        }
+
         final campaigns = trendController.filteredCampaigns;
         final campaignIndex = campaigns.isEmpty
             ? 0
@@ -203,6 +214,7 @@ class _TrendsScreenState extends State<TrendsScreen> {
                                                 context,
                                                 colors: product.colors,
                                                 sizes: product.sizes,
+                                                variants: product.variants,
                                                 maxQuantity: product.stock,
                                               );
                                           if (!context.mounted ||

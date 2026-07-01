@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../core/helpers/public_product_visibility_helper.dart';
 import '../core/config/loyalty_policy.dart';
+import '../core/helpers/phone_number_normalizer.dart';
+import '../core/helpers/product_orderability_helper.dart';
 import '../models/address_model.dart';
 import '../models/app_preferences_model.dart';
 import '../models/category_model.dart';
@@ -17,6 +19,7 @@ import '../models/order_model.dart';
 import '../models/payment_method_model.dart';
 import '../models/product_model.dart';
 import '../models/product_status.dart';
+import '../models/product_variant_model.dart';
 import '../models/review_model.dart';
 import '../models/seller_order_model.dart';
 import '../models/store_model.dart';
@@ -491,6 +494,24 @@ class MockDataService extends ChangeNotifier {
   UserModel? userByEmail(String email) =>
       _mockUsersByEmail[email.toLowerCase()];
 
+  UserModel? userByNormalizedPhone(String normalizedPhoneNumber) {
+    final normalized = PhoneNumberNormalizer.normalize(normalizedPhoneNumber);
+    if (normalized.isEmpty) {
+      return null;
+    }
+    for (final user in _mockUsersByEmail.values) {
+      final userPhone = PhoneNumberNormalizer.normalize(
+        user.normalizedPhoneNumber.isNotEmpty
+            ? user.normalizedPhoneNumber
+            : user.phone,
+      );
+      if (userPhone == normalized) {
+        return user;
+      }
+    }
+    return null;
+  }
+
   UserModel? userByEmailOrPhone(String emailOrPhone) {
     final normalized = emailOrPhone.trim().toLowerCase();
     if (normalized.isEmpty) {
@@ -500,19 +521,12 @@ class MockDataService extends ChangeNotifier {
     if (byEmail != null) {
       return byEmail;
     }
-    final normalizedPhone = _digitsOnly(normalized);
+    final normalizedPhone = PhoneNumberNormalizer.normalize(normalized);
     if (normalizedPhone.isEmpty) {
       return null;
     }
-    for (final user in _mockUsersByEmail.values) {
-      if (_digitsOnly(user.phone) == normalizedPhone) {
-        return user;
-      }
-    }
-    return null;
+    return userByNormalizedPhone(normalizedPhone);
   }
-
-  String _digitsOnly(String value) => value.replaceAll(RegExp(r'[^0-9]'), '');
 
   Future<void> addUser(UserModel user) async {
     _mockUsersByEmail[user.email.toLowerCase()] = user;
@@ -1141,7 +1155,8 @@ class MockDataService extends ChangeNotifier {
 
   bool isProductPublic(ProductModel product) {
     final seller = userById(product.sellerId);
-    final store = storeById(product.storeId);
+    final store =
+        storeById(product.storeId) ?? storeBySellerId(product.sellerId);
     return PublicProductVisibilityHelper.isProductPublic(
       product: product,
       seller: seller,
@@ -1725,8 +1740,10 @@ class MockDataService extends ChangeNotifier {
     );
   }
 
-  UserModel? mockUserForLogin(String email, String password) {
-    final user = _mockUsersByEmail[email.toLowerCase()];
+  UserModel? mockUserForLogin(String emailOrPhone, String password) {
+    final user =
+        _mockUsersByEmail[emailOrPhone.toLowerCase()] ??
+        userByNormalizedPhone(emailOrPhone);
     if (user == null || user.mockPassword != password) {
       return null;
     }
@@ -1909,6 +1926,97 @@ class MockDataService extends ChangeNotifier {
   SellerOrderModel? sellerOrderById(String sellerOrderId) {
     final matches = _sellerOrders.where((order) => order.id == sellerOrderId);
     return matches.isEmpty ? null : matches.first;
+  }
+
+  List<CartItemAvailabilityResult> validateOrderAvailability(OrderModel order) {
+    return order.items.map((item) {
+      final matches = _allProducts.where(
+        (product) => product.id == item.product.id,
+      );
+      final product = matches.isEmpty ? null : matches.first;
+      final seller = product == null ? null : userById(product.sellerId);
+      final store = product == null
+          ? null
+          : (storeById(product.storeId) ?? storeBySellerId(product.sellerId));
+      return ProductOrderabilityHelper.validate(
+        cartItemId: item.id,
+        product: product,
+        seller: seller,
+        store: store,
+        selectedColor: item.selectedColor,
+        selectedSize: item.selectedSize,
+        requestedQuantity: item.quantity,
+      );
+    }).toList();
+  }
+
+  bool reserveInventoryForOrder(OrderModel order) {
+    final nextProducts = List<ProductModel>.from(_allProducts);
+    for (final item in order.items) {
+      final productIndex = nextProducts.indexWhere(
+        (product) => product.id == item.product.id,
+      );
+      if (productIndex == -1 || item.quantity <= 0) {
+        return false;
+      }
+      final product = nextProducts[productIndex];
+      final availability = ProductOrderabilityHelper.validate(
+        cartItemId: item.id,
+        product: product,
+        seller: userById(product.sellerId),
+        store: storeById(product.storeId) ?? storeBySellerId(product.sellerId),
+        selectedColor: item.selectedColor,
+        selectedSize: item.selectedSize,
+        requestedQuantity: item.quantity,
+      );
+      if (!availability.isAvailable) {
+        return false;
+      }
+      if (product.variants.isNotEmpty) {
+        final variants = List<ProductVariantModel>.from(product.variants);
+        final selectedVariant = ProductOrderabilityHelper.resolveVariant(
+          product: product,
+          selectedColor: item.selectedColor,
+          selectedSize: item.selectedSize,
+        );
+        final variantIndex = variants.indexWhere(
+          (variant) => variant.id == selectedVariant?.id,
+        );
+        if (variantIndex == -1) {
+          return false;
+        }
+        final variant = variants[variantIndex];
+        if (variant.stock < item.quantity) {
+          return false;
+        }
+        variants[variantIndex] = variant.copyWith(
+          stock: variant.stock - item.quantity,
+        );
+        final nextStock = variants
+            .where((variant) => variant.isActive)
+            .fold<int>(0, (sum, variant) => sum + variant.stock);
+        nextProducts[productIndex] = product.copyWith(
+          variants: variants,
+          stock: nextStock,
+          status: nextStock <= 0 ? ProductStatus.outOfStock : product.status,
+          isActive: nextStock > 0 && product.isActive,
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        if (product.stock < item.quantity) {
+          return false;
+        }
+        final nextStock = product.stock - item.quantity;
+        nextProducts[productIndex] = product.copyWith(
+          stock: nextStock,
+          status: nextStock <= 0 ? ProductStatus.outOfStock : product.status,
+          isActive: nextStock > 0 && product.isActive,
+          updatedAt: DateTime.now(),
+        );
+      }
+    }
+    _allProducts = nextProducts;
+    return true;
   }
 
   void createOrder(OrderModel order, {List<SellerOrderModel>? sellerOrders}) {

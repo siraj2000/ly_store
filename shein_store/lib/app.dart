@@ -28,6 +28,7 @@ import 'core/constants/app_routes.dart';
 import 'core/constants/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'services/auth_service.dart';
+import 'services/auth_otp_service.dart';
 import 'services/cart_service.dart';
 import 'services/local_storage_service.dart';
 import 'services/mock_data_service.dart';
@@ -65,8 +66,12 @@ class StyleHubBootstrap extends StatelessWidget {
             localStorageService: context.read<LocalStorageService>(),
           ),
         ),
+        Provider(create: (_) => AuthOtpService()),
         Provider(
-          create: (context) => AuthService(context.read<MockDataService>()),
+          create: (context) => AuthService(
+            context.read<MockDataService>(),
+            otpService: context.read<AuthOtpService>(),
+          ),
         ),
         Provider(
           create: (context) => ProductService(context.read<MockDataService>()),

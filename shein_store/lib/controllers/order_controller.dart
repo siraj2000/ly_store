@@ -54,20 +54,6 @@ class OrderController extends ChangeNotifier {
     _replaceStatus(orderId, 'Delivered');
   }
 
-  void buyAgain(String orderId) {}
-
-  void markOrderPaid(String orderId) {
-    _replaceOrder(
-      orderId,
-      (order) => order.copyWith(
-        status: 'Processing',
-        paymentStatus: 'Paid',
-        shippingStatus: 'Preparing',
-        updatedAt: DateTime.now(),
-      ),
-    );
-  }
-
   void requestReturn(String orderId) {
     _replaceOrder(
       orderId,

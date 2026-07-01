@@ -153,7 +153,7 @@ class SellerOrderModel {
       platformCommission: (json['platformCommission'] as num?)?.toDouble() ?? 0,
       sellerNetAmount: (json['sellerNetAmount'] as num?)?.toDouble() ?? 0,
       status: json['status'] as String? ?? '',
-      paymentStatus: json['paymentStatus'] as String? ?? 'Paid',
+      paymentStatus: json['paymentStatus'] as String? ?? 'Pending',
       shippingStatus: json['shippingStatus'] as String? ?? 'Preparing',
       createdAt:
           DateTime.tryParse(json['createdAt'] as String? ?? '') ??

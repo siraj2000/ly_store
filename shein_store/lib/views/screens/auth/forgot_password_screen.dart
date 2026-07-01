@@ -86,8 +86,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             content: Text(
                               sent
                                   ? context.tr(
-                                      'Verification code sent. Demo code: 123456',
-                                      'تم إرسال رمز التحقق. رمز التجربة: 123456',
+                                      'Verification code sent if the account is valid.',
+                                      'سيتم إرسال رمز التحقق إذا كان الحساب صحيحاً.',
                                     )
                                   : _localizedResetError(
                                       context,

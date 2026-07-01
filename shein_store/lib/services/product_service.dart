@@ -28,13 +28,23 @@ class ProductService {
       // Keep the marketplace usable when the fashion demo API is offline.
     }
 
-    if (importedProducts.isNotEmpty) {
-      final byId = <String, ProductModel>{};
-      for (final product in importedProducts) {
-        byId[product.id] = product;
-      }
-      return byId.values.toList();
+    return _mergeProducts(
+      importedProducts: importedProducts,
+      localProducts: _mockDataService.allProducts,
+    );
+  }
+
+  List<ProductModel> _mergeProducts({
+    required List<ProductModel> importedProducts,
+    required List<ProductModel> localProducts,
+  }) {
+    final byId = <String, ProductModel>{};
+    for (final product in importedProducts) {
+      byId[product.id] = product;
     }
-    return _mockDataService.products;
+    for (final product in localProducts) {
+      byId[product.id] = product;
+    }
+    return byId.values.toList();
   }
 }

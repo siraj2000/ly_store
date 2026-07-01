@@ -6,7 +6,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_motion.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/catalog_localization_helper.dart';
+import '../../../core/policies/product_availability_policy.dart';
 import '../../../core/widgets/animated_pressable.dart';
 import '../../../core/widgets/app_animated_switcher.dart';
 import '../../../core/widgets/product_image.dart';
@@ -57,6 +59,12 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final productController = context.watch<ProductController>();
+    final availability = ProductAvailabilityPolicy.getAvailability(
+      product: product,
+      seller: productController.sellerForProduct(product),
+      store: productController.storeForProduct(product),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -77,7 +85,11 @@ class ProductCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: colors.card,
               borderRadius: radius,
-              border: Border.all(color: colors.border),
+              border: Border.all(
+                color: availability.isOrderable
+                    ? colors.border
+                    : colors.discount.withValues(alpha: 0.35),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: colors.background.withValues(
@@ -93,6 +105,7 @@ class ProductCard extends StatelessWidget {
               child: useHorizontalLayout
                   ? _HorizontalProductCard(
                       product: product,
+                      availability: availability,
                       compact: compact,
                       showRating: showRating,
                       showQuickAdd: showQuickAdd,
@@ -103,6 +116,7 @@ class ProductCard extends StatelessWidget {
                     )
                   : _VerticalProductCard(
                       product: product,
+                      availability: availability,
                       compact: compact,
                       showRating: showRating,
                       showQuickAdd: showQuickAdd,
@@ -122,6 +136,7 @@ class ProductCard extends StatelessWidget {
 class _VerticalProductCard extends StatelessWidget {
   const _VerticalProductCard({
     required this.product,
+    required this.availability,
     required this.compact,
     required this.showRating,
     required this.showQuickAdd,
@@ -132,6 +147,7 @@ class _VerticalProductCard extends StatelessWidget {
   });
 
   final ProductModel product;
+  final ProductAvailabilityResult availability;
   final bool compact;
   final bool showRating;
   final bool showQuickAdd;
@@ -167,6 +183,7 @@ class _VerticalProductCard extends StatelessWidget {
             aspectRatio: ProductCard.imageAspectRatio,
             child: _ProductImageStack(
               product: product,
+              availability: availability,
               compact: compact,
               isWishlisted: isWishlisted,
               showQuickAdd: showQuickAdd,
@@ -244,6 +261,7 @@ class _VerticalProductCard extends StatelessWidget {
 class _HorizontalProductCard extends StatelessWidget {
   const _HorizontalProductCard({
     required this.product,
+    required this.availability,
     required this.compact,
     required this.showRating,
     required this.showQuickAdd,
@@ -254,6 +272,7 @@ class _HorizontalProductCard extends StatelessWidget {
   });
 
   final ProductModel product;
+  final ProductAvailabilityResult availability;
   final bool compact;
   final bool showRating;
   final bool showQuickAdd;
@@ -290,6 +309,7 @@ class _HorizontalProductCard extends StatelessWidget {
               aspectRatio: ProductCard.imageAspectRatio,
               child: _ProductImageStack(
                 product: product,
+                availability: availability,
                 compact: compact,
                 isWishlisted: isWishlisted,
                 showQuickAdd: showQuickAdd,
@@ -444,6 +464,7 @@ class _StoreIdentityRow extends StatelessWidget {
 class _ProductImageStack extends StatelessWidget {
   const _ProductImageStack({
     required this.product,
+    required this.availability,
     required this.compact,
     required this.isWishlisted,
     required this.showQuickAdd,
@@ -454,6 +475,7 @@ class _ProductImageStack extends StatelessWidget {
   });
 
   final ProductModel product;
+  final ProductAvailabilityResult availability;
   final bool compact;
   final bool isWishlisted;
   final bool showQuickAdd;
@@ -467,22 +489,59 @@ class _ProductImageStack extends StatelessWidget {
     final colors = context.appColors;
     final actionSize = compact ? 30.0 : 32.0;
     final actionIconSize = compact ? 16.0 : 17.0;
+    final isUnavailable = !availability.isOrderable;
 
     return Stack(
       children: [
         Positioned.fill(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(imageRadius),
-            child: ProductImage(
-              imageUrl: product.imageUrl,
-              imageUrls: product.imageUrls,
-              radius: imageRadius,
+            child: Opacity(
+              opacity: isUnavailable ? 0.52 : 1,
+              child: ProductImage(
+                imageUrl: product.imageUrl,
+                imageUrls: product.imageUrls,
+                radius: imageRadius,
+              ),
             ),
           ),
         ),
+        if (isUnavailable)
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(imageRadius),
+              ),
+            ),
+          ),
+        if (isUnavailable)
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: colors.discount,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                context.tr('Currently unavailable', 'غير متاح حالياً'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
         if (product.discount > 0)
           Positioned(
-            top: 8,
+            top: isUnavailable ? 40 : 8,
             left: 8,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.92, end: 1),
@@ -547,7 +606,15 @@ class _ProductImageStack extends StatelessWidget {
               iconColor: context.isDarkMode
                   ? colors.primaryText
                   : colors.surface,
-              onPressed: onQuickAddTap,
+              onPressed: isUnavailable
+                  ? () => AppActionFeedback.error(
+                      context,
+                      context.tr(
+                        availability.englishMessage,
+                        availability.arabicMessage,
+                      ),
+                    )
+                  : onQuickAddTap,
               icon: const Icon(Icons.shopping_bag_outlined),
             ),
           ),

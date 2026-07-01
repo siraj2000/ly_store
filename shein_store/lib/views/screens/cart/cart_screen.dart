@@ -9,6 +9,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/locale_formatters.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_confirmation_dialog.dart';
@@ -79,9 +80,75 @@ class _LoggedInCartBody extends StatelessWidget {
             ),
           );
         }
+        final unavailableItems = cartController.availabilityResults
+            .where((result) => !result.isAvailable)
+            .toList();
         return ListView(
           padding: const EdgeInsets.all(AppSizes.lg),
           children: [
+            if (unavailableItems.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colors.discount.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colors.discount.withValues(alpha: 0.24),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.error_outline, color: colors.discount),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.tr(
+                              'Some bag items need attention',
+                              'بعض منتجات السلة تحتاج مراجعة',
+                            ),
+                            style: TextStyle(
+                              color: colors.primaryText,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            context.tr(
+                              'Remove unavailable items or update quantities before checkout.',
+                              'أزل المنتجات غير المتاحة أو عدّل الكميات قبل إتمام الدفع.',
+                            ),
+                            style: TextStyle(
+                              color: colors.secondaryText,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: cartController.removeUnavailableItems,
+                            style: TextButton.styleFrom(
+                              foregroundColor: colors.discount,
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            child: Text(
+                              context.tr(
+                                'Remove unavailable items',
+                                'إزالة المنتجات غير المتاحة',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -129,9 +196,11 @@ class _LoggedInCartBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...cartController.items.map(
-              (item) => CartItemRow(
+            ...cartController.items.map((item) {
+              final availability = cartController.availabilityForItem(item);
+              return CartItemRow(
                 item: item,
+                availability: availability,
                 onSelect: (selected) =>
                     cartController.selectItem(item.id, selected),
                 onDelete: () => _confirmDelete(context, () {
@@ -145,8 +214,12 @@ class _LoggedInCartBody extends StatelessWidget {
                   wishlistController.toggleWishlist(item.product);
                   cartController.removeFromCart(item.id);
                 },
-              ),
-            ),
+                onReduceToAvailableStock: availability.canAutoFix
+                    ? () =>
+                          cartController.reduceQuantityToAvailableStock(item.id)
+                    : null,
+              );
+            }),
             const SizedBox(height: AppSizes.md),
             _Panel(
               title: context.tr('Promotions', 'العروض'),
@@ -213,8 +286,8 @@ class _LoggedInCartBody extends StatelessWidget {
                   ),
                   _SummaryRow(
                     label: context.tr(
-                      'Tax/customs placeholder',
-                      'الضرائب/الجمارك التجريبية',
+                      'Estimated tax/customs',
+                      'الضرائب/الجمارك المتوقعة',
                     ),
                     value: 0,
                   ),
@@ -244,8 +317,24 @@ class _LoggedInCartBody extends StatelessWidget {
                   const SizedBox(height: 8),
                   AppButton(
                     text: context.tr('Checkout', 'إتمام الدفع'),
-                    onPressed: () =>
-                        Navigator.pushNamed(context, AppRoutes.checkout),
+                    onPressed: () {
+                      final selectedIssues =
+                          cartController.selectedAvailabilityIssues;
+                      final selectedIssue = selectedIssues.isEmpty
+                          ? null
+                          : selectedIssues.first;
+                      if (selectedIssue != null) {
+                        AppActionFeedback.error(
+                          context,
+                          context.tr(
+                            selectedIssue.englishMessage,
+                            selectedIssue.arabicMessage,
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pushNamed(context, AppRoutes.checkout);
+                    },
                   ),
                 ],
               ),

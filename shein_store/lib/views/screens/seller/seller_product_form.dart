@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../controllers/seller_product_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_routes.dart';
 import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/helpers/catalog_localization_helper.dart';
@@ -550,7 +551,7 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
         return;
       }
       AppActionFeedback.success(context, context.l10n.sellerProductSaved);
-      Navigator.pop(context);
+      _goToSellerProducts();
       return;
     }
 
@@ -656,7 +657,11 @@ class _SellerProductFormScreenState extends State<SellerProductFormScreen> {
     }
 
     AppActionFeedback.success(context, context.l10n.sellerProductSubmitted);
-    Navigator.pop(context);
+    _goToSellerProducts();
+  }
+
+  void _goToSellerProducts() {
+    Navigator.pushReplacementNamed(context, AppRoutes.sellerProducts);
   }
 }
 

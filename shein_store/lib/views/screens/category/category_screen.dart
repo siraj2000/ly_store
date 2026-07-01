@@ -64,7 +64,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   categoryController.loadCategories();
                 }
               });
-              return const Scaffold(body: AppLoading());
+              return const Scaffold(
+                body: AppLoading(layout: AppLoadingLayout.category),
+              );
             }
 
             final colors = context.appColors;
@@ -185,7 +187,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           context,
                           AppRoutes.notifications,
                         ),
-                        onCameraTap: () => _showCameraPlaceholder(context),
+                        onCameraTap: () => _showImageSearchInfo(context),
                         onSearchTap: () => _openSearch(context, selectedEntry),
                         onWishlistTap: () {
                           if (authController.isGuest) {
@@ -1035,15 +1037,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
     Navigator.pushNamed(context, AppRoutes.search);
   }
 
-  void _showCameraPlaceholder(BuildContext context) {
+  void _showImageSearchInfo(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.tr('Image search', 'البحث بالصور')),
         content: Text(
           context.tr(
-            'Visual search placeholder ready for future API integration.',
-            'ميزة البحث بالصور جاهزة مؤقتًا للربط مع الواجهة البرمجية لاحقًا.',
+            'Image search is not enabled in this local demo yet. It is prepared for future API integration.',
+            'البحث بالصور غير مفعل في نسخة الديمو المحلية حالياً، لكنه جاهز للربط مع الواجهة البرمجية لاحقاً.',
           ),
         ),
         actions: [

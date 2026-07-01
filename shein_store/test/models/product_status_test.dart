@@ -13,7 +13,10 @@ void main() {
 
   test('stable product status ids serialize predictably', () {
     expect(ProductStatus.active.id, 'active');
-    expect(ProductStatus.pendingApproval.id, 'pendingApproval');
-    expect(ProductStatus.outOfStock.id, 'outOfStock');
+    expect(ProductStatus.automatedReview.id, 'automated_review');
+    expect(ProductStatus.manualReview.id, 'manual_review');
+    expect(ProductStatus.informationRequired.id, 'information_required');
+    expect(ProductStatus.pendingApproval.id, 'pending_approval');
+    expect(ProductStatus.outOfStock.id, 'out_of_stock');
   });
 }

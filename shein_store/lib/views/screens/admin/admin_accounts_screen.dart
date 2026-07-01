@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../controllers/admin_account_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_loading.dart';
 import '../../../models/admin/admin_user_model.dart';
 import '../../../views/widgets/common/app_header.dart';
 import 'admin_account_details_screen.dart';
@@ -30,7 +31,7 @@ class AdminAccountsScreen extends StatelessWidget {
         ],
       ),
       body: controller.isLoading && accounts.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          ? const AppLoading(layout: AppLoadingLayout.list)
           : ListView(
               padding: const EdgeInsets.all(AppSizes.lg),
               children: [

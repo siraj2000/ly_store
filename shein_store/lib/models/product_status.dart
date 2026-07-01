@@ -22,10 +22,13 @@ enum ProductStatus {
       case 'submitted':
         return ProductStatus.submitted;
       case 'automatedReview':
+      case 'automated_review':
         return ProductStatus.automatedReview;
       case 'manualReview':
+      case 'manual_review':
         return ProductStatus.manualReview;
       case 'informationRequired':
+      case 'information_required':
         return ProductStatus.informationRequired;
       case 'pendingApproval':
       case 'pending_approval':
@@ -61,13 +64,13 @@ extension ProductStatusX on ProductStatus {
     return switch (this) {
       ProductStatus.draft => 'draft',
       ProductStatus.submitted => 'submitted',
-      ProductStatus.automatedReview => 'automatedReview',
-      ProductStatus.manualReview => 'manualReview',
-      ProductStatus.informationRequired => 'informationRequired',
-      ProductStatus.pendingApproval => 'pendingApproval',
+      ProductStatus.automatedReview => 'automated_review',
+      ProductStatus.manualReview => 'manual_review',
+      ProductStatus.informationRequired => 'information_required',
+      ProductStatus.pendingApproval => 'pending_approval',
       ProductStatus.active => 'active',
       ProductStatus.inactive => 'inactive',
-      ProductStatus.outOfStock => 'outOfStock',
+      ProductStatus.outOfStock => 'out_of_stock',
       ProductStatus.rejected => 'rejected',
       ProductStatus.restricted => 'restricted',
       ProductStatus.suspended => 'suspended',

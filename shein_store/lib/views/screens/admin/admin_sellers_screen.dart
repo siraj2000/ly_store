@@ -9,6 +9,7 @@ import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/admin_seller_localization_helper.dart';
 import '../../../core/helpers/business_activity_helper.dart';
 import '../../../core/helpers/locale_formatters.dart';
+import '../../../core/widgets/app_loading.dart';
 import '../../widgets/common/app_header.dart';
 
 class AdminSellersScreen extends StatelessWidget {
@@ -88,7 +89,10 @@ class AdminSellersScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 if (controller.isLoading && sellers.isEmpty)
-                  const Center(child: CircularProgressIndicator())
+                  const SizedBox(
+                    height: 520,
+                    child: AppLoading(layout: AppLoadingLayout.list),
+                  )
                 else if (sellers.isEmpty)
                   _EmptyState(message: context.l10n.adminNoSellersFound)
                 else

@@ -139,7 +139,7 @@ class _ProductImageFallback extends StatelessWidget {
                     if (!isCompact) ...[
                       SizedBox(height: spacing),
                       Text(
-                        context.tr('Image coming soon', 'الصورة قريباً'),
+                        context.tr('Image unavailable', 'الصورة غير متاحة'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 11,

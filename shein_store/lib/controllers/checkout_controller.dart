@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/config/loyalty_policy.dart';
+import '../core/helpers/product_orderability_helper.dart';
 import '../models/address_model.dart';
 import '../models/coupon_model.dart';
 import '../models/notification_model.dart';
@@ -37,6 +38,7 @@ class CheckoutController extends ChangeNotifier {
   double walletAmountToUse = 0;
   String giftCardCode = '';
   String? errorMessage;
+  CartItemAvailabilityResult? availabilityError;
   bool isPlacingOrder = false;
 
   void bind({
@@ -130,7 +132,11 @@ class CheckoutController extends ChangeNotifier {
   }
 
   Future<OrderModel?> placeOrder() async {
+    if (isPlacingOrder) {
+      return null;
+    }
     errorMessage = null;
+    availabilityError = null;
     if (_authController?.currentRole != UserRole.customer ||
         _authController?.currentUser == null) {
       errorMessage = 'Only customers can place orders';
@@ -204,7 +210,7 @@ class CheckoutController extends ChangeNotifier {
       address: selectedAddress!,
       paymentMethod: paymentMethod!,
       estimatedDelivery: DateTime.now().add(const Duration(days: 5)),
-      paymentStatus: 'Paid',
+      paymentStatus: _paymentStatusFor(paymentMethod!),
       shippingStatus: 'Processing',
       platformCommission: _cartController!.calculateSubtotal() * 0.12,
       loyaltyPointsEarned: pointsEarned,
@@ -217,6 +223,31 @@ class CheckoutController extends ChangeNotifier {
       sellerOrderIds: sellerOrders.map((item) => item.id).toList(),
       updatedAt: DateTime.now(),
     );
+    final availabilityIssues = _mockDataService
+        .validateOrderAvailability(order)
+        .where((result) => !result.isAvailable)
+        .toList();
+    if (availabilityIssues.isNotEmpty) {
+      availabilityError = availabilityIssues.first;
+      errorMessage = availabilityError!.englishMessage;
+      isPlacingOrder = false;
+      notifyListeners();
+      return null;
+    }
+    final inventoryReserved = _mockDataService.reserveInventoryForOrder(order);
+    if (!inventoryReserved) {
+      final latestIssues = _mockDataService
+          .validateOrderAvailability(order)
+          .where((result) => !result.isAvailable)
+          .toList();
+      availabilityError = latestIssues.isEmpty ? null : latestIssues.first;
+      errorMessage =
+          availabilityError?.englishMessage ??
+          'One or more selected items are no longer available. Please review your cart.';
+      isPlacingOrder = false;
+      notifyListeners();
+      return null;
+    }
     _orderService.createOrder(order, sellerOrders: sellerOrders);
     final updatedUser = _mockDataService.applyCheckoutRewards(order);
     if (updatedUser != null) {
@@ -273,6 +304,18 @@ class CheckoutController extends ChangeNotifier {
         estimatedDelivery: order.estimatedDelivery,
       );
     }).toList();
+  }
+
+  String _paymentStatusFor(PaymentMethodModel method) {
+    final id = method.id.trim().toLowerCase();
+    final token = method.token.trim().toLowerCase();
+    if (id == 'cash' || token == 'cash') {
+      return 'Unpaid';
+    }
+    if (id == 'pay-me' || token == 'pay-me') {
+      return 'AwaitingPayment';
+    }
+    return 'Pending';
   }
 
   void _createOrderNotifications(

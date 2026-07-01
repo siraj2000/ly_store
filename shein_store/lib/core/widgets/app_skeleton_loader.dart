@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_motion.dart';
@@ -48,51 +49,37 @@ class _AppSkeletonLoaderState extends State<AppSkeletonLoader>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    if (AppMotion.reduceMotion(context)) {
-      return _SkeletonBlock(
-        height: widget.height,
-        width: widget.width,
-        borderRadius: widget.borderRadius,
-        color: colors.surfaceSoft,
-      );
-    }
+    final block = LayoutBuilder(
+      builder: (context, constraints) {
+        final resolvedHeight = widget.height.isFinite
+            ? widget.height
+            : (constraints.hasBoundedHeight ? constraints.maxHeight : 120.0);
+        final resolvedWidth =
+            widget.width ??
+            (constraints.hasBoundedWidth ? constraints.maxWidth : null);
 
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final opacity = 0.55 + (_controller.value * 0.25);
-        return _SkeletonBlock(
-          height: widget.height,
-          width: widget.width,
-          borderRadius: widget.borderRadius,
-          color: colors.surfaceSoft.withValues(alpha: opacity),
+        return Bone(
+          height: resolvedHeight,
+          width: resolvedWidth,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
         );
       },
     );
-  }
-}
 
-class _SkeletonBlock extends StatelessWidget {
-  const _SkeletonBlock({
-    required this.height,
-    required this.width,
-    required this.borderRadius,
-    required this.color,
-  });
+    if (AppMotion.reduceMotion(context)) {
+      return Skeletonizer.zone(
+        enabled: false,
+        containersColor: colors.surfaceSoft,
+        child: block,
+      );
+    }
 
-  final double height;
-  final double? width;
-  final double borderRadius;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(borderRadius),
+    return Skeletonizer.zone(
+      containersColor: colors.surfaceSoft,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) =>
+            Opacity(opacity: 0.85 + (_controller.value * 0.15), child: block),
       ),
     );
   }

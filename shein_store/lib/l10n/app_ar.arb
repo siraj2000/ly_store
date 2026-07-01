@@ -515,7 +515,30 @@
   "copiedPhoneNumber": "تم نسخ رقم الهاتف",
   "copiedEmail": "تم نسخ البريد الإلكتروني",
   "copiedAddress": "تم نسخ العنوان",
-  "copy": "نسخ"
+  "copy": "نسخ",
+  "cartItemNoLongerAvailable": "هذا المنتج لم يعد متاحاً",
+  "reviewCart": "مراجعة السلة",
+  "removeItem": "إزالة المنتج",
+  "removeUnavailableItems": "إزالة المنتجات غير المتاحة",
+  "updateQuantity": "تعديل الكمية",
+  "reselectColorSize": "يرجى إعادة اختيار اللون والمقاس",
+  "storeVacationMode": "المتجر حالياً في وضع الإجازة",
+  "productOutOfStock": "المنتج غير متوفر في المخزون",
+  "quantityGreaterThanStock": "الكمية المطلوبة أكبر من المتاح",
+  "currentlyUnavailable": "غير متاح حالياً",
+  "outOfStock": "نفد المخزون",
+  "productUnavailable": "هذا المنتج غير متاح حالياً",
+  "storeOnVacation": "المتجر حالياً في وضع الإجازة",
+  "unavailableRemoveFromCart": "إزالة المنتج غير المتاح",
+  "chooseColor": "اختر اللون",
+  "chooseSize": "اختر المقاس",
+  "selectColor": "اختر اللون",
+  "selectSize": "اختر المقاس",
+  "selectColorAndSize": "اختر اللون والمقاس",
+  "noOptionsRequired": "لا توجد خيارات مطلوبة",
+  "reviewUnavailableItem": "راجع المنتج غير المتاح",
+  "paymentPending": "الدفع قيد الانتظار",
+  "reduceToAvailableStock": "تعديل للكمية المتاحة"
 }
 
 

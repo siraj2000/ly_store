@@ -2677,6 +2677,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy'**
   String get copy;
+
+  /// No description provided for @cartItemNoLongerAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This item is no longer available'**
+  String get cartItemNoLongerAvailable;
+
+  /// No description provided for @reviewCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Cart'**
+  String get reviewCart;
+
+  /// No description provided for @removeItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item'**
+  String get removeItem;
+
+  /// No description provided for @removeUnavailableItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove unavailable items'**
+  String get removeUnavailableItems;
+
+  /// No description provided for @updateQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Update quantity'**
+  String get updateQuantity;
+
+  /// No description provided for @reselectColorSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Please reselect color and size'**
+  String get reselectColorSize;
+
+  /// No description provided for @storeVacationMode.
+  ///
+  /// In en, this message translates to:
+  /// **'The store is currently on vacation'**
+  String get storeVacationMode;
+
+  /// No description provided for @productOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'The product is out of stock'**
+  String get productOutOfStock;
+
+  /// No description provided for @quantityGreaterThanStock.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested quantity is greater than available stock'**
+  String get quantityGreaterThanStock;
+
+  /// No description provided for @currentlyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently unavailable'**
+  String get currentlyUnavailable;
+
+  /// No description provided for @outOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of stock'**
+  String get outOfStock;
+
+  /// No description provided for @productUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This product is currently unavailable'**
+  String get productUnavailable;
+
+  /// No description provided for @storeOnVacation.
+  ///
+  /// In en, this message translates to:
+  /// **'The store is currently on vacation'**
+  String get storeOnVacation;
+
+  /// No description provided for @unavailableRemoveFromCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove unavailable item'**
+  String get unavailableRemoveFromCart;
+
+  /// No description provided for @chooseColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose color'**
+  String get chooseColor;
+
+  /// No description provided for @chooseSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose size'**
+  String get chooseSize;
+
+  /// No description provided for @selectColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select color'**
+  String get selectColor;
+
+  /// No description provided for @selectSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Select size'**
+  String get selectSize;
+
+  /// No description provided for @selectColorAndSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Select color and size'**
+  String get selectColorAndSize;
+
+  /// No description provided for @noOptionsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'No options required'**
+  String get noOptionsRequired;
+
+  /// No description provided for @reviewUnavailableItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Review unavailable item'**
+  String get reviewUnavailableItem;
+
+  /// No description provided for @paymentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment pending'**
+  String get paymentPending;
+
+  /// No description provided for @reduceToAvailableStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce to available stock'**
+  String get reduceToAvailableStock;
 }
 
 class _AppLocalizationsDelegate

@@ -90,7 +90,7 @@ class SellerFinanceScreen extends StatelessWidget {
                     const _SectionTitle(
                       title: 'Payout method',
                       subtitle:
-                          'A clean placeholder until bank integration is connected.',
+                          'Ready for bank integration when payouts are connected.',
                     ),
                     const SizedBox(height: 14),
                     Container(
@@ -341,7 +341,7 @@ class _FinanceHero extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                'Withdrawal request placeholder is ready for backend integration.',
+                                'Withdrawal requests require backend payout integration.',
                               ),
                             ),
                           );

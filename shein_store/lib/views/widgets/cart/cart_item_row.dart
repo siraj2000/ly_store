@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/helpers/product_orderability_helper.dart';
 import '../../../core/widgets/product_image.dart';
 import '../../../models/cart_item_model.dart';
 import '../common/price_text.dart';
@@ -16,6 +17,8 @@ class CartItemRow extends StatelessWidget {
     required this.onIncrease,
     required this.onDecrease,
     required this.onSaveForLater,
+    this.availability,
+    this.onReduceToAvailableStock,
   });
 
   final CartItemModel item;
@@ -24,10 +27,18 @@ class CartItemRow extends StatelessWidget {
   final VoidCallback onIncrease;
   final VoidCallback onDecrease;
   final VoidCallback onSaveForLater;
+  final CartItemAvailabilityResult? availability;
+  final VoidCallback? onReduceToAvailableStock;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final availability = this.availability;
+    final isUnavailable = availability != null && !availability.isAvailable;
+    final optionLabel = [
+      if (item.selectedColor.trim().isNotEmpty) item.selectedColor,
+      if (item.selectedSize.trim().isNotEmpty) item.selectedSize,
+    ].join(' / ');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -35,7 +46,9 @@ class CartItemRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border),
+        border: Border.all(
+          color: isUnavailable ? colors.discount : colors.border,
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,8 +56,10 @@ class CartItemRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 18),
             child: Checkbox(
-              value: item.isSelected,
-              onChanged: (value) => onSelect(value ?? false),
+              value: item.isSelected && !isUnavailable,
+              onChanged: isUnavailable
+                  ? null
+                  : (value) => onSelect(value ?? false),
             ),
           ),
           ClipRRect(
@@ -72,16 +87,44 @@ class CartItemRow extends StatelessWidget {
                     height: 1.25,
                   ).copyWith(color: colors.primaryText),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  '${item.selectedColor} / ${item.selectedSize}',
-                  style: TextStyle(color: colors.secondaryText, fontSize: 12),
-                ),
+                if (optionLabel.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    optionLabel,
+                    style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 PriceText(
                   price: item.product.price,
                   oldPrice: item.product.oldPrice,
                 ),
+                if (isUnavailable) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.discount.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: colors.discount.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Text(
+                      context.tr(
+                        availability.englishMessage,
+                        availability.arabicMessage,
+                      ),
+                      style: TextStyle(
+                        color: colors.discount,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -101,7 +144,10 @@ class CartItemRow extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _QtyButton(icon: Icons.remove, onTap: onDecrease),
+                          _QtyButton(
+                            icon: Icons.remove,
+                            onTap: isUnavailable ? null : onDecrease,
+                          ),
                           Container(
                             width: 34,
                             alignment: Alignment.center,
@@ -112,7 +158,10 @@ class CartItemRow extends StatelessWidget {
                               ).copyWith(color: colors.primaryText),
                             ),
                           ),
-                          _QtyButton(icon: Icons.add, onTap: onIncrease),
+                          _QtyButton(
+                            icon: Icons.add,
+                            onTap: isUnavailable ? null : onIncrease,
+                          ),
                         ],
                       ),
                     ),
@@ -146,8 +195,37 @@ class CartItemRow extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      child: Text(context.tr('Delete', 'حذف')),
+                      child: Text(
+                        context.tr(
+                          isUnavailable ? 'Remove item' : 'Delete',
+                          isUnavailable ? 'إزالة المنتج' : 'حذف',
+                        ),
+                      ),
                     ),
+                    if (isUnavailable &&
+                        availability.canAutoFix &&
+                        onReduceToAvailableStock != null)
+                      TextButton(
+                        onPressed: onReduceToAvailableStock,
+                        style: TextButton.styleFrom(
+                          foregroundColor: colors.primaryText,
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        child: Text(
+                          context.tr(
+                            'Reduce to available stock',
+                            'تعديل للكمية المتاحة',
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -163,7 +241,7 @@ class _QtyButton extends StatelessWidget {
   const _QtyButton({required this.icon, required this.onTap});
 
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

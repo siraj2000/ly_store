@@ -19,7 +19,9 @@ class AdminBannersScreen extends StatelessWidget {
               (banner) => Card(
                 child: ListTile(
                   title: Text(banner),
-                  subtitle: const Text('Homepage banner placeholder'),
+                  subtitle: const Text(
+                    'Banner management belongs to the separate Admin app.',
+                  ),
                 ),
               ),
             )

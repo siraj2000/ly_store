@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_routes.dart';
 import '../core/widgets/app_bottom_sheet.dart';
+import '../models/pending_registration_session.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
 import '../services/auth_service.dart';
@@ -14,10 +15,15 @@ class AuthController extends ChangeNotifier {
 
   final AuthService _authService;
   bool isLoading = false;
+  bool isSubmitting = false;
+  bool isSendingOtp = false;
+  bool isVerifyingOtp = false;
+  bool isCreatingPassword = false;
   bool isLoggedIn = false;
   bool isGuest = true;
   bool get isFirstLaunch => !_authService.hasSeenOnboarding;
   UserModel? currentUser;
+  PendingRegistrationSession? pendingRegistrationSession;
   String? errorMessage;
   UserRole get currentRole => currentUser?.role ?? UserRole.guest;
   bool get isCustomer => currentRole == UserRole.customer;
@@ -71,10 +77,30 @@ class AuthController extends ChangeNotifier {
       isGuest = false;
       return true;
     } catch (error) {
-      errorMessage = error.toString().replaceFirst('Exception: ', '');
+      errorMessage = _errorKey(error);
       return false;
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> loginWithPhonePassword(String phone, String password) async {
+    isLoading = true;
+    isSubmitting = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      currentUser = await _authService.loginWithPhonePassword(phone, password);
+      isLoggedIn = true;
+      isGuest = false;
+      return true;
+    } catch (error) {
+      errorMessage = _errorKey(error);
+      return false;
+    } finally {
+      isLoading = false;
+      isSubmitting = false;
       notifyListeners();
     }
   }
@@ -98,10 +124,97 @@ class AuthController extends ChangeNotifier {
       isGuest = false;
       return true;
     } catch (error) {
-      errorMessage = error.toString().replaceFirst('Exception: ', '');
+      errorMessage = _errorKey(error);
       return false;
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> startCustomerRegistration(String fullName, String phone) async {
+    isLoading = true;
+    isSendingOtp = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      pendingRegistrationSession = await _authService.startCustomerRegistration(
+        fullName: fullName,
+        phone: phone,
+      );
+      return true;
+    } catch (error) {
+      errorMessage = _errorKey(error);
+      return false;
+    } finally {
+      isLoading = false;
+      isSendingOtp = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyOtp(String code) async {
+    isLoading = true;
+    isVerifyingOtp = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      await _authService.verifyRegistrationOtp(code);
+      pendingRegistrationSession = _authService.pendingRegistrationSession;
+      return true;
+    } catch (error) {
+      pendingRegistrationSession = _authService.pendingRegistrationSession;
+      errorMessage = _errorKey(error);
+      return false;
+    } finally {
+      isLoading = false;
+      isVerifyingOtp = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> resendOtp() async {
+    isLoading = true;
+    isSendingOtp = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      pendingRegistrationSession = await _authService.resendRegistrationOtp();
+      return true;
+    } catch (error) {
+      errorMessage = _errorKey(error);
+      return false;
+    } finally {
+      isLoading = false;
+      isSendingOtp = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createPasswordAndCompleteRegistration(
+    String password,
+    String confirmPassword,
+  ) async {
+    isLoading = true;
+    isCreatingPassword = true;
+    errorMessage = null;
+    notifyListeners();
+    try {
+      currentUser = await _authService.completeCustomerRegistration(
+        password: password,
+        confirmPassword: confirmPassword,
+      );
+      pendingRegistrationSession = null;
+      isLoggedIn = true;
+      isGuest = false;
+      return true;
+    } catch (error) {
+      pendingRegistrationSession = _authService.pendingRegistrationSession;
+      errorMessage = _errorKey(error);
+      return false;
+    } finally {
+      isLoading = false;
+      isCreatingPassword = false;
       notifyListeners();
     }
   }
@@ -114,7 +227,7 @@ class AuthController extends ChangeNotifier {
       await _authService.forgotPassword(emailOrPhone);
       return true;
     } catch (error) {
-      errorMessage = error.toString().replaceFirst('Exception: ', '');
+      errorMessage = _errorKey(error);
       return false;
     } finally {
       isLoading = false;
@@ -138,7 +251,7 @@ class AuthController extends ChangeNotifier {
       );
       return true;
     } catch (error) {
-      errorMessage = error.toString().replaceFirst('Exception: ', '');
+      errorMessage = _errorKey(error);
       return false;
     } finally {
       isLoading = false;
@@ -213,5 +326,9 @@ class AuthController extends ChangeNotifier {
       );
     }
     return false;
+  }
+
+  String _errorKey(Object error) {
+    return error.toString().replaceFirst('Exception: ', '');
   }
 }

@@ -4,6 +4,7 @@ import '../constants/app_colors.dart';
 import '../constants/app_routes.dart';
 import '../constants/app_sizes.dart';
 import '../extensions/localization_extension.dart';
+import '../../models/product_variant_model.dart';
 import 'animated_page_wrapper.dart';
 import 'app_button.dart';
 
@@ -98,14 +99,21 @@ class AppBottomSheet {
     required String selected,
   }) {
     final options = [
-      context.tr('Recommended', 'موصى به'),
-      context.tr('Newest', 'الأحدث'),
-      context.tr('Price low to high', 'السعر من الأقل إلى الأعلى'),
-      context.tr('Price high to low', 'السعر من الأعلى إلى الأقل'),
-      context.tr('Top rated', 'الأعلى تقييماً'),
-      context.tr('Most popular', 'الأكثر شعبية'),
-      context.tr('Biggest discount', 'أكبر خصم'),
+      ('recommended', context.tr('Recommended', 'موصى به')),
+      ('newest', context.tr('Newest', 'الأحدث')),
+      (
+        'price_asc',
+        context.tr('Price low to high', 'السعر من الأقل إلى الأعلى'),
+      ),
+      (
+        'price_desc',
+        context.tr('Price high to low', 'السعر من الأعلى إلى الأقل'),
+      ),
+      ('top_rated', context.tr('Top rated', 'الأعلى تقييماً')),
+      ('most_popular', context.tr('Most popular', 'الأكثر شعبية')),
+      ('biggest_discount', context.tr('Biggest discount', 'أكبر خصم')),
     ];
+    final selectedId = _normalizeSortId(selected);
     return showModalBottomSheet<String>(
       context: context,
       builder: (_) => ListView(
@@ -114,11 +122,11 @@ class AppBottomSheet {
         children: options
             .map(
               (option) => ListTile(
-                title: Text(option),
-                trailing: selected == option
+                title: Text(option.$2),
+                trailing: selectedId == option.$1
                     ? Icon(Icons.check_circle, color: context.appColors.accent)
                     : null,
-                onTap: () => Navigator.pop(context, option),
+                onTap: () => Navigator.pop(context, option.$1),
               ),
             )
             .toList(),
@@ -176,93 +184,192 @@ class AppBottomSheet {
     BuildContext context, {
     required List<String> colors,
     required List<String> sizes,
+    List<ProductVariantModel> variants = const [],
     int maxQuantity = 99,
   }) {
     String? selectedColor;
     String? selectedSize;
     int quantity = 1;
-    final effectiveMaxQuantity = maxQuantity < 1 ? 0 : maxQuantity;
+    final optionColors = colors
+        .where((item) => item.trim().isNotEmpty)
+        .toList();
+    final optionSizes = sizes.where((item) => item.trim().isNotEmpty).toList();
+    final requiresColor = optionColors.isNotEmpty;
+    final requiresSize = optionSizes.isNotEmpty;
+    int stockForSelection() {
+      if (variants.isEmpty) {
+        return maxQuantity < 1 ? 0 : maxQuantity;
+      }
+      final matching = variants.where((variant) {
+        if (!variant.isActive) return false;
+        final colorMatches =
+            !requiresColor ||
+            selectedColor == null ||
+            variant.color == selectedColor ||
+            variant.color.isEmpty;
+        final sizeMatches =
+            !requiresSize ||
+            selectedSize == null ||
+            variant.size == selectedSize ||
+            variant.size.isEmpty;
+        return colorMatches && sizeMatches;
+      });
+      return matching.fold<int>(0, (sum, variant) => sum + variant.stock);
+    }
+
+    bool isColorEnabled(String color) {
+      if (variants.isEmpty) return true;
+      return variants.any((variant) {
+        if (!variant.isActive || variant.stock < 1) return false;
+        final colorMatches = variant.color == color || variant.color.isEmpty;
+        final sizeMatches =
+            !requiresSize ||
+            selectedSize == null ||
+            variant.size == selectedSize;
+        return colorMatches && sizeMatches;
+      });
+    }
+
+    bool isSizeEnabled(String size) {
+      if (variants.isEmpty) return true;
+      return variants.any((variant) {
+        if (!variant.isActive || variant.stock < 1) return false;
+        final colorMatches =
+            !requiresColor ||
+            selectedColor == null ||
+            variant.color == selectedColor;
+        final sizeMatches = variant.size == size || variant.size.isEmpty;
+        return colorMatches && sizeMatches;
+      });
+    }
+
     return showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
       builder: (_) => StatefulBuilder(
-        builder: (context, setState) => Padding(
-          padding: const EdgeInsets.all(AppSizes.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.tr('Choose options', 'اختر الخيارات'),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSizes.md),
-              Text(context.tr('Color', 'اللون')),
-              Wrap(
-                spacing: 8,
-                children: colors
-                    .map(
-                      (color) => ChoiceChip(
+        builder: (context, setState) {
+          final effectiveMaxQuantity = stockForSelection();
+          if (quantity > effectiveMaxQuantity && effectiveMaxQuantity > 0) {
+            quantity = effectiveMaxQuantity;
+          }
+          return Padding(
+            padding: const EdgeInsets.all(AppSizes.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.tr('Choose options', 'اختر الخيارات'),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: AppSizes.md),
+                if (!requiresColor && !requiresSize) ...[
+                  Text(
+                    context.tr('No options required', 'لا توجد خيارات مطلوبة'),
+                    style: TextStyle(color: context.appColors.secondaryText),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                ],
+                if (requiresColor) ...[
+                  Text(context.tr('Select color', 'اختر اللون')),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: optionColors.map((color) {
+                      final enabled = isColorEnabled(color);
+                      return ChoiceChip(
                         label: Text(color),
                         selected: selectedColor == color,
-                        onSelected: (_) =>
-                            setState(() => selectedColor = color),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: AppSizes.md),
-              Text(context.tr('Size', 'المقاس')),
-              Wrap(
-                spacing: 8,
-                children: sizes
-                    .map(
-                      (size) => ChoiceChip(
+                        onSelected: enabled
+                            ? (_) => setState(() {
+                                selectedColor = color;
+                                if (selectedSize != null &&
+                                    !isSizeEnabled(selectedSize!)) {
+                                  selectedSize = null;
+                                }
+                              })
+                            : null,
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                ],
+                if (requiresSize) ...[
+                  Text(context.tr('Select size', 'اختر المقاس')),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: optionSizes.map((size) {
+                      final enabled = isSizeEnabled(size);
+                      return ChoiceChip(
                         label: Text(size),
                         selected: selectedSize == size,
-                        onSelected: (_) => setState(() => selectedSize = size),
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: AppSizes.md),
-              Row(
-                children: [
-                  Text(context.tr('Quantity', 'الكمية')),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: quantity == 1
-                        ? null
-                        : () => setState(() => quantity--),
-                    icon: const Icon(Icons.remove_circle_outline),
+                        onSelected: enabled
+                            ? (_) => setState(() {
+                                selectedSize = size;
+                                if (selectedColor != null &&
+                                    !isColorEnabled(selectedColor!)) {
+                                  selectedColor = null;
+                                }
+                              })
+                            : null,
+                      );
+                    }).toList(),
                   ),
-                  Text('$quantity'),
-                  IconButton(
-                    onPressed: quantity >= effectiveMaxQuantity
-                        ? null
-                        : () => setState(() => quantity++),
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
+                  const SizedBox(height: AppSizes.md),
                 ],
-              ),
-              AppButton(
-                text: context.tr('Confirm', 'تأكيد'),
-                onPressed:
-                    effectiveMaxQuantity < 1 ||
-                        (colors.isNotEmpty && selectedColor == null) ||
-                        (sizes.isNotEmpty && selectedSize == null)
-                    ? null
-                    : () => Navigator.pop(context, {
-                        'color': selectedColor ?? '',
-                        'size': selectedSize ?? '',
-                        'quantity': quantity,
-                      }),
-              ),
-            ],
-          ),
-        ),
+                Row(
+                  children: [
+                    Text(context.tr('Quantity', 'الكمية')),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: quantity == 1
+                          ? null
+                          : () => setState(() => quantity--),
+                      icon: const Icon(Icons.remove_circle_outline),
+                    ),
+                    Text('$quantity'),
+                    IconButton(
+                      onPressed: quantity >= effectiveMaxQuantity
+                          ? null
+                          : () => setState(() => quantity++),
+                      icon: const Icon(Icons.add_circle_outline),
+                    ),
+                  ],
+                ),
+                AppButton(
+                  text: context.tr('Confirm', 'تأكيد'),
+                  onPressed:
+                      effectiveMaxQuantity < 1 ||
+                          (requiresColor && selectedColor == null) ||
+                          (requiresSize && selectedSize == null)
+                      ? null
+                      : () => Navigator.pop(context, {
+                          'color': selectedColor ?? '',
+                          'size': selectedSize ?? '',
+                          'quantity': quantity,
+                        }),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
+  }
+
+  static String _normalizeSortId(String value) {
+    return switch (value) {
+      'Newest' => 'newest',
+      'Price low to high' => 'price_asc',
+      'Price high to low' => 'price_desc',
+      'Top rated' => 'top_rated',
+      'Most popular' => 'most_popular',
+      'Biggest discount' => 'biggest_discount',
+      _ => value,
+    };
   }
 
   static Future<void> showSizeGuide(BuildContext context) {

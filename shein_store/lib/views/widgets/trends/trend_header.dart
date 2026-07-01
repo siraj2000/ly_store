@@ -108,11 +108,18 @@ class TrendHeader extends StatelessWidget {
                               key: const ValueKey('expanded-search'),
                               height: 48,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.14),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.10),
+                                  color: Colors.white.withValues(alpha: 0.78),
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
@@ -122,16 +129,18 @@ class TrendHeader extends StatelessWidget {
                                       onChanged: onSearchChanged,
                                       onSubmitted: (_) => onSearchTap(),
                                       textInputAction: TextInputAction.search,
+                                      cursorColor: const Color(0xFF111827),
+                                      selectionControls:
+                                          MaterialTextSelectionControls(),
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: Color(0xFF111827),
                                         fontWeight: FontWeight.w600,
                                       ),
                                       decoration: InputDecoration(
                                         hintText: searchHint,
-                                        hintStyle: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.62,
-                                          ),
+                                        hintStyle: const TextStyle(
+                                          color: Color(0xFF7B8493),
+                                          fontWeight: FontWeight.w600,
                                         ),
                                         border: InputBorder.none,
                                         contentPadding:
@@ -146,7 +155,7 @@ class TrendHeader extends StatelessWidget {
                                     onPressed: onSearchTap,
                                     icon: const Icon(
                                       Icons.search_rounded,
-                                      color: Colors.white,
+                                      color: Color(0xFF111827),
                                     ),
                                   ),
                                 ],

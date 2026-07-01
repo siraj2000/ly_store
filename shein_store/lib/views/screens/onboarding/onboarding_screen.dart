@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/extensions/localization_extension.dart';
+import '../../../core/widgets/app_skeleton_loader.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -563,6 +564,15 @@ class _RemoteImage extends StatelessWidget {
       child: Image.network(
         url,
         fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
+          return const AppSkeletonLoader(
+            height: double.infinity,
+            borderRadius: 0,
+          );
+        },
         errorBuilder: (context, error, stackTrace) => const ColoredBox(
           color: Color(0xFF202938),
           child: Center(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../models/review_model.dart';
 import '../models/store_model.dart';
+import '../models/user_model.dart';
 import '../models/user_role.dart';
 import '../core/helpers/public_product_visibility_helper.dart';
 import '../services/mock_data_service.dart';
@@ -54,9 +55,7 @@ class ProductController extends ChangeNotifier {
       _mockDataService.stores
           .where(
             (store) =>
-                store.isActive &&
-                !store.vacationMode &&
-                store.suspendedAt == null &&
+                store.canSell &&
                 _mockDataService
                         .userById(store.sellerId)
                         ?.isSellerAccountActive !=
@@ -70,10 +69,14 @@ class ProductController extends ChangeNotifier {
         _mockDataService.storeBySellerId(product.sellerId);
   }
 
+  UserModel? sellerForProduct(ProductModel product) {
+    return _mockDataService.userById(product.sellerId);
+  }
+
   StoreModel? storeById(String storeId) => _mockDataService.storeById(storeId);
 
   bool isProductPublic(ProductModel product) {
-    final seller = _mockDataService.userById(product.sellerId);
+    final seller = sellerForProduct(product);
     final store = storeForProduct(product);
     return PublicProductVisibilityHelper.isProductPublic(
       product: product,
@@ -84,11 +87,7 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> productsForStore(String storeId) {
     return marketplaceProducts
-        .where(
-          (product) =>
-              product.storeId == storeId &&
-              _mockDataService.isProductPublic(product),
-        )
+        .where((product) => product.storeId == storeId)
         .toList();
   }
 
@@ -147,7 +146,7 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> deals([String? departmentId]) {
     final source = departmentId == null
-        ? products
+        ? marketplaceProducts
         : productsByDepartment(departmentId);
     return source
         .where((item) => item.oldPrice > item.price || item.discount > 0)
@@ -157,7 +156,7 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> bestSellers([String? departmentId]) {
     final source = departmentId == null
-        ? products
+        ? marketplaceProducts
         : productsByDepartment(departmentId);
     return List<ProductModel>.from(source)
       ..sort((a, b) => b.soldCount.compareTo(a.soldCount));
@@ -165,7 +164,7 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> newest([String? departmentId]) {
     final source = departmentId == null
-        ? products
+        ? marketplaceProducts
         : productsByDepartment(departmentId);
     return List<ProductModel>.from(source)..sort(
       (a, b) => (b.publishedAt ?? b.createdAt).compareTo(
@@ -176,7 +175,7 @@ class ProductController extends ChangeNotifier {
 
   List<ProductModel> forYou([String? departmentId]) {
     final source = departmentId == null
-        ? products
+        ? marketplaceProducts
         : productsByDepartment(departmentId);
     return List<ProductModel>.from(source)..sort((a, b) {
       final popularity = b.soldCount.compareTo(a.soldCount);
@@ -419,7 +418,12 @@ class ProductController extends ChangeNotifier {
   Future<void> refreshPublicProducts() => loadInitialData();
 
   void _syncMarketplaceCatalog() {
-    products = _mockDataService.products;
+    final localProducts = _mockDataService.allProducts;
+    final localProductIds = localProducts.map((product) => product.id).toSet();
+    final importedProducts = products
+        .where((product) => !localProductIds.contains(product.id))
+        .toList();
+    products = [...localProducts, ...importedProducts];
     errorMessage = null;
     if (!isLoading) {
       notifyListeners();

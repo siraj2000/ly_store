@@ -120,6 +120,7 @@ class CategoryProductGrid extends StatelessWidget {
                     context,
                     colors: product.colors,
                     sizes: product.sizes,
+                    variants: product.variants,
                     maxQuantity: product.stock,
                   );
                   if (!context.mounted || selection == null) {

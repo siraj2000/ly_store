@@ -44,7 +44,8 @@ class ProductListingScreen extends StatefulWidget {
 
 class _ProductListingScreenState extends State<ProductListingScreen> {
   bool _gridView = true;
-  String _sort = 'Recommended';
+  String _sort = 'recommended';
+  Map<String, dynamic> _filters = const {};
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,9 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
             _,
           ) {
             if (productController.isLoading) {
-              return const Scaffold(body: AppLoading());
+              return const Scaffold(
+                body: AppLoading(layout: AppLoadingLayout.productGrid),
+              );
             }
             if (productController.errorMessage != null) {
               return Scaffold(
@@ -127,6 +130,8 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                   break;
               }
             }
+            products = _applyFilters(products);
+            products = _applySort(products);
             if (products.isEmpty) {
               return Scaffold(
                 appBar: AppHeader(title: localizedTitle),
@@ -235,7 +240,8 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                             final filters =
                                 await AppBottomSheet.showFilterOptions(context);
                             if (filters != null) {
-                              searchController.applyFilters(filters);
+                              setState(() => _filters = filters);
+                              searchController.setContextFilters(filters);
                             }
                           },
                           icon: const Icon(Icons.filter_alt_outlined),
@@ -347,6 +353,55 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
     }
   }
 
+  List<ProductModel> _applyFilters(List<ProductModel> products) {
+    var output = List<ProductModel>.from(products);
+    if (_filters['saleOnly'] == true) {
+      output = output
+          .where((item) => item.discount > 0 || item.oldPrice > item.price)
+          .toList();
+    }
+    if (_filters['newArrivals'] == true) {
+      final cutoff = DateTime.now().subtract(const Duration(days: 30));
+      output = output
+          .where((item) => (item.publishedAt ?? item.createdAt).isAfter(cutoff))
+          .toList();
+    }
+    return output;
+  }
+
+  List<ProductModel> _applySort(List<ProductModel> products) {
+    final output = List<ProductModel>.from(products);
+    switch (_sort) {
+      case 'newest':
+        output.sort(
+          (a, b) => (b.publishedAt ?? b.createdAt).compareTo(
+            a.publishedAt ?? a.createdAt,
+          ),
+        );
+        break;
+      case 'price_asc':
+        output.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'price_desc':
+        output.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case 'top_rated':
+        output.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case 'most_popular':
+        output.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+        break;
+      case 'biggest_discount':
+        output.sort((a, b) => b.discount.compareTo(a.discount));
+        break;
+      case 'recommended':
+      default:
+        output.sort((a, b) => b.soldCount.compareTo(a.soldCount));
+        break;
+    }
+    return output;
+  }
+
   void _quickAdd(BuildContext context, ProductModel product) {
     AuthRequiredHelper.guard(
       context,
@@ -355,6 +410,7 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
           context,
           colors: product.colors,
           sizes: product.sizes,
+          variants: product.variants,
           maxQuantity: product.stock,
         );
         if (!context.mounted || selection == null) return;

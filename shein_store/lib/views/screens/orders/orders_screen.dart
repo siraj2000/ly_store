@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../controllers/cart_controller.dart';
 import '../../../controllers/order_controller.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
@@ -10,6 +11,7 @@ import '../../../core/helpers/app_action_feedback.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/app_confirmation_dialog.dart';
 import '../../../core/widgets/app_empty_state.dart';
+import '../../../models/order_model.dart';
 import '../../widgets/common/app_header.dart';
 
 class OrdersScreen extends StatelessWidget {
@@ -147,12 +149,10 @@ class OrdersScreen extends StatelessWidget {
                                   if (order.status == 'Unpaid')
                                     OutlinedButton(
                                       onPressed: () {
-                                        orderController.markOrderPaid(order.id);
-                                        AppActionFeedback.success(
+                                        AppActionFeedback.info(
                                           context,
-                                          context.tr(
-                                            'Payment completed',
-                                            'تم الدفع بنجاح',
+                                          _paymentGatewayUnavailableMessage(
+                                            context,
                                           ),
                                         );
                                       },
@@ -199,6 +199,12 @@ class OrdersScreen extends StatelessWidget {
                                         'View Details',
                                         'عرض التفاصيل',
                                       ),
+                                    ),
+                                  ),
+                                  OutlinedButton(
+                                    onPressed: () => _buyAgain(context, order),
+                                    child: Text(
+                                      context.tr('Buy Again', 'اشترِ مجدداً'),
                                     ),
                                   ),
                                 ],
@@ -298,5 +304,51 @@ class OrdersScreen extends StatelessWidget {
         context.tr('Order marked as received', 'تم تأكيد استلام الطلب'),
       );
     }
+  }
+
+  String _paymentGatewayUnavailableMessage(BuildContext context) {
+    return context.tr(
+      'Online payment for existing orders needs a real payment gateway. Please cancel and checkout again, or pay on delivery if cash was selected.',
+      'الدفع الإلكتروني لطلب موجود يحتاج بوابة دفع حقيقية. يمكنك إلغاء الطلب وإعادة الشراء، أو الدفع عند الاستلام إذا تم اختيار الدفع النقدي.',
+    );
+  }
+
+  void _buyAgain(BuildContext context, OrderModel order) {
+    final cartController = context.read<CartController>();
+    var addedCount = 0;
+    var failedCount = 0;
+    for (final item in order.items) {
+      final result = cartController.addToCart(
+        item.product,
+        item.selectedColor,
+        item.selectedSize,
+        item.quantity,
+      );
+      if (result.isSuccess) {
+        addedCount++;
+      } else {
+        failedCount++;
+      }
+    }
+    if (addedCount == 0) {
+      AppActionFeedback.error(
+        context,
+        context.tr(
+          'These items are not available to buy again right now.',
+          'هذه المنتجات غير متاحة لإعادة الشراء حالياً.',
+        ),
+      );
+      return;
+    }
+    AppActionFeedback.success(
+      context,
+      failedCount == 0
+          ? context.tr('Items added to cart.', 'تمت إضافة المنتجات إلى السلة.')
+          : context.tr(
+              'Some items were added. Please review unavailable items.',
+              'تمت إضافة بعض المنتجات. يرجى مراجعة المنتجات غير المتاحة.',
+            ),
+    );
+    Navigator.pushNamed(context, AppRoutes.cart);
   }
 }

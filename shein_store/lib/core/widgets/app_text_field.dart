@@ -18,6 +18,7 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.textDirection,
     this.textAlign = TextAlign.start,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   final TextEditingController controller;
@@ -33,6 +34,7 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final TextDirection? textDirection;
   final TextAlign textAlign;
+  final TextCapitalization textCapitalization;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,7 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       textDirection: textDirection,
       textAlign: textAlign,
+      textCapitalization: textCapitalization,
       cursorColor: colors.primaryText,
       style: TextStyle(fontSize: 14, color: colors.primaryText),
       decoration: InputDecoration(

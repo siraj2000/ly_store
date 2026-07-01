@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/auth_controller.dart';
+import '../../core/widgets/app_loading.dart';
 import '../../models/user_role.dart';
 import 'app_motion.dart';
 import '../../views/screens/address/address_book_screen.dart';
 import '../../views/screens/address/address_form_screen.dart';
+import '../../views/screens/auth/create_password_screen.dart';
 import '../../views/screens/auth/forgot_password_screen.dart';
 import '../../views/screens/auth/login_screen.dart';
+import '../../views/screens/auth/otp_verification_screen.dart';
 import '../../views/screens/auth/register_screen.dart';
 import '../../views/screens/cart/cart_screen.dart';
 import '../../views/screens/category/category_screen.dart';
@@ -56,6 +59,8 @@ class AppRoutes {
   static const String main = '/main';
   static const String login = '/login';
   static const String register = '/register';
+  static const String otpVerification = '/otp-verification';
+  static const String createPassword = '/create-password';
   static const String forgotPassword = '/forgot-password';
   static const String search = '/search';
   static const String productListing = '/product-listing';
@@ -134,6 +139,16 @@ class AppRoutes {
         return _animatedRoute(routeSettings, child: const LoginScreen());
       case register:
         return _animatedRoute(routeSettings, child: const RegisterScreen());
+      case otpVerification:
+        return _animatedRoute(
+          routeSettings,
+          child: const OtpVerificationScreen(),
+        );
+      case createPassword:
+        return _animatedRoute(
+          routeSettings,
+          child: const CreatePasswordScreen(),
+        );
       case forgotPassword:
         return _animatedRoute(
           routeSettings,
@@ -513,21 +528,9 @@ class _RoleGuard extends StatelessWidget {
       });
       return Scaffold(
         appBar: AppBar(title: const Text('Redirecting')),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(
-                  'Redirecting to the correct screen for your account...',
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
+        body: const AppLoading(
+          layout: AppLoadingLayout.list,
+          message: 'Redirecting to the correct screen for your account...',
         ),
       );
     }

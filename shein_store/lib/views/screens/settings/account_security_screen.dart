@@ -30,7 +30,7 @@ class AccountSecurityScreen extends StatelessWidget {
             icon: Icons.verified_user_outlined,
             title: context.tr('Two-step verification', 'التحقق بخطوتين'),
             subtitle: context.tr(
-              'API-ready placeholder for stronger sign-in protection.',
+              'Ready for stronger sign-in protection when backend auth is connected.',
               'جاهز للربط لاحقاً لحماية تسجيل الدخول.',
             ),
           ),

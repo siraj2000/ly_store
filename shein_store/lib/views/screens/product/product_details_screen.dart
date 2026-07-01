@@ -12,6 +12,8 @@ import '../../../core/extensions/localization_extension.dart';
 import '../../../core/helpers/business_activity_helper.dart';
 import '../../../core/helpers/cart_action_feedback_helper.dart';
 import '../../../core/helpers/app_copy_helper.dart';
+import '../../../core/helpers/product_orderability_helper.dart';
+import '../../../core/policies/product_availability_policy.dart';
 import '../../../core/utils/auth_required_helper.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/app_bottom_sheet.dart';
@@ -90,9 +92,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         if (_selectedSize != null && !product.sizes.contains(_selectedSize)) {
           _selectedSize = null;
         }
-        if (_quantity > product.stock) {
-          _quantity = product.stock < 1 ? 1 : product.stock;
-        }
 
         final locale = Localizations.localeOf(context);
         final reviews = _sortedReviews(
@@ -113,6 +112,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         );
         final related = productController.relatedProducts(product);
         final store = productController.storeForProduct(product);
+        final availability = ProductAvailabilityPolicy.getAvailability(
+          product: product,
+          seller: productController.sellerForProduct(product),
+          store: store,
+        );
+        final requiresColor = ProductAvailabilityPolicy.requiresColor(product);
+        final requiresSize = ProductAvailabilityPolicy.requiresSize(product);
+        final maxSelectableQuantity = _maxQuantityForSelection(product);
+        if (_quantity > maxSelectableQuantity) {
+          _quantity = maxSelectableQuantity < 1 ? 1 : maxSelectableQuantity;
+        }
         // ignore: unused_local_variable
         final localizedStoreName =
             store?.localizedName(locale) ??
@@ -134,8 +144,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           if (product.isFlashSale) context.tr('Flash Sale', 'تخفيض سريع'),
           if (product.isHot) context.tr('Hot pick', 'اختيار رائج'),
           if (product.isNew) context.tr('New in', 'وصل حديثاً'),
-          if (product.isReturnable)
-            context.tr('30-day return', 'إرجاع خلال 30 يوماً'),
+          if (product.isReturnable) context.tr('Returnable', 'قابل للإرجاع'),
           if (isPurchased) context.tr('Purchased', 'تم شراؤه'),
         ];
 
@@ -207,7 +216,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => _addToBag(context, product),
+                      onPressed: availability.isOrderable
+                          ? () => _addToBag(context, product)
+                          : null,
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                         side: BorderSide(color: colors.border),
@@ -219,7 +230,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () => _buyNow(context, product),
+                      onPressed: availability.isOrderable
+                          ? () => _buyNow(context, product)
+                          : null,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                       ),
@@ -261,6 +274,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ],
               ),
               const SizedBox(height: 14),
+              if (!availability.isOrderable) ...[
+                _UnavailableProductWarning(availability: availability),
+                const SizedBox(height: 14),
+              ],
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -419,14 +436,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           context.tr('Express options', 'خيارات سريعة'),
                           Icons.local_shipping_outlined,
                         ),
-                        _InfoStripItem(
-                          context.tr('Free return', 'إرجاع مجاني'),
-                          context.tr(
-                            'Easy 30-day return',
-                            'إرجاع سهل خلال 30 يوماً',
+                        if (product.isReturnable)
+                          _InfoStripItem(
+                            context.tr('Return available', 'الإرجاع متاح'),
+                            context.tr(
+                              'Allowed by this seller',
+                              'متاح حسب سياسة المتجر',
+                            ),
+                            Icons.assignment_return_outlined,
                           ),
-                          Icons.assignment_return_outlined,
-                        ),
                       ],
                     ),
                     if (store != null) ...[
@@ -482,95 +500,77 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _PanelLabel(
-                      title: context.tr('Color', 'اللون'),
-                      subtitle: context.tr(
-                        'Available shades',
-                        'الألوان المتاحة',
+                    if (requiresColor) ...[
+                      _PanelLabel(
+                        title: context.tr('Color', 'اللون'),
+                        subtitle: context.tr(
+                          'Available shades',
+                          'الألوان المتاحة',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: product.colors.isEmpty
-                          ? [
-                              Chip(
-                                label: Text(
-                                  context.tr(
-                                    'No color selection needed',
-                                    'لا يلزم اختيار لون',
-                                  ),
-                                ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: product.colors
+                            .map(
+                              (color) => ChoiceChip(
+                                label: Text(color),
+                                selected: _selectedColor == color,
+                                onSelected: (_) =>
+                                    setState(() => _selectedColor = color),
                               ),
-                            ]
-                          : product.colors
-                                .map(
-                                  (color) => ChoiceChip(
-                                    label: Text(color),
-                                    selected: _selectedColor == color,
-                                    onSelected: (_) =>
-                                        setState(() => _selectedColor = color),
-                                  ),
-                                )
-                                .toList(),
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _PanelLabel(
-                            title: context.tr('Size', 'المقاس'),
-                            subtitle: context.tr(
-                              'Find your best fit',
-                              'اعثر على المقاس الأنسب',
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    if (requiresSize) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _PanelLabel(
+                              title: context.tr('Size', 'المقاس'),
+                              subtitle: context.tr(
+                                'Find your best fit',
+                                'اعثر على المقاس الأنسب',
+                              ),
                             ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              AppBottomSheet.showSizeGuide(context),
-                          child: Text(
-                            context.tr('Size Guide', 'دليل المقاسات'),
+                          TextButton(
+                            onPressed: () =>
+                                AppBottomSheet.showSizeGuide(context),
+                            child: Text(
+                              context.tr('Size Guide', 'دليل المقاسات'),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: product.sizes.isEmpty
-                          ? [
-                              Chip(
-                                label: Text(
-                                  context.tr(
-                                    'No size selection needed',
-                                    'لا يلزم اختيار مقاس',
-                                  ),
-                                ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: product.sizes
+                            .map(
+                              (size) => ChoiceChip(
+                                label: Text(size),
+                                selected: _selectedSize == size,
+                                onSelected: (_) =>
+                                    setState(() => _selectedSize = size),
                               ),
-                            ]
-                          : product.sizes
-                                .map(
-                                  (size) => ChoiceChip(
-                                    label: Text(size),
-                                    selected: _selectedSize == size,
-                                    onSelected: (_) =>
-                                        setState(() => _selectedSize = size),
-                                  ),
-                                )
-                                .toList(),
-                    ),
-                    const SizedBox(height: 18),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 18),
+                    ],
                     Row(
                       children: [
                         Expanded(
                           child: _PanelLabel(
                             title: context.tr('Quantity', 'الكمية'),
                             subtitle: context.tr(
-                              '${product.stock} pieces ready to ship',
-                              '${product.stock} قطع جاهزة للشحن',
+                              '$maxSelectableQuantity pieces ready to ship',
+                              '$maxSelectableQuantity قطع جاهزة للشحن',
                             ),
                           ),
                         ),
@@ -579,7 +579,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           onDecrease: _quantity == 1
                               ? null
                               : () => setState(() => _quantity--),
-                          onIncrease: _quantity >= product.stock
+                          onIncrease: _quantity >= maxSelectableQuantity
                               ? null
                               : () => setState(() => _quantity++),
                         ),
@@ -591,20 +591,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               _DetailPanel(
                 title: context.tr('Shipping and return', 'الشحن والإرجاع'),
                 subtitle: context.tr(
-                  'Helpful delivery details before you place the order.',
-                  'تفاصيل مفيدة عن التوصيل قبل تنفيذ الطلب.',
+                  'Delivery time and seller return policy before checkout.',
+                  'وقت التوصيل وسياسة الإرجاع حسب اختيار المتجر.',
                 ),
                 icon: Icons.local_shipping_outlined,
                 child: Column(
                   children: [
-                    _MiniInfoTile(
-                      icon: Icons.delivery_dining_outlined,
-                      title: context.tr('Shipping method', 'طريقة الشحن'),
-                      subtitle: context.tr(
-                        'Standard and express delivery options are available.',
-                        'خيارات الشحن العادي والسريع متاحة.',
-                      ),
-                    ),
                     _MiniInfoTile(
                       icon: Icons.schedule_outlined,
                       title: context.tr(
@@ -612,17 +604,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         'التوصيل المتوقع',
                       ),
                       subtitle: context.tr(
-                        'Expected arrival within 3 to 7 business days.',
-                        'الوصول المتوقع خلال 3 إلى 7 أيام عمل.',
+                        'Expected delivery within 24 hours.',
+                        'التوصيل المتوقع خلال 24 ساعة.',
                       ),
                     ),
                     _MiniInfoTile(
                       icon: Icons.assignment_return_outlined,
                       title: context.tr('Return policy', 'سياسة الإرجاع'),
-                      subtitle: context.tr(
-                        'Eligible items can be returned within 30 days.',
-                        'يمكن إرجاع المنتجات المؤهلة خلال 30 يوماً.',
-                      ),
+                      subtitle: product.isReturnable
+                          ? context.tr(
+                              'This seller accepts returns for this product.',
+                              'صاحب المتجر يقبل إرجاع هذا المنتج.',
+                            )
+                          : context.tr(
+                              'This seller marked this product as not returnable.',
+                              'صاحب المتجر جعل هذا المنتج غير قابل للإرجاع.',
+                            ),
                     ),
                   ],
                 ),
@@ -793,6 +790,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           context,
           colors: product.colors,
           sizes: product.sizes,
+          variants: product.variants,
           maxQuantity: product.stock,
         );
         if (!context.mounted || selection == null) {
@@ -907,14 +905,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       onAuthenticated: () {
         if (!_hasRequiredSelections(product)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.tr(
-                  'Please choose color and size',
-                  'يرجى اختيار اللون والمقاس',
-                ),
-              ),
-            ),
+            SnackBar(content: Text(_selectionMessage(context, product))),
           );
           return;
         }
@@ -935,14 +926,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       onAuthenticated: () {
         if (!_hasRequiredSelections(product)) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.tr(
-                  'Please choose color and size',
-                  'يرجى اختيار اللون والمقاس',
-                ),
-              ),
-            ),
+            SnackBar(content: Text(_selectionMessage(context, product))),
           );
           return;
         }
@@ -962,9 +946,118 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   bool _hasRequiredSelections(ProductModel product) {
-    final hasColor = product.colors.isEmpty || _selectedColor != null;
-    final hasSize = product.sizes.isEmpty || _selectedSize != null;
+    final hasColor =
+        !ProductAvailabilityPolicy.requiresColor(product) ||
+        _selectedColor != null;
+    final hasSize =
+        !ProductAvailabilityPolicy.requiresSize(product) ||
+        _selectedSize != null;
     return hasColor && hasSize;
+  }
+
+  int _maxQuantityForSelection(ProductModel product) {
+    if (product.variants.isEmpty) {
+      return product.stock;
+    }
+    final hasRequiredColor =
+        !ProductAvailabilityPolicy.requiresColor(product) ||
+        _selectedColor != null;
+    final hasRequiredSize =
+        !ProductAvailabilityPolicy.requiresSize(product) ||
+        _selectedSize != null;
+    if (hasRequiredColor && hasRequiredSize) {
+      final variant = ProductOrderabilityHelper.resolveVariant(
+        product: product,
+        selectedColor: _selectedColor ?? '',
+        selectedSize: _selectedSize ?? '',
+      );
+      return variant?.stock ?? 0;
+    }
+    return product.variants
+        .where((variant) => variant.isActive)
+        .fold<int>(0, (sum, variant) => sum + variant.stock);
+  }
+
+  String _selectionMessage(BuildContext context, ProductModel product) {
+    final requiresColor = ProductAvailabilityPolicy.requiresColor(product);
+    final requiresSize = ProductAvailabilityPolicy.requiresSize(product);
+    if (requiresColor && requiresSize) {
+      return context.tr(
+        'Please choose color and size',
+        'يرجى اختيار اللون والمقاس',
+      );
+    }
+    if (requiresColor) {
+      return context.tr('Choose color', 'اختر اللون');
+    }
+    if (requiresSize) {
+      return context.tr('Choose size', 'اختر المقاس');
+    }
+    return '';
+  }
+}
+
+class _UnavailableProductWarning extends StatelessWidget {
+  const _UnavailableProductWarning({required this.availability});
+
+  final ProductAvailabilityResult availability;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.discount.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: colors.discount.withValues(alpha: 0.28)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: colors.discount.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(Icons.error_outline_rounded, color: colors.discount),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.tr(
+                    'This product is currently unavailable',
+                    'هذا المنتج غير متاح حالياً',
+                  ),
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.tr(
+                    availability.englishMessage,
+                    availability.arabicMessage,
+                  ),
+                  style: TextStyle(
+                    color: colors.secondaryText,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

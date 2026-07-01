@@ -51,7 +51,10 @@ class WalletScreen extends StatelessWidget {
             ),
           ),
           _InfoCard(
-            title: context.tr('Withdraw placeholder', 'قسم السحب التجريبي'),
+            title: context.tr(
+              'Withdrawals require payout setup',
+              'السحب يحتاج إعداد الدفع',
+            ),
             subtitle: context.tr(
               'Withdrawals require a real payment integration.',
               'السحب يحتاج إلى تكامل دفع حقيقي.',
@@ -60,8 +63,8 @@ class WalletScreen extends StatelessWidget {
           _InfoCard(
             title: context.tr('Add funds disabled', 'إضافة الرصيد غير مفعلة'),
             subtitle: context.tr(
-              'Real wallet funding is intentionally not implemented in this mock app.',
-              'تم تعطيل شحن المحفظة الحقيقية عمداً في هذا التطبيق التجريبي.',
+              'Real wallet funding requires a connected payment provider before launch.',
+              'شحن المحفظة الحقيقي يحتاج إلى مزود دفع متصل قبل الإطلاق.',
             ),
           ),
         ],

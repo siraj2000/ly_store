@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_motion.dart';
 import '../../../core/extensions/localization_extension.dart';
-import 'seller_add_product_screen.dart';
 import 'seller_dashboard_screen.dart';
 import 'seller_finance_screen.dart';
 import 'seller_orders_screen.dart';
@@ -21,11 +20,10 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
 
   final _screens = const [
     SellerDashboardScreen(),
-    SellerOrdersScreen(),
-    SellerAddProductScreen(),
     SellerProductsScreen(),
-    SellerStoreScreen(),
+    SellerOrdersScreen(),
     SellerFinanceScreen(),
+    SellerStoreScreen(),
   ];
 
   @override
@@ -44,18 +42,6 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
             label: context.tr('Dashboard', 'لوحة التحكم'),
           ),
           NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: const _SelectedNavIcon(
-              icon: Icons.receipt_long_outlined,
-            ),
-            label: context.tr('Orders', 'الطلبات'),
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.add_box_outlined),
-            selectedIcon: const _SelectedNavIcon(icon: Icons.add_box_outlined),
-            label: context.tr('Add', 'إضافة'),
-          ),
-          NavigationDestination(
             icon: const Icon(Icons.inventory_2_outlined),
             selectedIcon: const _SelectedNavIcon(
               icon: Icons.inventory_2_outlined,
@@ -63,18 +49,23 @@ class _SellerMainScreenState extends State<SellerMainScreen> {
             label: context.tr('Products', 'المنتجات'),
           ),
           NavigationDestination(
-            icon: const Icon(Icons.storefront_outlined),
+            icon: const Icon(Icons.receipt_long_outlined),
             selectedIcon: const _SelectedNavIcon(
-              icon: Icons.storefront_outlined,
+              icon: Icons.receipt_long_outlined,
             ),
-            label: context.tr('Store', 'المتجر'),
+            label: context.tr('Orders', 'الطلبات'),
           ),
           NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
+            icon: const Icon(Icons.analytics_outlined),
             selectedIcon: const _SelectedNavIcon(
-              icon: Icons.account_balance_wallet_outlined,
+              icon: Icons.analytics_outlined,
             ),
-            label: context.tr('Finance', 'المالية'),
+            label: context.tr('Reports', 'التقارير'),
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const _SelectedNavIcon(icon: Icons.person_outline),
+            label: context.tr('Profile', 'الملف'),
           ),
         ],
       ),

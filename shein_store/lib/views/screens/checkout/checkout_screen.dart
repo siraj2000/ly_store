@@ -93,6 +93,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           0,
           (sum, item) => sum + item.quantity,
         );
+        final selectedAvailabilityIssues = cartController
+            .selectedAvailabilityIssues
+            .where((result) => !result.isAvailable)
+            .toList();
+        final firstAvailabilityIssue = selectedAvailabilityIssues.isEmpty
+            ? null
+            : selectedAvailabilityIssues.first;
 
         _scheduleSeedFormFromAddress(selectedAddress, user.name);
 
@@ -116,11 +123,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return Scaffold(
           appBar: AppHeader(title: context.tr('Review & Pay', 'مراجعة ودفع')),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSizes.lg,
               AppSizes.md,
               AppSizes.lg,
-              AppSizes.xl,
+              AppSizes.xl + MediaQuery.viewPaddingOf(context).bottom + 28,
             ),
             children: [
               _CheckoutHeroCard(
@@ -333,6 +340,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             .toList(),
                       ),
               ),
+              if (firstAvailabilityIssue != null)
+                _Section(
+                  icon: Icons.error_outline_rounded,
+                  title: context.tr('Review your bag', 'مراجعة السلة'),
+                  subtitle: context.tr(
+                    'One selected product needs attention before checkout can continue.',
+                    'يوجد منتج محدد يحتاج مراجعة قبل إكمال الدفع.',
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _PaymentInfoNote(
+                        title: firstAvailabilityIssue.productName.isEmpty
+                            ? context.tr(
+                                'This item is no longer available',
+                                'هذا المنتج لم يعد متاحاً',
+                              )
+                            : firstAvailabilityIssue.productName,
+                        subtitle: context.tr(
+                          firstAvailabilityIssue.englishMessage,
+                          firstAvailabilityIssue.arabicMessage,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: () =>
+                            Navigator.pushNamed(context, AppRoutes.cart),
+                        icon: const Icon(Icons.shopping_bag_outlined),
+                        label: Text(context.tr('Review Cart', 'مراجعة السلة')),
+                      ),
+                    ],
+                  ),
+                ),
               _Section(
                 icon: Icons.stars_outlined,
                 title: context.tr('Rewards & wallet', 'المكافآت والمحفظة'),
@@ -529,10 +569,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     if (checkoutController.errorMessage != null) ...[
                       const SizedBox(height: AppSizes.md),
                       Text(
-                        _localizedCheckoutError(
-                          context,
-                          checkoutController.errorMessage!,
-                        ),
+                        checkoutController.availabilityError == null
+                            ? _localizedCheckoutError(
+                                context,
+                                checkoutController.errorMessage!,
+                              )
+                            : context.tr(
+                                checkoutController
+                                    .availabilityError!
+                                    .englishMessage,
+                                checkoutController
+                                    .availabilityError!
+                                    .arabicMessage,
+                              ),
                         style: TextStyle(
                           color: colors.discount,
                           fontWeight: FontWeight.w700,
@@ -541,7 +590,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ],
                     const SizedBox(height: AppSizes.lg),
                     AppButton(
-                      text: checkoutController.isPlacingOrder
+                      text: firstAvailabilityIssue != null
+                          ? context.tr('Review Cart', 'مراجعة السلة')
+                          : checkoutController.isPlacingOrder
                           ? context.tr(
                               'Placing Order...',
                               'جارٍ تنفيذ الطلب...',
@@ -549,6 +600,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           : context.tr('Place Order', 'تنفيذ الطلب'),
                       onPressed: checkoutController.isPlacingOrder
                           ? null
+                          : firstAvailabilityIssue != null
+                          ? () => Navigator.pushNamed(context, AppRoutes.cart)
                           : () => _submitOrder(
                               context,
                               checkoutController,
@@ -885,7 +938,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
     if (order == null) {
-      if (checkoutController.errorMessage != null) {
+      if (checkoutController.availabilityError != null) {
+        final issue = checkoutController.availabilityError!;
+        AppActionFeedback.error(
+          context,
+          context.tr(issue.englishMessage, issue.arabicMessage),
+        );
+      } else if (checkoutController.errorMessage != null) {
         AppActionFeedback.error(
           context,
           _localizedCheckoutError(context, checkoutController.errorMessage!),
@@ -1497,6 +1556,8 @@ class _CheckoutItemCard extends StatelessWidget {
     final colors = context.appColors;
     final locale = Localizations.localeOf(context);
     final localizedTitle = item.product.resolvedTitle(locale);
+    final selectedColor = item.selectedColor.trim();
+    final selectedSize = item.selectedSize.trim();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1536,14 +1597,15 @@ class _CheckoutItemCard extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _ItemMetaPill(
-                      label:
-                          '${context.tr('Color', 'اللون')}: ${item.selectedColor}',
-                    ),
-                    _ItemMetaPill(
-                      label:
-                          '${context.tr('Size', 'المقاس')}: ${item.selectedSize}',
-                    ),
+                    if (selectedColor.isNotEmpty)
+                      _ItemMetaPill(
+                        label:
+                            '${context.tr('Color', 'اللون')}: $selectedColor',
+                      ),
+                    if (selectedSize.isNotEmpty)
+                      _ItemMetaPill(
+                        label: '${context.tr('Size', 'المقاس')}: $selectedSize',
+                      ),
                     _ItemMetaPill(
                       label: '${context.tr('Qty', 'الكمية')}: ${item.quantity}',
                     ),

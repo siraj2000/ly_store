@@ -1434,4 +1434,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copy => 'Copy';
+
+  @override
+  String get cartItemNoLongerAvailable => 'This item is no longer available';
+
+  @override
+  String get reviewCart => 'Review Cart';
+
+  @override
+  String get removeItem => 'Remove item';
+
+  @override
+  String get removeUnavailableItems => 'Remove unavailable items';
+
+  @override
+  String get updateQuantity => 'Update quantity';
+
+  @override
+  String get reselectColorSize => 'Please reselect color and size';
+
+  @override
+  String get storeVacationMode => 'The store is currently on vacation';
+
+  @override
+  String get productOutOfStock => 'The product is out of stock';
+
+  @override
+  String get quantityGreaterThanStock =>
+      'The requested quantity is greater than available stock';
+
+  @override
+  String get currentlyUnavailable => 'Currently unavailable';
+
+  @override
+  String get outOfStock => 'Out of stock';
+
+  @override
+  String get productUnavailable => 'This product is currently unavailable';
+
+  @override
+  String get storeOnVacation => 'The store is currently on vacation';
+
+  @override
+  String get unavailableRemoveFromCart => 'Remove unavailable item';
+
+  @override
+  String get chooseColor => 'Choose color';
+
+  @override
+  String get chooseSize => 'Choose size';
+
+  @override
+  String get selectColor => 'Select color';
+
+  @override
+  String get selectSize => 'Select size';
+
+  @override
+  String get selectColorAndSize => 'Select color and size';
+
+  @override
+  String get noOptionsRequired => 'No options required';
+
+  @override
+  String get reviewUnavailableItem => 'Review unavailable item';
+
+  @override
+  String get paymentPending => 'Payment pending';
+
+  @override
+  String get reduceToAvailableStock => 'Reduce to available stock';
 }

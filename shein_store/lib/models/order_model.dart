@@ -15,7 +15,7 @@ class OrderModel {
     required this.address,
     required this.paymentMethod,
     required this.estimatedDelivery,
-    this.paymentStatus = 'Paid',
+    this.paymentStatus = 'Pending',
     this.shippingStatus = 'Preparing',
     this.platformCommission = 0,
     this.sellerOrderIds = const [],
@@ -107,7 +107,7 @@ class OrderModel {
       estimatedDelivery:
           DateTime.tryParse(json['estimatedDelivery'] as String? ?? '') ??
           DateTime.now(),
-      paymentStatus: json['paymentStatus'] as String? ?? 'Paid',
+      paymentStatus: json['paymentStatus'] as String? ?? 'Pending',
       shippingStatus: json['shippingStatus'] as String? ?? 'Preparing',
       platformCommission: (json['platformCommission'] as num?)?.toDouble() ?? 0,
       sellerOrderIds: (json['sellerOrderIds'] as List<dynamic>? ?? [])
